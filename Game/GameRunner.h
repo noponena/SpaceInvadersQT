@@ -31,7 +31,6 @@ private:
     void gameLoop();
     void processInput(qint64 deltaTime);
     void updateGameState(qint64 deltaTime);
-    void render();
     void updateFps();
 
     void initializeGameObjects();

@@ -6,32 +6,34 @@
 namespace GameObjects {
 
 EnemyShip::EnemyShip(const int maxHp, float speed, int fireRate, const Position &position)
-    : Shooter(maxHp, speed, fireRate, position), m_destroyed(false)
-{
-    int frameWidth = 400;  // width of a single frame
-    int frameHeight = 400;  // height of a single frame
-    int columns = 4;  // number of columns of frames in the sprite sheet
-    int rows = 4;  // number of rows of frames in the sprite sheet
-    int targetWidth = 30;  // The width of your ship
-    int targetHeight = 30;  // The height of your ship
-    QPixmap spriteSheet("C:\\Users\\aaron\\OneDrive\\Tiedostot\\Aaro\\Personal\\Projects\\QT\\SpaceInvaders\\Images\\explosion.png");
-
-    for (int row = 0; row < rows; ++row) {
-        for (int col = 0; col < columns; ++col) {
-            int x = col * frameWidth;
-            int y = row * frameHeight;
-            QPixmap frame = spriteSheet.copy(x, y, frameWidth, frameHeight);
-            QPixmap scaledFrame = frame.scaled(targetWidth, targetHeight, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-            m_animationFrames.append(scaledFrame);
-        }
-    }
-    qDebug() << "Total frames:" << m_animationFrames.size();
-    connect(this, &EnemyShip::animationCompleted, this, &EnemyShip::onAnimationCompleted);
-
-}
+    : Shooter(maxHp, speed, fireRate, position)
+{}
 
 void EnemyShip::initialize()
 {
+//    this->setMovementFunc(
+//        [this](const std::tuple<int, int>& currentPosition, int deltaTime) {
+//            int originalX = std::get<0>(currentPosition);
+//            int originalY = std::get<1>(currentPosition);
+
+//            // Horizontal oscillation
+//            //float timeInSeconds = deltaTime / 1000.0f;  // Assuming deltaTime is in milliseconds
+//            float timeInSeconds = 0.016;
+//            //qDebug() << "timeInSeconds:" << timeInSeconds;
+//            float value = m_oscillationFrequency * timeInSeconds * originalY;
+//            //qDebug() << "value:" << value;
+//            int deltaX = static_cast<int>(10 * std::sin(value));
+
+//            // Constant vertical motion
+//            int deltaY = m_speed * deltaTime;
+
+//            int x = originalX + deltaX;
+//            int y = originalY + deltaY;
+//            return std::make_tuple(x, y);
+//        }
+//    );
+
+    this->initializeDestructionAnimation();
     QGraphicsPolygonItem *polygonItem = new QGraphicsPolygonItem();
 
     // Set the color and pen properties
@@ -45,12 +47,7 @@ void EnemyShip::initialize()
 
     // Assign the polygonItem to m_graphicsItem
     m_graphicsItem = polygonItem;
-    this->calculateBoundingBox();
-}
-
-bool EnemyShip::shouldBeDeleted()
-{
-    return m_destroyed;
+    this->updateBoundingBox();
 }
 
 void EnemyShip::shoot()
@@ -65,14 +62,14 @@ void EnemyShip::collideWith(GameObject &other) {
 
 void EnemyShip::collideWithProjectile(Projectile &projectile)
 {
-
     int damageValue = projectile.getDamage();  // Assume Projectile has a method damage()
     this->takeDamage(damageValue);
     qDebug() << "Ouch! HP left:" << this->m_currentHp;
-    if (this->m_currentHp <= 0) {
-        m_collidable = false;
-        this->playDestructionAnimation();
-    }
+}
+
+void EnemyShip::collideWithEnemyShip(EnemyShip &enemyShip)
+{
+    this->takeDamage(10000);
 }
 
 void EnemyShip::playDestructionAnimation() {
@@ -90,10 +87,10 @@ void EnemyShip::playDestructionAnimation() {
         } else {
             animationTimer->stop();
             animationTimer->deleteLater();
-            emit animationCompleted();  // Emit the signal when the animation completes
+            emit animationCompleted();
         }
     });
-    animationTimer->start(100);  // Adjust timing to fit your needs
+    animationTimer->start(100);
 }
 
 
@@ -120,11 +117,9 @@ void EnemyShip::switchToPixmapItem() {
     }
 }
 
-
-void EnemyShip::onAnimationCompleted()
+bool EnemyShip::shouldBeDeleted()
 {
-    m_destroyed = true;
-    qDebug() << "animation completed";
+    return m_destroyed || m_position.isBeyondScreenBottomLimit(30);
 }
 
 } // namespace GameObjects

@@ -12,7 +12,6 @@ class Shooter : public Ship
 public:
     Shooter(int maxHp, float speed, int fireRate, Position position);
     virtual void shoot() = 0;
-    void update(int deltaTime) override;
     void updateFireRate(int amount = 1);
     int fireRate() const;
 

@@ -16,7 +16,6 @@ public:
     // GameObject interface
 public:
     void initialize() override;
-    bool shouldBeDeleted() override;
 
     // Shooter interface
 public:
@@ -26,18 +25,18 @@ public:
 public:
     void collideWith(GameObject &other) override;
     void collideWithProjectile(Projectile& projectile) override;
-    void playDestructionAnimation();
+    void collideWithEnemyShip(EnemyShip& enemyShip) override;
+protected:
+        void playDestructionAnimation() override;
 private:
     void switchToPixmapItem();
-    QList<QPixmap> m_animationFrames;
-    bool m_destroyed;
     int m_frameIndex;
+    int m_oscillationAmplitude = 5;
+    float m_oscillationFrequency = 1;
 
-private slots:
-    void onAnimationCompleted();
-
-signals:
-    void animationCompleted();
+    // GameObject interface
+public:
+    bool shouldBeDeleted() override;
 };
 
 

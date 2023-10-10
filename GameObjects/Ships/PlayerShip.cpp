@@ -25,7 +25,7 @@ void PlayerShip::initialize()
 
     // Assign the polygonItem to m_graphicsItem
     m_graphicsItem = polygonItem;
-    this->calculateBoundingBox();
+    this->updateBoundingBox();
 
 //    m_animatedItem = new AnimatedGraphicsItem(m_graphicsItem.data());  // assuming m_graphicsItem is a QSharedPointer<QGraphicsPolygonItem>
 //    m_animation = new QPropertyAnimation(m_animatedItem, "pos");
@@ -40,20 +40,9 @@ void PlayerShip::shoot()
         Position position = m_position;
         position.moveY(-10);
         std::shared_ptr<Laser> laser = std::make_shared<Laser>(position, 1, Qt::red);
+        laser->initialize();
         emit laserShot(laser);
     }
-}
-
-
-
-void PlayerShip::update(int deltaTime)
-{
-
-}
-
-bool PlayerShip::shouldBeDeleted()
-{
-    return false;
 }
 
 void PlayerShip::collideWith(GameObject &other)

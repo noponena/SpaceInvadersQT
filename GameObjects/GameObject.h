@@ -6,6 +6,7 @@
 #include <QGraphicsItem>
 #include <QPropertyAnimation>
 #include "AnimatedGraphicsItem.h"
+#include "Game/MovementFunction.h"
 
 namespace GameObjects {
 
@@ -25,27 +26,27 @@ public:
         return std::make_tuple(x, y);
     }
 
-    bool isAtScreenTopLimit() const {
-        return this->y == minY;
+    bool isBeyondScreenTopLimit(int offset = 0) const {
+        return this->y + offset < minY;
     }
 
-    bool isAtScreenBottomLimit() const {
-        return this->y == maxY;
+    bool isBeyondScreenBottomLimit(int offset = 0) const {
+        return this->y - offset > maxY;
     }
 
-    bool isAtScreenLeftLimit() const {
-        return this->x == minX;
+    bool isBeyondScreenLeftLimit(int offset = 0) const {
+        return this->x + offset < minX;
     }
 
-    bool isAtScreenRightLimit() const {
-        return this->x == maxX;
+    bool isBeyondScreenRightLimit(int offset = 0) const {
+        return this->x - offset > maxX;
     }
 
-    bool isAtLimit() const {
-        return isAtScreenTopLimit()
-               || isAtScreenBottomLimit()
-               || isAtScreenLeftLimit()
-               || isAtScreenRightLimit();
+    bool isBeyondLimit() const {
+        return isBeyondScreenTopLimit()
+               || isBeyondScreenBottomLimit()
+               || isBeyondScreenLeftLimit()
+               || isBeyondScreenRightLimit();
     }
 
     void moveX(int amount) {
@@ -81,7 +82,12 @@ public:
 
     void setX(int newX)
     {
-        x = newX;
+        if (newX > maxX)
+            x = maxX;
+        else if (newX < minX)
+            x = minX;
+        else
+            x = newX;
     }
 
     void setY(int newY)
@@ -105,7 +111,6 @@ class GameObject : public QObject {
     //Q_PROPERTY(QPointF pos READ pos WRITE setPos)
 
 public:
-
     struct BoundingBox {
         int minX, minY, maxX, maxY;
     };
@@ -113,12 +118,13 @@ public:
     GameObject(const Position &position, float speed);
     virtual ~GameObject() = default;
     virtual void initialize() = 0;
-    virtual void update(int deltaTime) = 0;
     virtual bool shouldBeDeleted() = 0;
     virtual void collideWith(GameObject &other) {(void)other;}
     virtual void collideWithProjectile(Projectile& projectile) {(void)projectile;}
     virtual void collideWithEnemyShip(EnemyShip& enemyShip) {(void)enemyShip;}
     virtual void collideWithPlayerShip(PlayerShip& playerShip) {(void)playerShip;}
+
+    void update(int deltaTime);
 
     void moveLeft(int deltaTime);
     void moveRight(int deltaTime);
@@ -130,7 +136,7 @@ public:
     void moveY(int amount);
 
     bool isAtLimit() const;
-    bool isCollision(GameObject &other);
+    bool checkCollision(GameObject &other);
 
     const Position &position() const;
 
@@ -144,15 +150,26 @@ public:
 
     bool collidable() const;
 
+    void setXMovementFunc(const MovementFunction::MovementFunc &newMovementFunc);
+    void setYMovementFunc(const MovementFunction::MovementFunc &newYMovementFunc);
+
 protected:
     Position m_position;
     float m_speed;
     QGraphicsItem *m_graphicsItem;
-    void calculateBoundingBox();
+    void updateBoundingBox();
     bool m_hasCollided;
     bool m_collidable;
+
+
+    virtual void playDestructionAnimation() {};
 private:
     BoundingBox m_boundingBox;
+    void move(int xRel, int yRel);
+    MovementFunction::MovementFunc m_xMovementFunc;
+    MovementFunction::MovementFunc m_yMovementFunc;
+    void execMovement(int deltaTime);
+    void updateGraphicsItemPosition();
 };
 
 }

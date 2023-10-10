@@ -64,7 +64,6 @@ void GameRunner::gameLoop()
     qint64 deltaTime = m_elapsedTimer.restart();
     this->processInput(deltaTime);
     this->updateGameState(deltaTime);
-    this->render();
     this->updateFps();
 }
 
@@ -104,31 +103,13 @@ void GameRunner::updateGameState(qint64 deltaTime)
     const auto& gameObjects = m_gameState.gameObjects();
     for (auto it1 = gameObjects.begin(); it1 != gameObjects.end(); ++it1) {
         for (auto it2 = std::next(it1); it2 != gameObjects.end(); ++it2) {
-            if ((*it1)->isCollision(**it2)) {
+            if ((*it1)->checkCollision(**it2)) {
                 i++;
                 qDebug() << "Collision:" << i;
             }
         }
     }
     m_gameState.update(deltaTime);
-}
-
-
-void GameRunner::render()
-{
-    const std::list<std::shared_ptr<GameObjects::GameObject>>& gameObjects = m_gameState.gameObjects();
-    for (const auto& object : gameObjects) {
-        GameObjects::Position positionObject = object->position();
-        std::tuple<int, int> positionTuple = positionObject.get();
-
-        int x = std::get<0>(positionTuple);
-        int y = std::get<1>(positionTuple);
-
-        QGraphicsItem *graphicsItem = object->graphicsItem();
-        if (graphicsItem) {
-            graphicsItem->setPos(x, y);
-        }
-    }
 }
 
 void GameRunner::updateFps()

@@ -17,8 +17,6 @@ public:
 public:
     void initialize() override;
     void shoot() override;
-    void update(int deltaTime) override;
-    bool shouldBeDeleted() override;
     void collideWith(GameObject &other) override;
     void collideWithProjectile(Projectile& projectile) override;
 

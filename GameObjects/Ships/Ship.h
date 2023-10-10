@@ -7,6 +7,7 @@ namespace GameObjects {
 
 class Ship : public GameObject
 {
+    Q_OBJECT
 public:
     Ship(const int maxHp, float speed, const Position &position);
     void takeDamage(int amount);
@@ -17,6 +18,23 @@ protected:
     int m_currentHp;
     int m_maxHp;
     float m_speed;
+    bool m_destroyed;
+    QList<QPixmap> m_animationFrames;
+    virtual void initializeDestructionAnimation();
+
+private:
+    void die();
+
+protected slots:
+    void onAnimationCompleted();
+
+signals:
+    void animationCompleted();
+
+    // GameObject interface
+public:
+    void initialize() override;
+    bool shouldBeDeleted() override;
 };
 
 } // namespace GameObjects

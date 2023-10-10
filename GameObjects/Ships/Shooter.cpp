@@ -8,11 +8,6 @@ Shooter::Shooter(int maxHp, float speed, int fireRate, Position position)
     m_shotCooldown = 1000 / m_fireRate;
 }
 
-void Shooter::update(int deltaTime)
-{
-
-}
-
 void Shooter::updateFireRate(int amount)
 {
     m_fireRate += amount;

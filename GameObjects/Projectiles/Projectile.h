@@ -9,7 +9,6 @@ class Projectile : public GameObject
 {
 public:
     Projectile(Position pos, float speed, bool hostile = false, int damage = 1);
-    void update(int deltaTime) override;
     bool shouldBeDeleted() override;
     void collideWith(GameObject& other) override;
     void collideWithEnemyShip(EnemyShip& enemyShip) override;

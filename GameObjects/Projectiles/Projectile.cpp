@@ -1,4 +1,5 @@
 #include "Projectile.h"
+#include "GameObjects/Ships/EnemyShip.h"
 
 namespace GameObjects
 {
@@ -8,14 +9,9 @@ Projectile::Projectile(Position pos, float speed, bool hostile, int damage)
 
 }
 
-void Projectile::update(int deltaTime)
-{
-    this->moveUp(m_speed * deltaTime);
-}
-
 bool Projectile::shouldBeDeleted()
 {
-    return m_position.isAtScreenTopLimit() || m_hasCollided;
+    return m_position.isBeyondScreenTopLimit() || m_hasCollided;
 }
 
 void Projectile::collideWith(GameObject &other)
@@ -27,6 +23,7 @@ void Projectile::collideWith(GameObject &other)
 void Projectile::collideWithEnemyShip(EnemyShip &enemyShip)
 {
     m_hasCollided = true;
+    enemyShip.collideWithProjectile(*this);
 }
 
 int Projectile::getDamage() const
@@ -40,3 +37,4 @@ bool Projectile::hostile() const
 }
 }
 
+    //this->graphicsItem()->setPos(this->m_position.getX(), this->m_position.getY());
