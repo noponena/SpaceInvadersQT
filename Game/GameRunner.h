@@ -5,6 +5,7 @@
 #include <QElapsedTimer>
 #include <QGraphicsView>
 #include <QKeyEvent>
+#include <QWheelEvent>
 #include "GameState.h"
 
 namespace Game {
@@ -13,6 +14,7 @@ class GameRunner : public QGraphicsView
     Q_OBJECT
 public:
     explicit GameRunner(QWidget *parent = nullptr);
+    ~GameRunner();
     void startGame();
 
     QGraphicsScene *scene();
@@ -20,6 +22,25 @@ public:
 protected:
     void keyPressEvent(QKeyEvent *event) override;
     void keyReleaseEvent(QKeyEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override
+    {
+        Q_UNUSED(event);
+    }
+
+    void mouseReleaseEvent(QMouseEvent *event) override
+    {
+        Q_UNUSED(event);
+    }
+
+    void mouseMoveEvent(QMouseEvent *event) override
+    {
+        Q_UNUSED(event);
+    }
+
+    void wheelEvent(QWheelEvent *event) override
+    {
+        event->ignore();
+    }
 private:
     QElapsedTimer m_elapsedTimer;
     int m_frameCount = 0;
@@ -32,22 +53,26 @@ private:
     void processInput(qint64 deltaTime);
     void updateGameState(qint64 deltaTime);
     void updateFps();
+    void initializeCollisionDetection();
 
     void initializeGameObjects();
+    bool m_perfTest = false;
+
+    QThread* m_collisionThread;
 
 signals:
     void fpsUpdated(int fps);
 
 public slots:
-    void onLaserAdded(const std::shared_ptr<GameObjects::Laser>& laser) {
-        m_scene.addItem(laser->graphicsItem());
-    }
-    void onEnemyAdded(const std::shared_ptr<GameObjects::EnemyShip>& enemy) {
-        m_scene.addItem(enemy->graphicsItem());
+    void onObjectAdded(const std::shared_ptr<GameObjects::GameObject>& object) {
+        m_scene.addItem(object->graphicsItem());
     }
     void onObjectDeleted(const std::shared_ptr<GameObjects::GameObject>& object) {
         m_scene.removeItem(object->graphicsItem());
-        qDebug() << "object deleted";
+    }
+    void onCollisionDetected(const std::shared_ptr<GameObjects::GameObject>& obj1,
+                             const std::shared_ptr<GameObjects::GameObject>& obj2) {
+        obj1->doCollide(*obj2);
     }
 
 };

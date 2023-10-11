@@ -25,12 +25,7 @@ void PlayerShip::initialize()
 
     // Assign the polygonItem to m_graphicsItem
     m_graphicsItem = polygonItem;
-    this->updateBoundingBox();
-
-//    m_animatedItem = new AnimatedGraphicsItem(m_graphicsItem.data());  // assuming m_graphicsItem is a QSharedPointer<QGraphicsPolygonItem>
-//    m_animation = new QPropertyAnimation(m_animatedItem, "pos");
-//    m_animation->setDuration(100);  // for a half-second animation
-    //    m_animation->setEasingCurve(QEasingCurve::Linear);
+    this->initBoundingBox();
 }
 
 void PlayerShip::shoot()
@@ -52,10 +47,7 @@ void PlayerShip::collideWith(GameObject &other)
 
 void PlayerShip::collideWithProjectile(Projectile &projectile)
 {
-    if (!projectile.hostile())
-    {
-        qDebug() << "Friendly fire!";
-    }
+
 }
 
 }

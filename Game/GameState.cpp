@@ -7,23 +7,26 @@ namespace Game {
 GameState::GameState(QObject *parent)
     : QObject(parent)
 {
-    m_playersShipStartSpeed = 0.5;
+    m_playersShipStartSpeed = 1;
 }
 
 void GameState::initialize()
 {
     this->initMovementConstrains();
     this->initPlayerShip();
-    this->initEnemyShip();
+    this->initEnemyShips();
 }
 
 void GameState::addGameObject(std::shared_ptr<GameObjects::GameObject> object)
 {
-    m_gameObjects.push_back(std::move(object));
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_gameObjects.push_back(object);
+    emit objectAdded(object);
 }
 
 void GameState::removeGameObject(std::shared_ptr<GameObjects::GameObject> object)
 {
+    std::lock_guard<std::mutex> lock(m_mutex);
     m_gameObjects.remove(object);
 }
 
@@ -35,6 +38,8 @@ void GameState::setSize(int width, int height)
 
 void GameState::update(int deltaTime)
 {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    //qDebug() << "gameObjects:" << m_gameObjects.size();
     auto it = m_gameObjects.begin();
     while (it != m_gameObjects.end()) {
         (*it)->update(deltaTime);
@@ -49,13 +54,15 @@ void GameState::update(int deltaTime)
 
 const std::list<std::shared_ptr<GameObjects::GameObject>>& GameState::gameObjects() const
 {
+    std::lock_guard<std::mutex> lock(m_mutex);
     return m_gameObjects;
 }
 
 void GameState::initPlayerShip()
 {
-    GameObjects::Position pos(m_windowWidth / 2, m_maxY, m_minX, m_maxX, m_minY, m_maxY);
-    std::shared_ptr<GameObjects::PlayerShip> playerShip = std::make_shared<GameObjects::PlayerShip>(100, m_playersShipStartSpeed, 1, pos);
+    GameObjects::Position pos(m_windowWidth - 100, m_maxY, m_minX, m_maxX, m_minY, m_maxY);
+    std::shared_ptr<GameObjects::PlayerShip> playerShip = std::make_shared<GameObjects::PlayerShip>(100, m_playersShipStartSpeed, 100, pos);
+    playerShip->initialize();
     m_playerShip = playerShip;
 
     connect(playerShip.get(), &GameObjects::PlayerShip::laserShot, this, &GameState::onLaserShot);
@@ -63,12 +70,18 @@ void GameState::initPlayerShip()
     this->addGameObject(std::move(playerShip));
 }
 
-void GameState::initEnemyShip()
+void GameState::initEnemyShips()
 {
-    for (int i = 1; i <= 1; i++) {
-        GameObjects::Position pos(i * 900, m_minY + 50, m_minX, m_maxX, m_minY, m_maxY);
-        std::shared_ptr<GameObjects::EnemyShip> enemyShip = std::make_shared<GameObjects::EnemyShip>(1, 0.08, 1, pos);
-        this->addGameObject(enemyShip);
+    int rows = 20;
+    int cols = 32;
+    qDebug() << "Initializing" << rows*cols << "enemy ships.";
+    for (int j = 1; j <= rows; j++) {
+        for (int i = 1; i <= cols; i++) {
+            GameObjects::Position pos(i * 55 + 50, j * 40 + m_minY + 20, m_minX, m_maxX, m_minY, m_maxY);
+            std::shared_ptr<GameObjects::EnemyShip> enemyShip = std::make_shared<GameObjects::EnemyShip>(1, 0.08, 1, pos);
+            enemyShip->initialize();
+            this->addGameObject(enemyShip);
+        }
     }
 }
 
@@ -81,15 +94,14 @@ void GameState::initMovementConstrains()
     m_maxY = m_windowHeight - 50;
 }
 
-void GameState::addLaser(const std::shared_ptr<GameObjects::Laser> &laser)
-{
-    this->addGameObject(laser);
-    emit laserAdded(laser);
-}
-
 const std::shared_ptr<GameObjects::PlayerShip> &GameState::playerShip() const
 {
     return m_playerShip;
+}
+
+std::mutex &GameState::mutex()
+{
+    return m_mutex;
 }
 
 }

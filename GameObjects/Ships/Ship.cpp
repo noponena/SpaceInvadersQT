@@ -52,23 +52,19 @@ void Ship::initializeDestructionAnimation()
             m_animationFrames.append(scaledFrame);
         }
     }
-    qDebug() << "Total frames:" << m_animationFrames.size();
     connect(this, &Ship::animationCompleted, this, &Ship::onAnimationCompleted);
 }
 
 void Ship::die()
 {
-    //this->update(16);
     m_collidable = false;
-    this->setXMovementFunc(nullptr);
-    this->setYMovementFunc(nullptr);
+    this->clearMovementStrategy();
     this->playDestructionAnimation();
 }
 
 void Ship::onAnimationCompleted()
 {
     m_destroyed = true;
-    qDebug() << "animation completed";
 }
 
 void Ship::initialize()

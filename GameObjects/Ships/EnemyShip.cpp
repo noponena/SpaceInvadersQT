@@ -11,34 +11,15 @@ EnemyShip::EnemyShip(const int maxHp, float speed, int fireRate, const Position 
 
 void EnemyShip::initialize()
 {
-//    this->setMovementFunc(
-//        [this](const std::tuple<int, int>& currentPosition, int deltaTime) {
-//            int originalX = std::get<0>(currentPosition);
-//            int originalY = std::get<1>(currentPosition);
-
-//            // Horizontal oscillation
-//            //float timeInSeconds = deltaTime / 1000.0f;  // Assuming deltaTime is in milliseconds
-//            float timeInSeconds = 0.016;
-//            //qDebug() << "timeInSeconds:" << timeInSeconds;
-//            float value = m_oscillationFrequency * timeInSeconds * originalY;
-//            //qDebug() << "value:" << value;
-//            int deltaX = static_cast<int>(10 * std::sin(value));
-
-//            // Constant vertical motion
-//            int deltaY = m_speed * deltaTime;
-
-//            int x = originalX + deltaX;
-//            int y = originalY + deltaY;
-//            return std::make_tuple(x, y);
-//        }
-//    );
-
+    this->setMovementStrategy(Game::MovementStrategies::CircularMovementStrategy(2, 1));
+    //this->setMovementStrategy(Game::MovementStrategies::PlayerProjectileMovementStrategy(0.07));
     this->initializeDestructionAnimation();
     QGraphicsPolygonItem *polygonItem = new QGraphicsPolygonItem();
 
     // Set the color and pen properties
     polygonItem->setBrush(Qt::green);
-    polygonItem->setPen(QPen(Qt::black));
+    //polygonItem->setPen(QPen(Qt::black));
+    polygonItem->setPen(Qt::NoPen);
 
     // Create a QPolygon to represent the triangle and set it to the QGraphicsPolygonItem
     QPolygon triangle;
@@ -47,7 +28,7 @@ void EnemyShip::initialize()
 
     // Assign the polygonItem to m_graphicsItem
     m_graphicsItem = polygonItem;
-    this->updateBoundingBox();
+    this->initBoundingBox();
 }
 
 void EnemyShip::shoot()
@@ -57,14 +38,12 @@ void EnemyShip::shoot()
 
 void EnemyShip::collideWith(GameObject &other) {
     other.collideWithEnemyShip(*this);
-    qDebug() << "enemy ship collided!";
 }
 
 void EnemyShip::collideWithProjectile(Projectile &projectile)
 {
     int damageValue = projectile.getDamage();  // Assume Projectile has a method damage()
     this->takeDamage(damageValue);
-    qDebug() << "Ouch! HP left:" << this->m_currentHp;
 }
 
 void EnemyShip::collideWithEnemyShip(EnemyShip &enemyShip)
@@ -73,7 +52,6 @@ void EnemyShip::collideWithEnemyShip(EnemyShip &enemyShip)
 }
 
 void EnemyShip::playDestructionAnimation() {
-    qDebug() << "playing destruction animation";
     this->switchToPixmapItem();  // Switch to using a QGraphicsPixmapItem
     this->moveX(-15);
     this->moveY(-20);

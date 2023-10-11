@@ -2,28 +2,40 @@
 #include "GameObjects/Ships/PlayerShip.h"
 #include <QGraphicsPolygonItem>
 #include <QOpenGLWidget>
+#include <QThread>
 #include "UI/FPSCounter.h"
+#include "CollisionDetector.h"
 
 namespace Game {
 GameRunner::GameRunner(QWidget *parent)
     : QGraphicsView(parent), m_scene(new QGraphicsScene(this))
 {
     setViewport(new QOpenGLWidget);
-    setViewportUpdateMode(QGraphicsView::SmartViewportUpdate);
+    setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
     setAlignment(Qt::AlignLeft | Qt::AlignTop);
+    setInteractive(false);
+    setOptimizationFlags(QGraphicsView::DontAdjustForAntialiasing | QGraphicsView::DontSavePainterState);
     setViewportMargins(0, 0, 0, 0);
+    //setRenderHint(QPainter::Antialiasing);
     setScene(&m_scene);
     UI::FPSCounter *fpsCounter = new UI::FPSCounter();
     fpsCounter->setPos(0, 0);
+    scene()->setItemIndexMethod(QGraphicsScene::BspTreeIndex);
     scene()->addItem(fpsCounter);
     m_scene.setBackgroundBrush(QBrush(Qt::black));
     m_elapsedTimer.start();
     this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    connect(&m_gameState, &GameState::laserAdded, this, &GameRunner::onLaserAdded);
-    connect(&m_gameState, &GameState::enemyAdded, this, &GameRunner::onEnemyAdded);
+    connect(&m_gameState, &GameState::objectAdded, this, &GameRunner::onObjectAdded);
     connect(&m_gameState, &GameState::objectDeleted, this, &GameRunner::onObjectDeleted);
     connect(this, &GameRunner::fpsUpdated, fpsCounter, &UI::FPSCounter::updateFPS);
+}
+
+GameRunner::~GameRunner()
+{
+    m_collisionThread->quit();
+    m_collisionThread->wait();
+    delete m_collisionThread;
 }
 
 void GameRunner::startGame()
@@ -31,7 +43,8 @@ void GameRunner::startGame()
     // Initialize game state
     m_gameState.setSize(this->scene()->sceneRect().width(), this->scene()->sceneRect().height());
     m_gameState.initialize();
-    this->initializeGameObjects();
+    //this->initializeGameObjects();
+    this->initializeCollisionDetection();
 
     // Create and start game loop timer
     QTimer* timer = new QTimer(this);
@@ -82,8 +95,12 @@ void GameRunner::processInput(qint64 deltaTime)
     if (m_pressedKeys.contains(Qt::Key_Up)) {
         playerShip->moveUp(deltaTime);
     }
-    if (m_pressedKeys.contains(Qt::Key_Space)) {
+    if (m_pressedKeys.contains(Qt::Key_Space) || m_perfTest) {
         playerShip->shoot();
+    }
+    if (m_pressedKeys.contains(Qt::Key_Q)) {
+        m_gameState.initEnemyShips();
+        m_pressedKeys.remove(Qt::Key_Q);
     }
     if (m_pressedKeys.contains(Qt::Key_U)) {
         playerShip->updateFireRate();
@@ -99,16 +116,6 @@ void GameRunner::processInput(qint64 deltaTime)
 
 void GameRunner::updateGameState(qint64 deltaTime)
 {
-    static int i = 0;
-    const auto& gameObjects = m_gameState.gameObjects();
-    for (auto it1 = gameObjects.begin(); it1 != gameObjects.end(); ++it1) {
-        for (auto it2 = std::next(it1); it2 != gameObjects.end(); ++it2) {
-            if ((*it1)->checkCollision(**it2)) {
-                i++;
-                qDebug() << "Collision:" << i;
-            }
-        }
-    }
     m_gameState.update(deltaTime);
 }
 
@@ -120,6 +127,20 @@ void GameRunner::updateFps()
         m_frameCount = 0;
         m_fpsTimer.restart();
     }
+}
+
+void GameRunner::initializeCollisionDetection()
+{
+    m_collisionThread = new QThread;
+    CollisionDetector* detector = new CollisionDetector(m_gameState.gameObjects(), m_gameState.mutex());
+    detector->moveToThread(m_collisionThread);
+
+    connect(m_collisionThread, &QThread::finished, detector, &CollisionDetector::deleteLater);
+    connect(detector, &CollisionDetector::collisionDetected,
+                     this, &GameRunner::onCollisionDetected,
+                     Qt::QueuedConnection);
+
+    m_collisionThread->start();
 }
 
 void GameRunner::initializeGameObjects()

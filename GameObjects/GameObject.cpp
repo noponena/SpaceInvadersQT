@@ -57,11 +57,15 @@ const GameObject::BoundingBox &GameObject::boundingBox() const
 }
 
 void GameObject::updateBoundingBox() {
-    QSizeF size = m_graphicsItem->boundingRect().size();
-    m_boundingBox.minX = m_position.getX() - size.width() / 2;
-    m_boundingBox.minY = m_position.getY() - size.width() / 2;
-    m_boundingBox.maxX = m_position.getX() + size.width() / 2;
-    m_boundingBox.maxY = m_position.getY() + size.height() / 2;
+    m_boundingBox.minX = m_position.x - m_boundingBoxWidthHalf;
+    m_boundingBox.minY = m_position.y - m_boundingBoxHeightHalf;
+    m_boundingBox.maxX = m_position.x + m_boundingBoxWidthHalf;
+    m_boundingBox.maxY = m_position.y + m_boundingBoxHeightHalf;
+}
+
+void GameObject::clearMovementStrategy()
+{
+    m_movementStrategy.clear();
 }
 
 void GameObject::move(int xRel, int yRel)
@@ -70,36 +74,32 @@ void GameObject::move(int xRel, int yRel)
     this->moveY(yRel);
 }
 
+void GameObject::setMovementStrategy(const Game::MovementStrategies::MovementStrategy &newMovementStrategy)
+{
+    m_movementStrategy = newMovementStrategy;
+}
+
+void GameObject::initBoundingBox()
+{
+    QSizeF size = m_graphicsItem->boundingRect().size();
+    m_boundingBoxWidth = size.width();
+    m_boundingBoxHeight = size.height();
+    m_boundingBoxWidthHalf = m_boundingBoxWidth / 2;
+    m_boundingBoxHeightHalf = m_boundingBoxHeight / 2;
+    this->updateBoundingBox();
+}
+
 void GameObject::execMovement(int deltaTime) {
-    if (m_xMovementFunc) {
-        int newX = m_xMovementFunc(m_position.getX(), deltaTime);
-        m_position.setX(newX);
-    }
-    if (m_yMovementFunc) {
-        int newY = m_yMovementFunc(m_position.getY(), deltaTime);
-        m_position.setY(newY);
-    }
-    updateGraphicsItemPosition();
+    std::tuple<int, int> newPos = m_movementStrategy.move(m_position.get(), deltaTime);
+    m_position.x = std::get<0>(newPos);
+    m_position.y = std::get<1>(newPos);
 }
 
 void GameObject::updateGraphicsItemPosition()
 {
-    std::tuple<int, int> positionTuple = m_position.get();
-    int x = std::get<0>(positionTuple);
-    int y = std::get<1>(positionTuple);
     if (m_graphicsItem) {
-        m_graphicsItem->setPos(x, y);
+        m_graphicsItem->setPos(m_position.x, m_position.y);
     }
-}
-
-void GameObject::setXMovementFunc(const MovementFunction::MovementFunc &newMovementFunc)
-{
-    m_xMovementFunc = newMovementFunc;
-}
-
-void GameObject::setYMovementFunc(const MovementFunction::MovementFunc &newYMovementFunc)
-{
-    m_yMovementFunc = newYMovementFunc;
 }
 
 bool GameObject::collidable() const
@@ -107,11 +107,11 @@ bool GameObject::collidable() const
     return m_collidable;
 }
 
-bool GameObject::checkCollision(GameObject& other)
+void GameObject::doCollide(GameObject& other)
 {
     if (!this->collidable() || !other.collidable())
     {
-        return false;
+        return;
     }
     BoundingBox localBox = this->boundingBox();
     BoundingBox otherBox = other.boundingBox();
@@ -124,8 +124,21 @@ bool GameObject::checkCollision(GameObject& other)
         this->collideWith(other);
         other.collideWith(*this);
     }
+}
 
-    return collision;
+bool GameObject::isCollision(const GameObject &other) const
+{
+    if (!this->collidable() || !other.collidable())
+    {
+        return false;
+    }
+
+    BoundingBox localBox = this->boundingBox();
+    BoundingBox otherBox = other.boundingBox();
+    return !(localBox.minX > otherBox.maxX ||
+                       localBox.maxX < otherBox.minX ||
+                       localBox.minY > otherBox.maxY ||
+                       localBox.maxY < otherBox.minY);
 }
 
 bool GameObject::isAtLimit() const

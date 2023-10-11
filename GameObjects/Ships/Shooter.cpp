@@ -14,8 +14,8 @@ void Shooter::updateFireRate(int amount)
     if (m_fireRate < 1)
     {
         m_fireRate = 1;
-    } else if (m_fireRate > 100) {
-        m_fireRate = 100;
+    } else if (m_fireRate > 1000) {
+        m_fireRate = 1000;
     }
     m_shotCooldown = 1000 / m_fireRate;
 }

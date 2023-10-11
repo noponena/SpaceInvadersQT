@@ -6,7 +6,7 @@
 #include <QGraphicsItem>
 #include <QPropertyAnimation>
 #include "AnimatedGraphicsItem.h"
-#include "Game/MovementFunction.h"
+#include "Game/MovementStrategy.h"
 
 namespace GameObjects {
 
@@ -24,6 +24,11 @@ public:
 
     std::tuple<int, int> get() const {
         return std::make_tuple(x, y);
+    }
+
+    void set(std::tuple<int, int> xySetpoint) {
+        this->setX(std::get<0>(xySetpoint));
+        this->setY(std::get<1>(xySetpoint));
     }
 
     bool isBeyondScreenTopLimit(int offset = 0) const {
@@ -95,7 +100,6 @@ public:
         y = newY;
     }
 
-private:
     int x;
     int y;
 
@@ -108,8 +112,6 @@ private:
 
 class GameObject : public QObject {
     Q_OBJECT
-    //Q_PROPERTY(QPointF pos READ pos WRITE setPos)
-
 public:
     struct BoundingBox {
         int minX, minY, maxX, maxY;
@@ -136,40 +138,40 @@ public:
     void moveY(int amount);
 
     bool isAtLimit() const;
-    bool checkCollision(GameObject &other);
+    void doCollide(GameObject &other);
+    bool isCollision(const GameObject &other) const;
 
     const Position &position() const;
 
     Position m_targetPosition;
     void lerpTowardsTarget(float t);
     QGraphicsItem *graphicsItem() const;
-
     void moveTo(const QPointF &newPosition);
-
     const BoundingBox &boundingBox() const;
-
     bool collidable() const;
-
-    void setXMovementFunc(const MovementFunction::MovementFunc &newMovementFunc);
-    void setYMovementFunc(const MovementFunction::MovementFunc &newYMovementFunc);
+    void setMovementStrategy(const Game::MovementStrategies::MovementStrategy &newMovementStrategy);
 
 protected:
     Position m_position;
     float m_speed;
     QGraphicsItem *m_graphicsItem;
+    void initBoundingBox();
     void updateBoundingBox();
     bool m_hasCollided;
     bool m_collidable;
-
-
+    void clearMovementStrategy();
     virtual void playDestructionAnimation() {};
 private:
     BoundingBox m_boundingBox;
     void move(int xRel, int yRel);
-    MovementFunction::MovementFunc m_xMovementFunc;
-    MovementFunction::MovementFunc m_yMovementFunc;
+    Game::MovementStrategies::MovementStrategy m_movementStrategy;
     void execMovement(int deltaTime);
     void updateGraphicsItemPosition();
+
+    int m_boundingBoxWidth = 0;
+    int m_boundingBoxHeight = 0;
+    int m_boundingBoxWidthHalf = 0;
+    int m_boundingBoxHeightHalf = 0;
 };
 
 }
