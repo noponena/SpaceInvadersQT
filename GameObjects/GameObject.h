@@ -5,6 +5,7 @@
 #include <QString>
 #include <QGraphicsItem>
 #include <QPropertyAnimation>
+#include <unordered_set>
 #include "AnimatedGraphicsItem.h"
 #include "Game/MovementStrategy.h"
 
@@ -22,15 +23,6 @@ public:
           minX(minX), minY(minY),
           maxX(maxX), maxY(maxY) {}
 
-    std::tuple<int, int> get() const {
-        return std::make_tuple(x, y);
-    }
-
-    void set(std::tuple<int, int> xySetpoint) {
-        this->setX(std::get<0>(xySetpoint));
-        this->setY(std::get<1>(xySetpoint));
-    }
-
     bool isBeyondScreenTopLimit(int offset = 0) const {
         return this->y + offset < minY;
     }
@@ -47,57 +39,11 @@ public:
         return this->x - offset > maxX;
     }
 
-    bool isBeyondLimit() const {
+    bool isBeyondAnyLimit() const {
         return isBeyondScreenTopLimit()
                || isBeyondScreenBottomLimit()
                || isBeyondScreenLeftLimit()
                || isBeyondScreenRightLimit();
-    }
-
-    void moveX(int amount) {
-        this->x += amount;
-        if (this->x > maxX)
-            this->x = maxX;
-        else if (this->x < minX)
-            this->x = minX;
-    }
-
-    void moveY(int amount) {
-        this->y += amount;
-        if (this->y > maxY)
-            this->y = maxY;
-        else if (this->y < minY)
-            this->y = minY;
-    }
-
-
-    bool operator==(const Position& other) const {
-        return this->x == other.x && this->y == other.y;
-    }
-
-    int getX() const
-    {
-        return x;
-    }
-
-    int getY() const
-    {
-        return y;
-    }
-
-    void setX(int newX)
-    {
-        if (newX > maxX)
-            x = maxX;
-        else if (newX < minX)
-            x = minX;
-        else
-            x = newX;
-    }
-
-    void setY(int newY)
-    {
-        y = newY;
     }
 
     int x;
@@ -113,10 +59,6 @@ public:
 class GameObject : public QObject {
     Q_OBJECT
 public:
-    struct BoundingBox {
-        int minX, minY, maxX, maxY;
-    };
-
     GameObject(const Position &position, float speed);
     virtual ~GameObject() = default;
     virtual void initialize() = 0;
@@ -147,33 +89,37 @@ public:
     void lerpTowardsTarget(float t);
     QGraphicsItem *graphicsItem() const;
     void moveTo(const QPointF &newPosition);
-    const BoundingBox &boundingBox() const;
     bool collidable() const;
     void setMovementStrategy(const Game::MovementStrategies::MovementStrategy &newMovementStrategy);
+
+    int id();
 
 protected:
     Position m_position;
     float m_speed;
     QGraphicsItem *m_graphicsItem;
-    void initBoundingBox();
-    void updateBoundingBox();
     bool m_hasCollided;
     bool m_collidable;
     void clearMovementStrategy();
-    virtual void playDestructionAnimation() {};
+    inline void updateGraphicsItemPosition()
+    {
+        if (m_graphicsItem) {
+            m_graphicsItem->setPos(m_position.x, m_position.y);
+        }
+    }
+    virtual void playOnDestructionAnimation() {};
 private:
-    BoundingBox m_boundingBox;
-    void move(int xRel, int yRel);
+    inline void checkXConstraints();
+    inline void checkYConstraints();
+    inline void checkXYConstraints();
+    inline void doMoveX(int amount);
+    inline void doMoveY(int amount);
     Game::MovementStrategies::MovementStrategy m_movementStrategy;
     void execMovement(int deltaTime);
-    void updateGraphicsItemPosition();
-
-    int m_boundingBoxWidth = 0;
-    int m_boundingBoxHeight = 0;
-    int m_boundingBoxWidthHalf = 0;
-    int m_boundingBoxHeightHalf = 0;
+    int m_id;
+    static int counter;
+    std::unordered_set<int> m_collisions;
 };
-
 }
 
 #endif // GAMEOBJECT_H

@@ -33,9 +33,9 @@ GameRunner::GameRunner(QWidget *parent)
 
 GameRunner::~GameRunner()
 {
-    m_collisionThread->quit();
-    m_collisionThread->wait();
-    delete m_collisionThread;
+//    m_collisionThread->quit();
+//    m_collisionThread->wait();
+//    delete m_collisionThread;
 }
 
 void GameRunner::startGame()
@@ -43,8 +43,8 @@ void GameRunner::startGame()
     // Initialize game state
     m_gameState.setSize(this->scene()->sceneRect().width(), this->scene()->sceneRect().height());
     m_gameState.initialize();
-    //this->initializeGameObjects();
-    this->initializeCollisionDetection();
+    m_gameObjects = &(m_gameState.gameObjects());
+    //this->initializeCollisionDetection();
 
     // Create and start game loop timer
     QTimer* timer = new QTimer(this);
@@ -77,6 +77,7 @@ void GameRunner::gameLoop()
     qint64 deltaTime = m_elapsedTimer.restart();
     this->processInput(deltaTime);
     this->updateGameState(deltaTime);
+    this->detectCollisions();
     this->updateFps();
 }
 
@@ -131,6 +132,7 @@ void GameRunner::updateFps()
 
 void GameRunner::initializeCollisionDetection()
 {
+    m_mutex = &m_gameState.mutex();
     m_collisionThread = new QThread;
     CollisionDetector* detector = new CollisionDetector(m_gameState.gameObjects(), m_gameState.mutex());
     detector->moveToThread(m_collisionThread);
@@ -143,12 +145,14 @@ void GameRunner::initializeCollisionDetection()
     m_collisionThread->start();
 }
 
-void GameRunner::initializeGameObjects()
+void GameRunner::detectCollisions()
 {
-    const std::list<std::shared_ptr<GameObjects::GameObject>>& gameObjects = m_gameState.gameObjects();
-    for (const auto& object : gameObjects) {
-        object->initialize();
-        m_scene.addItem(object->graphicsItem());
+    for (auto it1 = m_gameObjects->begin(); it1 != m_gameObjects->end(); ++it1) {
+        for (auto it2 = std::next(it1); it2 != m_gameObjects->end(); ++it2) {
+            if ((*it1)->isCollision(**it2)) {
+                (*it1)->doCollide(**it2);
+            }
+        }
     }
 }
 }

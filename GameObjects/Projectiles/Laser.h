@@ -5,11 +5,13 @@
 
 namespace GameObjects
 {
-class Laser : public Projectile
+class Laser : public Projectile, public QGraphicsRectItem
 {
 public:
     Laser(Position position, float speed, Qt::GlobalColor color);
     void initialize() override;
+private:
+    Qt::GlobalColor m_color;
 };
 }
 

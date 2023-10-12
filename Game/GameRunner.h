@@ -54,11 +54,13 @@ private:
     void updateGameState(qint64 deltaTime);
     void updateFps();
     void initializeCollisionDetection();
-
-    void initializeGameObjects();
+    void detectCollisions();
     bool m_perfTest = false;
 
     QThread* m_collisionThread;
+
+    std::mutex *m_mutex;
+    const std::list<std::shared_ptr<GameObjects::GameObject>>* m_gameObjects;
 
 signals:
     void fpsUpdated(int fps);
@@ -72,6 +74,7 @@ public slots:
     }
     void onCollisionDetected(const std::shared_ptr<GameObjects::GameObject>& obj1,
                              const std::shared_ptr<GameObjects::GameObject>& obj2) {
+        std::lock_guard<std::mutex> lock(*m_mutex);
         obj1->doCollide(*obj2);
     }
 

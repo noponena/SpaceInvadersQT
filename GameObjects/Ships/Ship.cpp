@@ -3,7 +3,8 @@
 namespace GameObjects {
 
 Ship::Ship(const int maxHp, float speed, const Position &position)
-    : GameObject(position, speed), m_maxHp(maxHp), m_speed(speed), m_destroyed(false)
+    : GameObject(position, speed), m_maxHp(maxHp), m_speed(speed), m_destroyed(false),
+      m_destructionAnimationPlayed(false)
 {
     m_currentHp = maxHp;
 }
@@ -39,7 +40,7 @@ void Ship::initializeDestructionAnimation()
     int frameHeight = 400;  // height of a single frame
     int columns = 4;  // number of columns of frames in the sprite sheet
     int rows = 4;  // number of rows of frames in the sprite sheet
-    int targetWidth = 30;  // The width of your ship
+    int targetWidth = 20;  // The width of your ship
     int targetHeight = 30;  // The height of your ship
     QPixmap spriteSheet("C:\\Users\\aaron\\OneDrive\\Tiedostot\\Aaro\\Personal\\Projects\\QT\\SpaceInvaders\\Images\\explosion.png");
 
@@ -59,7 +60,7 @@ void Ship::die()
 {
     m_collidable = false;
     this->clearMovementStrategy();
-    this->playDestructionAnimation();
+    this->playOnDestructionAnimation();
 }
 
 void Ship::onAnimationCompleted()

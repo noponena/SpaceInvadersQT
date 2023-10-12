@@ -1,13 +1,17 @@
 #include "EnemyShip.h"
+#include "GameObjects/Effects/ParticleSystem.h"
 #include <QGraphicsScene>
 #include <QPen>
 #include <QTimer>
+#include <QTimerEvent>
 
 namespace GameObjects {
 
 EnemyShip::EnemyShip(const int maxHp, float speed, int fireRate, const Position &position)
     : Shooter(maxHp, speed, fireRate, position)
-{}
+{
+
+}
 
 void EnemyShip::initialize()
 {
@@ -18,7 +22,6 @@ void EnemyShip::initialize()
 
     // Set the color and pen properties
     polygonItem->setBrush(Qt::green);
-    //polygonItem->setPen(QPen(Qt::black));
     polygonItem->setPen(Qt::NoPen);
 
     // Create a QPolygon to represent the triangle and set it to the QGraphicsPolygonItem
@@ -28,7 +31,8 @@ void EnemyShip::initialize()
 
     // Assign the polygonItem to m_graphicsItem
     m_graphicsItem = polygonItem;
-    this->initBoundingBox();
+    m_originalColor = static_cast<QGraphicsPolygonItem*>(m_graphicsItem)->brush().color();
+    this->updateGraphicsItemPosition();
 }
 
 void EnemyShip::shoot()
@@ -42,8 +46,10 @@ void EnemyShip::collideWith(GameObject &other) {
 
 void EnemyShip::collideWithProjectile(Projectile &projectile)
 {
-    int damageValue = projectile.getDamage();  // Assume Projectile has a method damage()
+    int damageValue = projectile.getDamage();
     this->takeDamage(damageValue);
+    if (this->isAlive())
+        this->playOnHitAnimation();
 }
 
 void EnemyShip::collideWithEnemyShip(EnemyShip &enemyShip)
@@ -51,11 +57,21 @@ void EnemyShip::collideWithEnemyShip(EnemyShip &enemyShip)
     this->takeDamage(10000);
 }
 
-void EnemyShip::playDestructionAnimation() {
-    this->switchToPixmapItem();  // Switch to using a QGraphicsPixmapItem
-    this->moveX(-15);
-    this->moveY(-20);
-    m_frameIndex = 0;  // Reset frameIndex
+void EnemyShip::playOnDestructionAnimation() {
+    if (m_destructionAnimationPlayed)
+        return;
+    if (m_onHitTimerId != -1) {
+        killTimer(m_onHitTimerId);
+        m_onHitTimerId = -1;
+    }
+    m_destructionAnimationPlayed = true;
+    this->switchToPixmapItem();
+    QPointF p(m_position.x, m_position.y);
+    Effects::ParticleSystem *particleSystem = new Effects::ParticleSystem(p);
+    particleSystem->spawnParticles(100);
+    m_graphicsItem->scene()->addItem(particleSystem);
+    particleSystem->start();
+    m_frameIndex = 0;
     QTimer *animationTimer = new QTimer();
     connect(animationTimer, &QTimer::timeout, this, [this, animationTimer]() {
         QGraphicsPixmapItem *pixmapItem = qgraphicsitem_cast<QGraphicsPixmapItem*>(m_graphicsItem);
@@ -68,21 +84,42 @@ void EnemyShip::playDestructionAnimation() {
             emit animationCompleted();
         }
     });
-    animationTimer->start(100);
+    animationTimer->start(50);
 }
 
+void EnemyShip::playOnHitAnimation()
+{
+    if (m_onHitAnimationInProgress)
+        return;
 
+    m_onHitAnimationInProgress = true;
+    QColor darkerColor = m_originalColor.darker(200);
+    static_cast<QGraphicsPolygonItem*>(m_graphicsItem)->setBrush(darkerColor);
+
+    m_onHitTimerId = startTimer(25);
+}
+
+void EnemyShip::timerEvent(QTimerEvent *event) {
+    if (event->timerId() == m_onHitTimerId) {
+        static_cast<QGraphicsPolygonItem*>(m_graphicsItem)->setBrush(m_originalColor);
+        m_onHitAnimationInProgress = false;
+        killTimer(m_onHitTimerId);
+        m_onHitTimerId = -1;
+    }
+}
 
 void EnemyShip::switchToPixmapItem() {
     if (m_graphicsItem) {
-        // Get the current position of the polygon item
-        QPointF position(500, 500);// = m_graphicsItem->scenePos();
+        QRectF rect = m_graphicsItem->boundingRect();
+
+        qreal halfWidth = rect.width() / 2;
+        qreal halfHeight = rect.height() / 2;
+
+        this->moveX(-halfWidth);
+        this->moveY(-halfHeight);
 
         // Create a new QGraphicsPixmapItem
         QGraphicsPixmapItem* pixmapItem = new QGraphicsPixmapItem();
-
-        // Set the position of the new pixmap item to match the old polygon item
-        pixmapItem->setPos(position);
 
         // Replace the old m_graphicsItem with the new pixmap item
         QGraphicsScene* scene = m_graphicsItem->scene();
@@ -90,8 +127,8 @@ void EnemyShip::switchToPixmapItem() {
         delete m_graphicsItem;
         m_graphicsItem = pixmapItem;
         scene->addItem(m_graphicsItem);
-        pixmapItem->setZValue(1000);
-        pixmapItem->setTransformOriginPoint(pixmapItem->boundingRect().center());
+        QPointF p = pixmapItem->boundingRect().center();
+        pixmapItem->setTransformOriginPoint(p);
     }
 }
 
@@ -99,5 +136,4 @@ bool EnemyShip::shouldBeDeleted()
 {
     return m_destroyed || m_position.isBeyondScreenBottomLimit(30);
 }
-
-} // namespace GameObjects
+}

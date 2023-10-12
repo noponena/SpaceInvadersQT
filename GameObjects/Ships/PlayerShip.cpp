@@ -25,7 +25,7 @@ void PlayerShip::initialize()
 
     // Assign the polygonItem to m_graphicsItem
     m_graphicsItem = polygonItem;
-    this->initBoundingBox();
+    this->updateGraphicsItemPosition();
 }
 
 void PlayerShip::shoot()
@@ -33,8 +33,8 @@ void PlayerShip::shoot()
     if (this->canShoot())
     {
         Position position = m_position;
-        position.moveY(-10);
-        std::shared_ptr<Laser> laser = std::make_shared<Laser>(position, 1, Qt::red);
+        position.y += -10;
+        std::shared_ptr<Laser> laser = std::make_shared<Laser>(position, 1, Qt::GlobalColor::magenta);
         laser->initialize();
         emit laserShot(laser);
     }

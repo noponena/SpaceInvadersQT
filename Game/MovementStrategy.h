@@ -25,9 +25,7 @@ public:
         m_yAxisMovementStrategies.reserve(m_maxStrategies);
     }
 
-    std::tuple<int, int> move(const std::tuple<int, int>& xyPos, int deltaTime) {
-        int x = std::get<0>(xyPos);
-        int y = std::get<1>(xyPos);
+    std::tuple<int, int> move(int x, int y, int deltaTime) {
         for (auto& strategy : m_xAxisMovementStrategies)
         {
             x = std::visit([&](auto&& arg) { return arg.move(x, deltaTime); }, strategy);

@@ -2,6 +2,7 @@
 #define GAMEOBJECTS_SHIP_H
 
 #include "GameObjects/GameObject.h"
+#include "GameObjects/Effects/ParticleSystem.h"
 
 namespace GameObjects {
 
@@ -21,6 +22,7 @@ protected:
     bool m_destroyed;
     QList<QPixmap> m_animationFrames;
     virtual void initializeDestructionAnimation();
+    bool m_destructionAnimationPlayed;
 
 private:
     void die();

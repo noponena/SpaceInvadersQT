@@ -7,7 +7,7 @@
 
 namespace GameObjects {
 
-class PlayerShip : public Shooter
+class PlayerShip : public Shooter, public QGraphicsPolygonItem
 {
     Q_OBJECT
 public:

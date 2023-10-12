@@ -7,7 +7,7 @@
 
 namespace GameObjects {
 
-class EnemyShip : public Shooter
+class EnemyShip : public Shooter, public QGraphicsPolygonItem
 {
     Q_OBJECT
 public:
@@ -27,12 +27,17 @@ public:
     void collideWithProjectile(Projectile& projectile) override;
     void collideWithEnemyShip(EnemyShip& enemyShip) override;
 protected:
-        void playDestructionAnimation() override;
+    void playOnDestructionAnimation() override;
+    void playOnHitAnimation();
+    void timerEvent(QTimerEvent *event) override;
 private:
     void switchToPixmapItem();
     int m_frameIndex;
     int m_oscillationAmplitude = 5;
     float m_oscillationFrequency = 1;
+    bool m_onHitAnimationInProgress = false;
+    int m_onHitTimerId = -1;
+    QColor m_originalColor;
 
     // GameObject interface
 public:

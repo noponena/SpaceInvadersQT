@@ -7,3 +7,4 @@ SOURCES += \
 
 include(Projectiles/Projectiles.pri)
 include(Ships/Ships.pri)
+include(Effects/Effects.pri)
