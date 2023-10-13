@@ -11,32 +11,34 @@ GameObject::GameObject(const Position &position, float speed):
     m_hasCollided(false), m_collidable(true)
 {
     m_id = counter++;
+    m_anchorX = position.x;
+    m_anchorY = position.y;
 }
 
-void GameObject::update(int deltaTime)
+void GameObject::update(float deltaTimeInSeconds)
 {
-    this->execMovement(deltaTime);
+    this->execMovement(deltaTimeInSeconds);
     this->updateGraphicsItemPosition();
 }
 
-void GameObject::moveLeft(int deltaTime)
+void GameObject::moveLeft(float deltaTimeInSeconds)
 {
-    this->doMoveX(-std::round(m_speed * deltaTime));
+    this->doMoveX(-std::round(m_speed * deltaTimeInSeconds));
 }
 
-void GameObject::moveRight(int deltaTime)
+void GameObject::moveRight(float deltaTimeInSeconds)
 {
-    this->doMoveX(std::round(m_speed * deltaTime));
+    this->doMoveX(std::round(m_speed * deltaTimeInSeconds));
 }
 
-void GameObject::moveDown(int deltaTime)
+void GameObject::moveDown(float deltaTimeInSeconds)
 {
-    this->doMoveY(std::round(m_speed * deltaTime));
+    this->doMoveY(std::round(m_speed * deltaTimeInSeconds));
 }
 
-void GameObject::moveUp(int deltaTime)
+void GameObject::moveUp(float deltaTimeInSeconds)
 {
-    this->doMoveY(-std::round(m_speed * deltaTime));
+    this->doMoveY(-std::round(m_speed * deltaTimeInSeconds));
 }
 
 void GameObject::moveX(int amount)
@@ -59,15 +61,17 @@ void GameObject::clearMovementStrategy()
     m_movementStrategy.clear();
 }
 
-void GameObject::setMovementStrategy(const Game::MovementStrategies::MovementStrategy &newMovementStrategy)
+void GameObject::setMovementStrategy(const Game::Movement::MovementStrategy &newMovementStrategy)
 {
     m_movementStrategy = newMovementStrategy;
 }
 
-void GameObject::execMovement(int deltaTime) {
-    std::tuple<int, int> newPos = m_movementStrategy.move(m_position.x, m_position.y, deltaTime);
+void GameObject::execMovement(float deltaTimeInSeconds) {
+    std::tuple<int, int, int, int> newPos = m_movementStrategy.move(m_position.x, m_position.y, m_anchorX, m_anchorY, deltaTimeInSeconds);
     m_position.x = std::get<0>(newPos);
     m_position.y = std::get<1>(newPos);
+    m_anchorX = std::get<2>(newPos);
+    m_anchorY = std::get<3>(newPos);
 }
 
 int GameObject::id()

@@ -3,6 +3,7 @@
 
 #include "GameObjects/GameObject.h"
 #include "GameObjects/Effects/ParticleSystem.h"
+#include <QElapsedTimer>
 
 namespace GameObjects {
 
@@ -10,19 +11,24 @@ class Ship : public GameObject
 {
     Q_OBJECT
 public:
-    Ship(const int maxHp, float speed, const Position &position);
+    Ship(const int maxHp, int speed, int fireRate, const Position &position);
+    virtual void shoot() = 0;
+    void initialize() override;
+    bool shouldBeDeleted() override;
     void takeDamage(int amount);
     void heal(int amount);
     bool isAlive();
+    void updateFireRate(int amount = 1);
+    int fireRate() const;
 
 protected:
-    int m_currentHp;
-    int m_maxHp;
-    float m_speed;
+    int m_currentHp, m_maxHp, m_speed, m_fireRate, m_shotCooldownMs;
     bool m_destroyed;
     QList<QPixmap> m_animationFrames;
+    QElapsedTimer m_lastShotTime;
+
     virtual void initializeDestructionAnimation();
-    bool m_destructionAnimationPlayed;
+    bool canShoot();
 
 private:
     void die();
@@ -32,11 +38,8 @@ protected slots:
 
 signals:
     void animationCompleted();
+    void projectileShot(const std::shared_ptr<Projectile>& projectile);
 
-    // GameObject interface
-public:
-    void initialize() override;
-    bool shouldBeDeleted() override;
 };
 
 } // namespace GameObjects

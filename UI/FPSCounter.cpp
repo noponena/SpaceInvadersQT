@@ -5,7 +5,7 @@ namespace UI {
 
 FPSCounter::FPSCounter(QGraphicsItem *parent) : QGraphicsTextItem(parent) {
     setDefaultTextColor(Qt::white);
-    setFont(QFont("times", 16));
+    setFont(QFont("times", 12));
 }
 
 void FPSCounter::updateFPS(int fps) {

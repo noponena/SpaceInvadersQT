@@ -7,16 +7,16 @@
 
 namespace GameObjects {
 
-EnemyShip::EnemyShip(const int maxHp, float speed, int fireRate, const Position &position)
-    : Shooter(maxHp, speed, fireRate, position)
+EnemyShip::EnemyShip(const int maxHp, int speed, int fireRate, const Position &position)
+    : Ship(maxHp, speed, fireRate, position)
 {
 
 }
 
 void EnemyShip::initialize()
 {
-    this->setMovementStrategy(Game::MovementStrategies::CircularMovementStrategy(2, 1));
-    //this->setMovementStrategy(Game::MovementStrategies::PlayerProjectileMovementStrategy(0.07));
+    //this->setMovementStrategy(Game::Movement::DownwardMovingCircularMovementStrategy(50, 1, m_speed));
+    //this->setMovementStrategy(Game::Movement::CircularMovementStrategy(50, 1));
     this->initializeDestructionAnimation();
     QGraphicsPolygonItem *polygonItem = new QGraphicsPolygonItem();
 
@@ -54,17 +54,15 @@ void EnemyShip::collideWithProjectile(Projectile &projectile)
 
 void EnemyShip::collideWithEnemyShip(EnemyShip &enemyShip)
 {
-    this->takeDamage(10000);
+    this->takeDamage(0);
 }
 
 void EnemyShip::playOnDestructionAnimation() {
-    if (m_destructionAnimationPlayed)
-        return;
     if (m_onHitTimerId != -1) {
         killTimer(m_onHitTimerId);
         m_onHitTimerId = -1;
     }
-    m_destructionAnimationPlayed = true;
+
     this->switchToPixmapItem();
     QPointF p(m_position.x, m_position.y);
     Effects::ParticleSystem *particleSystem = new Effects::ParticleSystem(p);
@@ -135,5 +133,6 @@ void EnemyShip::switchToPixmapItem() {
 bool EnemyShip::shouldBeDeleted()
 {
     return m_destroyed || m_position.isBeyondScreenBottomLimit(30);
+    return false;
 }
 }

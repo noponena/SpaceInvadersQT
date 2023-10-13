@@ -4,7 +4,7 @@
 namespace GameObjects {
 
 PlayerShip::PlayerShip(const int maxHp, float speed, int fireRate, const Position &position)
-    : Shooter(maxHp, speed, fireRate, position)
+    : Ship(maxHp, speed, fireRate, position)
 {
     m_lastShotTime.start();
 }
@@ -36,7 +36,8 @@ void PlayerShip::shoot()
         position.y += -10;
         std::shared_ptr<Laser> laser = std::make_shared<Laser>(position, 1, Qt::GlobalColor::magenta);
         laser->initialize();
-        emit laserShot(laser);
+        laser->setMovementStrategy(Game::Movement::VerticalMovementStrategy(1000, -1));
+        emit projectileShot(laser);
     }
 }
 

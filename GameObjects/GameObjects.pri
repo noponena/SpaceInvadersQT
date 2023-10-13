@@ -1,5 +1,4 @@
 HEADERS += \
-    $$PWD/AnimatedGraphicsItem.h \
     $$PWD/GameObject.h \
 
 SOURCES += \

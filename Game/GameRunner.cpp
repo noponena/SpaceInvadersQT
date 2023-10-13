@@ -1,14 +1,21 @@
 #include "GameRunner.h"
 #include "GameObjects/Ships/PlayerShip.h"
-#include <QGraphicsPolygonItem>
-#include <QOpenGLWidget>
-#include <QThread>
 #include "UI/FPSCounter.h"
-#include "CollisionDetector.h"
+#include "UI/GameObjectCounter.h"
+#include <QOpenGLWidget>
+#include <QTimer>
 
 namespace Game {
 GameRunner::GameRunner(QWidget *parent)
     : QGraphicsView(parent), m_scene(new QGraphicsScene(this))
+{
+    setupView();
+    setupCounters();
+    setupConnections();
+    m_elapsedTimer.start();
+}
+
+void GameRunner::setupView()
 {
     setViewport(new QOpenGLWidget);
     setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
@@ -16,26 +23,35 @@ GameRunner::GameRunner(QWidget *parent)
     setInteractive(false);
     setOptimizationFlags(QGraphicsView::DontAdjustForAntialiasing | QGraphicsView::DontSavePainterState);
     setViewportMargins(0, 0, 0, 0);
-    //setRenderHint(QPainter::Antialiasing);
     setScene(&m_scene);
-    UI::FPSCounter *fpsCounter = new UI::FPSCounter();
-    fpsCounter->setPos(0, 0);
-    scene()->setItemIndexMethod(QGraphicsScene::BspTreeIndex);
-    scene()->addItem(fpsCounter);
+    m_scene.setItemIndexMethod(QGraphicsScene::BspTreeIndex);
     m_scene.setBackgroundBrush(QBrush(Qt::black));
-    m_elapsedTimer.start();
     this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    connect(&m_gameState, &GameState::objectAdded, this, &GameRunner::onObjectAdded);
-    connect(&m_gameState, &GameState::objectDeleted, this, &GameRunner::onObjectDeleted);
+}
+
+void GameRunner::setupCounters()
+{
+    UI::FPSCounter *fpsCounter = new UI::FPSCounter();
+    UI::GameObjectCounter *gameObjectCounter = new UI::GameObjectCounter();
+    fpsCounter->setPos(0, 0);
+    gameObjectCounter->setPos(0, fpsCounter->boundingRect().height() - 10);
+    scene()->addItem(fpsCounter);
+    scene()->addItem(gameObjectCounter);
+
+    connect(&m_gameState, &GameState::objectAdded, this, [=](){
+        gameObjectCounter->updateObjectCount(1);
+    });
+    connect(&m_gameState, &GameState::objectDeleted, this, [=](){
+        gameObjectCounter->updateObjectCount(-1);
+    });
     connect(this, &GameRunner::fpsUpdated, fpsCounter, &UI::FPSCounter::updateFPS);
 }
 
-GameRunner::~GameRunner()
+void GameRunner::setupConnections()
 {
-//    m_collisionThread->quit();
-//    m_collisionThread->wait();
-//    delete m_collisionThread;
+    connect(&m_gameState, &GameState::objectAdded, this, &GameRunner::onObjectAdded);
+    connect(&m_gameState, &GameState::objectDeleted, this, &GameRunner::onObjectDeleted);
 }
 
 void GameRunner::startGame()
@@ -43,7 +59,9 @@ void GameRunner::startGame()
     // Initialize game state
     m_gameState.setSize(this->scene()->sceneRect().width(), this->scene()->sceneRect().height());
     m_gameState.initialize();
+    m_playerShip = m_gameState.playerShip();
     m_gameObjects = &(m_gameState.gameObjects());
+    m_levelManager = std::make_unique<LevelManager>(m_gameState);
     //this->initializeCollisionDetection();
 
     // Create and start game loop timer
@@ -55,67 +73,25 @@ void GameRunner::startGame()
     // ...
 }
 
-
-void GameRunner::keyPressEvent(QKeyEvent *event)
-{
-    m_pressedKeys.insert(event->key());
-}
-
-void GameRunner::keyReleaseEvent(QKeyEvent *event)
-{
-    m_pressedKeys.remove(event->key());
-}
-
-QGraphicsScene *GameRunner::scene()
-{
-    return &m_scene;
-}
-
-
 void GameRunner::gameLoop()
 {
-    qint64 deltaTime = m_elapsedTimer.restart();
-    this->processInput(deltaTime);
-    this->updateGameState(deltaTime);
+    float deltaTimeInSeconds = static_cast<float>(m_elapsedTimer.restart()) / 1000.0f;
+    m_levelManager->update();
+    this->processInput(deltaTimeInSeconds);
+    this->updateGameState(deltaTimeInSeconds);
     this->detectCollisions();
     this->updateFps();
 }
 
-void GameRunner::processInput(qint64 deltaTime)
+void GameRunner::processInput(float deltaTime)
 {
-    std::shared_ptr<GameObjects::PlayerShip> playerShip = m_gameState.playerShip();
-    if (m_pressedKeys.contains(Qt::Key_Left)) {
-        playerShip->moveLeft(deltaTime);
-    }
-    if (m_pressedKeys.contains(Qt::Key_Right)) {
-        playerShip->moveRight(deltaTime);
-    }
-    if (m_pressedKeys.contains(Qt::Key_Down)) {
-        playerShip->moveDown(deltaTime);
-    }
-    if (m_pressedKeys.contains(Qt::Key_Up)) {
-        playerShip->moveUp(deltaTime);
-    }
-    if (m_pressedKeys.contains(Qt::Key_Space) || m_perfTest) {
-        playerShip->shoot();
-    }
-    if (m_pressedKeys.contains(Qt::Key_Q)) {
-        m_gameState.initEnemyShips();
-        m_pressedKeys.remove(Qt::Key_Q);
-    }
-    if (m_pressedKeys.contains(Qt::Key_U)) {
-        playerShip->updateFireRate();
-        int rate = playerShip->fireRate();
-        qDebug() << "fireRate:" << rate;
-    }
-    if (m_pressedKeys.contains(Qt::Key_D)) {
-        playerShip->updateFireRate(-1);
-        int rate = playerShip->fireRate();
-        qDebug() << "fireRate:" << rate;
+    for (const auto& [key, action] : m_keyActions) {
+        if (m_pressedKeys.contains(key))
+            action(deltaTime);
     }
 }
 
-void GameRunner::updateGameState(qint64 deltaTime)
+void GameRunner::updateGameState(float deltaTime)
 {
     m_gameState.update(deltaTime);
 }
@@ -130,21 +106,6 @@ void GameRunner::updateFps()
     }
 }
 
-void GameRunner::initializeCollisionDetection()
-{
-    m_mutex = &m_gameState.mutex();
-    m_collisionThread = new QThread;
-    CollisionDetector* detector = new CollisionDetector(m_gameState.gameObjects(), m_gameState.mutex());
-    detector->moveToThread(m_collisionThread);
-
-    connect(m_collisionThread, &QThread::finished, detector, &CollisionDetector::deleteLater);
-    connect(detector, &CollisionDetector::collisionDetected,
-                     this, &GameRunner::onCollisionDetected,
-                     Qt::QueuedConnection);
-
-    m_collisionThread->start();
-}
-
 void GameRunner::detectCollisions()
 {
     for (auto it1 = m_gameObjects->begin(); it1 != m_gameObjects->end(); ++it1) {
@@ -155,6 +116,15 @@ void GameRunner::detectCollisions()
         }
     }
 }
+
+void GameRunner::keyPressEvent(QKeyEvent *event)
+{
+    m_pressedKeys.insert(event->key());
 }
 
+void GameRunner::keyReleaseEvent(QKeyEvent *event)
+{
+    m_pressedKeys.remove(event->key());
+}
 
+}

@@ -2,12 +2,9 @@
 #define GAMEOBJECT_H
 
 #include <QObject>
-#include <QString>
 #include <QGraphicsItem>
-#include <QPropertyAnimation>
 #include <unordered_set>
-#include "AnimatedGraphicsItem.h"
-#include "Game/MovementStrategy.h"
+#include "Game/Movement/MovementStrategy.h"
 
 namespace GameObjects {
 
@@ -46,14 +43,7 @@ public:
                || isBeyondScreenRightLimit();
     }
 
-    int x;
-    int y;
-
-    int minX;
-    int minY;
-
-    int maxX;
-    int maxY;
+    int x, y, minX, minY, maxX, maxY;
 };
 
 class GameObject : public QObject {
@@ -68,13 +58,13 @@ public:
     virtual void collideWithEnemyShip(EnemyShip& enemyShip) {(void)enemyShip;}
     virtual void collideWithPlayerShip(PlayerShip& playerShip) {(void)playerShip;}
 
-    void update(int deltaTime);
+    void update(float deltaTimeInSeconds);
 
-    void moveLeft(int deltaTime);
-    void moveRight(int deltaTime);
+    void moveLeft(float deltaTimeInSeconds);
+    void moveRight(float deltaTimeInSeconds);
 
-    void moveDown(int deltaTime);
-    void moveUp(int deltaTime);
+    void moveDown(float deltaTimeInSeconds);
+    void moveUp(float deltaTimeInSeconds);
 
     void moveX(int amount);
     void moveY(int amount);
@@ -90,7 +80,7 @@ public:
     QGraphicsItem *graphicsItem() const;
     void moveTo(const QPointF &newPosition);
     bool collidable() const;
-    void setMovementStrategy(const Game::MovementStrategies::MovementStrategy &newMovementStrategy);
+    void setMovementStrategy(const Game::Movement::MovementStrategy &newMovementStrategy);
 
     int id();
 
@@ -114,9 +104,15 @@ private:
     inline void checkXYConstraints();
     inline void doMoveX(int amount);
     inline void doMoveY(int amount);
-    Game::MovementStrategies::MovementStrategy m_movementStrategy;
-    void execMovement(int deltaTime);
-    int m_id;
+
+    int m_anchorX, m_anchorY, m_id;
+    float m_currentSpeedX = 10;
+    float m_currentSpeedY = 10;
+    float m_acceleration = 1;
+    float m_deceleration = 10;
+
+    Game::Movement::MovementStrategy m_movementStrategy;
+    void execMovement(float deltaTimeInSeconds);
     static int counter;
     std::unordered_set<int> m_collisions;
 };

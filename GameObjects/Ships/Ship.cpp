@@ -2,11 +2,11 @@
 
 namespace GameObjects {
 
-Ship::Ship(const int maxHp, float speed, const Position &position)
-    : GameObject(position, speed), m_maxHp(maxHp), m_speed(speed), m_destroyed(false),
-      m_destructionAnimationPlayed(false)
+Ship::Ship(const int maxHp, int speed, int fireRate, const Position &position)
+    : GameObject(position, speed), m_maxHp(maxHp), m_speed(speed), m_fireRate(fireRate), m_destroyed(false)
 {
     m_currentHp = maxHp;
+    m_shotCooldownMs = 1000 / m_fireRate;
 }
 
 void Ship::takeDamage(int amount)
@@ -32,6 +32,34 @@ void Ship::heal(int amount)
 bool Ship::isAlive()
 {
     return m_currentHp > 0;
+}
+
+void Ship::updateFireRate(int amount)
+{
+    m_fireRate += amount;
+    if (m_fireRate < 1)
+    {
+        m_fireRate = 1;
+    } else if (m_fireRate > 1000) {
+        m_fireRate = 1000;
+    }
+    m_shotCooldownMs = 1000 / m_fireRate;
+}
+
+int Ship::fireRate() const
+{
+    return m_fireRate;
+}
+
+bool Ship::canShoot()
+{
+    int elapsed = m_lastShotTime.elapsed();  // Time in milliseconds since last shot
+    if (elapsed < m_shotCooldownMs) {
+        return false;
+    }
+
+    m_lastShotTime.restart();
+    return true;
 }
 
 void Ship::initializeDestructionAnimation()
