@@ -1,12 +1,16 @@
 #include "Ship.h"
 
 namespace GameObjects {
-
-Ship::Ship(const int maxHp, int speed, int fireRate, const Position &position)
-    : GameObject(position, speed), m_maxHp(maxHp), m_speed(speed), m_fireRate(fireRate), m_destroyed(false)
+namespace Ships {
+Ship::Ship(const int maxHp, int speed, const Position &position)
+    : GameObject(position, speed), m_maxHp(maxHp), m_speed(speed), m_destroyed(false)
 {
     m_currentHp = maxHp;
-    m_shotCooldownMs = 1000 / m_fireRate;
+}
+
+void Ship::shoot()
+{
+    m_weapon->shoot();
 }
 
 void Ship::takeDamage(int amount)
@@ -36,31 +40,22 @@ bool Ship::isAlive()
 
 void Ship::updateFireRate(int amount)
 {
-    m_fireRate += amount;
-    if (m_fireRate < 1)
-    {
-        m_fireRate = 1;
-    } else if (m_fireRate > 1000) {
-        m_fireRate = 1000;
-    }
-    m_shotCooldownMs = 1000 / m_fireRate;
+    m_weapon->updateWeaponCooldown(amount);
 }
 
-int Ship::fireRate() const
+void Ship::setWeapon(std::unique_ptr<Weapons::Weapon> newWeapon)
 {
-    return m_fireRate;
+    m_weapon = std::move(newWeapon);
+    m_weapon->setOwner(this);
+
+    QObject::connect(m_weapon.get(),
+                     &Weapons::Weapon::projectileShot, this,
+                     [this]
+                     (const std::shared_ptr<GameObjects::Projectiles::Projectile>& projectile) {
+                         emit this->projectileShot(projectile);
+                     });
 }
 
-bool Ship::canShoot()
-{
-    int elapsed = m_lastShotTime.elapsed();  // Time in milliseconds since last shot
-    if (elapsed < m_shotCooldownMs) {
-        return false;
-    }
-
-    m_lastShotTime.restart();
-    return true;
-}
 
 void Ship::initializeDestructionAnimation()
 {
@@ -70,7 +65,7 @@ void Ship::initializeDestructionAnimation()
     int rows = 4;  // number of rows of frames in the sprite sheet
     int targetWidth = 20;  // The width of your ship
     int targetHeight = 30;  // The height of your ship
-    QPixmap spriteSheet("C:\\Users\\aaron\\OneDrive\\Tiedostot\\Aaro\\Personal\\Projects\\QT\\SpaceInvadersQT\\Images\\explosion.png");
+    QPixmap spriteSheet(":/Images/explosion.png");
 
     for (int row = 0; row < rows; ++row) {
         for (int col = 0; col < columns; ++col) {
@@ -105,6 +100,5 @@ bool Ship::shouldBeDeleted()
 {
     return m_destroyed;
 }
-
-
+}
 } // namespace GameObjects

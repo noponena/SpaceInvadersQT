@@ -9,9 +9,13 @@
 
 namespace GameObjects {
 
-class Projectile;
+namespace Projectiles { class Projectile; }
+namespace Ships
+{
 class EnemyShip;
 class PlayerShip;
+}
+
 
 class GameObject : public QObject {
     Q_OBJECT
@@ -21,9 +25,9 @@ public:
     virtual void initialize() = 0;
     virtual bool shouldBeDeleted() = 0;
     virtual void collideWith(GameObject &other) {(void)other;}
-    virtual void collideWithProjectile(Projectile& projectile) {(void)projectile;}
-    virtual void collideWithEnemyShip(EnemyShip& enemyShip) {(void)enemyShip;}
-    virtual void collideWithPlayerShip(PlayerShip& playerShip) {(void)playerShip;}
+    virtual void collideWithProjectile(Projectiles::Projectile& projectile) {(void)projectile;}
+    virtual void collideWithEnemyShip(Ships::EnemyShip& enemyShip) {(void)enemyShip;}
+    virtual void collideWithPlayerShip(Ships::PlayerShip& playerShip) {(void)playerShip;}
 
     void update(float deltaTimeInSeconds);
 

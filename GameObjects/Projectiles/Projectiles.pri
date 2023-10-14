@@ -1,7 +1,7 @@
 HEADERS += \
-    $$PWD/Laser.h \
+    $$PWD/LaserBeam.h \
     $$PWD/Projectile.h \
 
 SOURCES += \
-    $$PWD/Laser.cpp \
+    $$PWD/LaserBeam.cpp \
     $$PWD/Projectile.cpp \

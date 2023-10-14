@@ -2,7 +2,7 @@
 #define GAMESTATE_H
 
 #include "GameObjects/GameObject.h"
-#include "GameObjects/Projectiles/Laser.h"
+#include "GameObjects/Projectiles/LaserBeam.h"
 #include "GameObjects/Ships/PlayerShip.h"
 #include "GameObjects/Ships/EnemyShip.h"
 
@@ -22,7 +22,7 @@ public:
     void initEnemyShips();
 
     const std::list<std::shared_ptr<GameObjects::GameObject>>& gameObjects() const;
-    const std::shared_ptr<GameObjects::PlayerShip> &playerShip() const;
+    const std::shared_ptr<GameObjects::Ships::PlayerShip> &playerShip() const;
 
     int m_minX, m_minY, m_maxX, m_maxY, m_windowWidth, m_windowHeight;
 
@@ -31,15 +31,15 @@ private:
     float m_playersShipStartSpeed;
     void initPlayerShip();
     void initMovementConstrains();
-    void addLaser(const std::shared_ptr<GameObjects::Laser>& laser);
-    std::shared_ptr<GameObjects::PlayerShip> m_playerShip;
+    void addLaser(const std::shared_ptr<GameObjects::Projectiles::LaserBeam>& laser);
+    std::shared_ptr<GameObjects::Ships::PlayerShip> m_playerShip;
 
 signals:
     void objectDeleted(const std::shared_ptr<GameObjects::GameObject>& object);
     void objectAdded(const std::shared_ptr<GameObjects::GameObject>& object);
 
 public slots:
-    void onProjectileShot(const std::shared_ptr<GameObjects::Projectile>& projectile) {
+    void onProjectileShot(const std::shared_ptr<GameObjects::Projectiles::Projectile>& projectile) {
         this->addGameObject(projectile);
     }
 };

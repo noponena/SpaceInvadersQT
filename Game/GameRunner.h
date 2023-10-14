@@ -23,7 +23,7 @@ protected:
 
 private:
     std::unique_ptr<LevelManager> m_levelManager;
-    std::shared_ptr<GameObjects::PlayerShip> m_playerShip;
+    std::shared_ptr<GameObjects::Ships::PlayerShip> m_playerShip;
     QElapsedTimer m_elapsedTimer;
     QElapsedTimer m_fpsTimer;
     Game::GameState m_gameState;

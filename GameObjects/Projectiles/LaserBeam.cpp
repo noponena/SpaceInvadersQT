@@ -1,15 +1,16 @@
-#include "Laser.h"
+#include "LaserBeam.h"
 #include <QPen>
 
 namespace GameObjects
 {
-Laser::Laser(Position position, float speed, Qt::GlobalColor color)
+namespace Projectiles {
+LaserBeam::LaserBeam(Position position, float speed, Qt::GlobalColor color)
     : Projectile(position, speed), m_color(color)
 {
 
 }
 
-void Laser::initialize()
+void LaserBeam::initialize()
 {
     QGraphicsRectItem* rectItem = new QGraphicsRectItem();
     rectItem->setRect(0, 0, 2, 10);
@@ -18,5 +19,7 @@ void Laser::initialize()
     m_graphicsItem = rectItem;
     this->updateGraphicsItemPosition();
 }
+}
+
 }
 

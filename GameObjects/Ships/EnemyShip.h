@@ -3,19 +3,18 @@
 
 #include "Ship.h"
 #include "GameObjects/Projectiles/Projectile.h"
-#include "GameObjects/Projectiles/Laser.h"
+#include "GameObjects/Projectiles/LaserBeam.h"
 
 namespace GameObjects {
-
-class EnemyShip : public Ship, public QGraphicsPolygonItem
+namespace Ships {
+class EnemyShip : public Ships::Ship, public QGraphicsPolygonItem
 {
     Q_OBJECT
 public:
-    EnemyShip(const int maxHp, int speed, int fireRate, const Position &position);
+    EnemyShip(const int maxHp, int speed, const Position &position);
     void initialize() override;
-    void shoot() override;
     void collideWith(GameObject &other) override;
-    void collideWithProjectile(Projectile& projectile) override;
+    void collideWithProjectile(Projectiles::Projectile& projectile) override;
     void collideWithEnemyShip(EnemyShip& enemyShip) override;
     bool shouldBeDeleted() override;
 protected:
@@ -29,6 +28,9 @@ private:
     bool m_onHitAnimationInProgress = false;
     QColor m_originalColor;
 };
+}
+
+
 
 
 } // namespace GameObjects

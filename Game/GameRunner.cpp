@@ -57,12 +57,12 @@ void GameRunner::setupConnections()
 void GameRunner::startGame()
 {
     // Initialize game state
+    qDebug() << "starting game..";
     m_gameState.setSize(this->scene()->sceneRect().width(), this->scene()->sceneRect().height());
     m_gameState.initialize();
     m_playerShip = m_gameState.playerShip();
     m_gameObjects = &(m_gameState.gameObjects());
     m_levelManager = std::make_unique<LevelManager>(m_gameState);
-    //this->initializeCollisionDetection();
 
     // Create and start game loop timer
     QTimer* timer = new QTimer(this);

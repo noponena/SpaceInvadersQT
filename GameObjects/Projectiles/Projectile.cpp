@@ -3,6 +3,7 @@
 
 namespace GameObjects
 {
+namespace Projectiles {
 Projectile::Projectile(Position pos, float speed, bool hostile, int damage)
     : GameObject(pos, speed), m_hostile(hostile), m_damage(damage)
 {
@@ -19,7 +20,7 @@ void Projectile::collideWith(GameObject &other)
     other.collideWithProjectile(*this);
 }
 
-void Projectile::collideWithEnemyShip(EnemyShip &enemyShip)
+void Projectile::collideWithEnemyShip(Ships::EnemyShip &enemyShip)
 {
     m_hasCollided = true;
     enemyShip.collideWithProjectile(*this);
@@ -34,4 +35,6 @@ bool Projectile::hostile() const
 {
     return m_hostile;
 }
+}
+
 }

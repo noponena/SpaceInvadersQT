@@ -7,9 +7,9 @@
 #include <QColor>
 
 namespace GameObjects {
-
-EnemyShip::EnemyShip(const int maxHp, int speed, int fireRate, const Position &position)
-    : Ship(maxHp, speed, fireRate, position)
+namespace Ships {
+EnemyShip::EnemyShip(const int maxHp, int speed, const Position &position)
+    : Ship(maxHp, speed, position)
 {
 
 }
@@ -36,16 +36,11 @@ void EnemyShip::initialize()
     this->updateGraphicsItemPosition();
 }
 
-void EnemyShip::shoot()
-{
-
-}
-
 void EnemyShip::collideWith(GameObject &other) {
     other.collideWithEnemyShip(*this);
 }
 
-void EnemyShip::collideWithProjectile(Projectile &projectile)
+void EnemyShip::collideWithProjectile(Projectiles::Projectile &projectile)
 {
     int damageValue = projectile.getDamage();
     this->takeDamage(damageValue);
@@ -137,4 +132,7 @@ bool EnemyShip::shouldBeDeleted()
     return m_destroyed || m_position.isBeyondScreenBottomLimit(30);
     return false;
 }
+}
+
+
 }

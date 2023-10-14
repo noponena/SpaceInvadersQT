@@ -1,10 +1,11 @@
 #include "PlayerShip.h"
+#include "Weapons/LaserCannon.h"
 #include <QPen>
 
 namespace GameObjects {
-
-PlayerShip::PlayerShip(const int maxHp, float speed, int fireRate, const Position &position)
-    : Ship(maxHp, speed, fireRate, position)
+namespace Ships {
+PlayerShip::PlayerShip(const int maxHp, float speed, const Position &position)
+    : Ship(maxHp, speed, position)
 {
     m_lastShotTime.start();
 }
@@ -25,20 +26,8 @@ void PlayerShip::initialize()
 
     // Assign the polygonItem to m_graphicsItem
     m_graphicsItem = polygonItem;
+    this->setWeapon(std::make_unique<Weapons::LaserCannon>(1000, Game::Movement::VerticalMovementStrategy(500, -1)));
     this->updateGraphicsItemPosition();
-}
-
-void PlayerShip::shoot()
-{
-    if (this->canShoot())
-    {
-        Position position = m_position;
-        position.setY(position.y() - 10);
-        std::shared_ptr<Laser> laser = std::make_shared<Laser>(position, 1, Qt::GlobalColor::magenta);
-        laser->initialize();
-        laser->setMovementStrategy(Game::Movement::VerticalMovementStrategy(1000, -1));
-        emit projectileShot(laser);
-    }
 }
 
 void PlayerShip::collideWith(GameObject &other)
@@ -46,10 +35,13 @@ void PlayerShip::collideWith(GameObject &other)
     other.collideWithPlayerShip(*this);
 }
 
-void PlayerShip::collideWithProjectile(Projectile &projectile)
+void PlayerShip::collideWithProjectile(Projectiles::Projectile &projectile)
 {
 
 }
+}
+
+
 
 }
 
