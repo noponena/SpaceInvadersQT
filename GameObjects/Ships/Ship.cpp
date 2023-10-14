@@ -70,7 +70,7 @@ void Ship::initializeDestructionAnimation()
     int rows = 4;  // number of rows of frames in the sprite sheet
     int targetWidth = 20;  // The width of your ship
     int targetHeight = 30;  // The height of your ship
-    QPixmap spriteSheet("C:\\Users\\aaron\\OneDrive\\Tiedostot\\Aaro\\Personal\\Projects\\QT\\SpaceInvaders\\Images\\explosion.png");
+    QPixmap spriteSheet("C:\\Users\\aaron\\OneDrive\\Tiedostot\\Aaro\\Personal\\Projects\\QT\\SpaceInvadersQT\\Images\\explosion.png");
 
     for (int row = 0; row < rows; ++row) {
         for (int col = 0; col < columns; ++col) {
