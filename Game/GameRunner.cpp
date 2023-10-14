@@ -89,6 +89,19 @@ void GameRunner::processInput(float deltaTime)
         if (m_pressedKeys.contains(key))
             action(deltaTime);
     }
+
+    if ((!m_pressedKeys.contains(Qt::Key_Left) && !m_pressedKeys.contains(Qt::Key_Right)) ||
+        (m_pressedKeys.contains(Qt::Key_Left) && m_pressedKeys.contains(Qt::Key_Right))) {
+        m_playerShip->decelerateX(deltaTime);
+    }
+
+    if ((!m_pressedKeys.contains(Qt::Key_Up) && !m_pressedKeys.contains(Qt::Key_Down)) ||
+        (m_pressedKeys.contains(Qt::Key_Up) && m_pressedKeys.contains(Qt::Key_Down))) {
+        m_playerShip->decelerateY(deltaTime);
+    }
+
+    m_playerShip->moveHorizontal(deltaTime);
+    m_playerShip->moveVertical(deltaTime);
 }
 
 void GameRunner::updateGameState(float deltaTime)

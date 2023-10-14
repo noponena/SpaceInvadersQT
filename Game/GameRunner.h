@@ -46,10 +46,10 @@ private:
     using Action = std::function<void(float)>;
     const std::unordered_map<int, Action> m_keyActions
     {
-        { Qt::Key_Left,   [&](float dt) { m_playerShip->moveLeft(dt);                 } },
-        { Qt::Key_Right,  [&](float dt) { m_playerShip->moveRight(dt);                } },
-        { Qt::Key_Down,   [&](float dt) { m_playerShip->moveDown(dt);                 } },
-        { Qt::Key_Up,     [&](float dt) { m_playerShip->moveUp(dt);                   } },
+        { Qt::Key_Left,   [&](float dt) { m_playerShip->accelerateLeft(dt);           } },
+        { Qt::Key_Right,  [&](float dt) { m_playerShip->accelerateRight(dt);          } },
+        { Qt::Key_Down,   [&](float dt) { m_playerShip->accelerateDown(dt);           } },
+        { Qt::Key_Up,     [&](float dt) { m_playerShip->accelerateUp(dt);             } },
         { Qt::Key_Space,  [&](float dt) { Q_UNUSED(dt); m_playerShip->shoot();        } },
         { Qt::Key_Q,      [&](float dt) { Q_UNUSED(dt); m_gameState.initEnemyShips(); } },
         { Qt::Key_U,  [&](float dt) { Q_UNUSED(dt); m_playerShip->updateFireRate();   } },

@@ -5,6 +5,7 @@
 #include <tuple>
 #include <variant>
 #include "AxisMovementStrategy.h"  // Include or forward-declare your movement strategy classes
+#include <QPointF>
 
 namespace Game {
 namespace Movement {
@@ -25,7 +26,11 @@ public:
         m_yAxisMovementStrategies.reserve(m_maxStrategies);
     }
 
-    std::tuple<int, int, int, int> move(int x, int y, int anchorX, int anchorY, float deltaTimeInSeconds) {
+    std::pair<QPointF, QPointF> move(QPointF pos, QPointF anchorPos, float deltaTimeInSeconds) {
+        float x = pos.x();
+        float y = pos.y();
+        float anchorX = anchorPos.x();
+        float anchorY = anchorPos.y();
         for (auto& strategy : m_xAxisMovementStrategies)
         {
             std::tie(x, anchorX) = std::visit([&](auto&& arg) { return arg.move(x, anchorX, deltaTimeInSeconds); }, strategy);
@@ -34,7 +39,7 @@ public:
         {
             std::tie(y, anchorY) = std::visit([&](auto&& arg) { return arg.move(y, anchorY, deltaTimeInSeconds); }, strategy);
         }
-        return std::make_tuple(x, y, anchorX, anchorY);
+        return {QPointF(x, y), QPointF(anchorX, anchorY)};
     }
 
     void clear() {
@@ -71,7 +76,7 @@ private:
 class VerticalMovementStrategy : public MovementStrategy {
 
 public:
-    VerticalMovementStrategy(int speed = 1, int direction = 1) {
+    VerticalMovementStrategy(float speed = 1, int direction = 1) {
         m_yAxisMovementStrategies.push_back(Movement::LinearMovement(speed, direction, false));
     }
 };
@@ -79,7 +84,7 @@ public:
 class HorizontalMovementStrategy : public MovementStrategy {
 
 public:
-    HorizontalMovementStrategy(int speed = 1, int direction = 1) {
+    HorizontalMovementStrategy(float speed = 1, int direction = 1) {
         m_xAxisMovementStrategies.push_back(Movement::LinearMovement(speed, direction, false));
     }
 };
@@ -97,7 +102,7 @@ public:
 class DownwardMovingCircularMovementStrategy : public MovementStrategy {
 
 public:
-    DownwardMovingCircularMovementStrategy(float amplitude, float frequency, int speed, int direction = 1) {
+    DownwardMovingCircularMovementStrategy(float amplitude, float frequency, float speed, int direction = 1) {
         m_xAxisMovementStrategies.push_back(Movement::SinusoidMovement(amplitude, frequency, 0, direction, false));
         m_yAxisMovementStrategies.push_back(Movement::SinusoidMovement(amplitude, frequency, 0.5, direction, false));
         m_yAxisMovementStrategies.push_back(Movement::LinearMovement(speed, 1, true));

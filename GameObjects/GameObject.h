@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QGraphicsItem>
 #include <unordered_set>
+#include "Position.h"
 #include "Game/Movement/MovementStrategy.h"
 
 namespace GameObjects {
@@ -11,52 +12,6 @@ namespace GameObjects {
 class Projectile;
 class EnemyShip;
 class PlayerShip;
-
-class Position {
-
-public:
-    Position(float x, float y, float minX=-1, float maxX=-1, float minY=-1, float maxY=-1)
-        : pos(x, y),
-          bounds(minX, minY, maxX - minX, maxY - minY) {}
-
-    bool isBeyondScreenTopLimit(float offset = 0) const {
-        return pos.y() + offset < bounds.top();
-    }
-
-    bool isBeyondScreenBottomLimit(float offset = 0) const {
-        return pos.y() - offset > bounds.bottom();
-    }
-
-    bool isBeyondScreenLeftLimit(float offset = 0) const {
-        return pos.x() + offset < bounds.left();
-    }
-
-    bool isBeyondScreenRightLimit(float offset = 0) const {
-        return pos.x() - offset > bounds.right();
-    }
-
-    bool isBeyondAnyLimit() const {
-        return isBeyondScreenTopLimit()
-               || isBeyondScreenBottomLimit()
-               || isBeyondScreenLeftLimit()
-               || isBeyondScreenRightLimit();
-    }
-
-    float x() const { return pos.x(); }
-    float y() const { return pos.y(); }
-
-    void setX(float x) { pos.setX(x); }
-    void setY(float y) { pos.setY(y); }
-
-    void goToTopLimit() { pos.setY(bounds.top()); }
-    void goToBottomLimit() { pos.setY(bounds.bottom()); }
-    void goToLeftLimit() { pos.setX(bounds.left()); }
-    void goToRightLimit() { pos.setX(bounds.right()); }
-
-private:
-    QPointF pos;
-    QRectF bounds;  // Using QRectF to represent boundaries for more advanced manipulations if needed
-};
 
 class GameObject : public QObject {
     Q_OBJECT
@@ -78,8 +33,8 @@ public:
     void moveDown(float deltaTimeInSeconds);
     void moveUp(float deltaTimeInSeconds);
 
-    void moveX(int amount);
-    void moveY(int amount);
+    void moveX(float amount);
+    void moveY(float amount);
 
     bool isAtLimit() const;
     void doCollide(GameObject &other);
@@ -96,6 +51,14 @@ public:
 
     int id();
 
+    void accelerateLeft(float deltaTimeInSeconds);
+    void accelerateRight(float deltaTimeInSeconds);
+    void decelerateX(float deltaTimeInSeconds);
+    void moveHorizontal(float deltaTimeInSeconds);
+    void moveVertical(float deltaTimeInSeconds);
+    void accelerateUp(float deltaTimeInSeconds);
+    void accelerateDown(float deltaTimeInSeconds);
+    void decelerateY(float deltaTimeInSeconds);
 protected:
     Position m_position;
     float m_speed;
@@ -106,7 +69,7 @@ protected:
     inline void updateGraphicsItemPosition()
     {
         if (m_graphicsItem) {
-            m_graphicsItem->setPos(m_position.x(), m_position.y());
+            m_graphicsItem->setPos(m_position.pos);
         }
     }
     virtual void playOnDestructionAnimation() {};
@@ -114,14 +77,13 @@ private:
     inline void checkXConstraints();
     inline void checkYConstraints();
     inline void checkXYConstraints();
-    inline void doMoveX(int amount);
-    inline void doMoveY(int amount);
+    inline void doMoveX(float amount);
+    inline void doMoveY(float amount);
 
-    int m_anchorX, m_anchorY, m_id;
-    float m_currentSpeedX = 10;
-    float m_currentSpeedY = 10;
-    float m_acceleration = 1;
-    float m_deceleration = 10;
+    int m_id;
+    float m_currentSpeedX = 0;
+    float m_currentSpeedY = 0;
+    float m_acceleration = 1250;
 
     Game::Movement::MovementStrategy m_movementStrategy;
     void execMovement(float deltaTimeInSeconds);

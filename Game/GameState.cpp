@@ -7,7 +7,7 @@ namespace Game {
 GameState::GameState(QObject *parent)
     : QObject(parent)
 {
-    m_playersShipStartSpeed = 250;
+    m_playersShipStartSpeed = 500;
 }
 
 void GameState::initialize()
@@ -68,7 +68,7 @@ void GameState::initPlayerShip()
 void GameState::initEnemyShips()
 {
     int rows = 1;
-    int cols = 30;
+    int cols = 1;
     int width = m_maxX - m_minX;
     int height = m_maxY - m_minY - 300;
     int xSpacing = width / (cols + 1);
@@ -79,6 +79,7 @@ void GameState::initEnemyShips()
             GameObjects::Position pos(m_minX + i * xSpacing, m_minY + j * ySpacing, m_minX, m_maxX, m_minY, m_maxY);
             std::shared_ptr<GameObjects::EnemyShip> enemyShip = std::make_shared<GameObjects::EnemyShip>(10, 100, 1, pos);
             enemyShip->initialize();
+            enemyShip->setMovementStrategy(Game::Movement::CircularMovementStrategy(100, 1));
             this->addGameObject(enemyShip);
         }
     }

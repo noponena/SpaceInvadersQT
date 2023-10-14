@@ -1,5 +1,6 @@
 HEADERS += \
     $$PWD/GameObject.h \
+    $$PWD/Position.h
 
 SOURCES += \
     $$PWD/GameObject.cpp \

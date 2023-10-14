@@ -13,13 +13,13 @@ namespace Movement {
 
 
 class LinearMovement {
-    int m_speed;
+    float m_speed;
     int m_direction;
     bool m_updateAnchor;
 public:
-    LinearMovement(int speed, int direction = 1, bool updateAnchor = false) : m_speed(speed), m_direction(direction), m_updateAnchor(updateAnchor) {}
-    std::pair<int, int> move(int currentPosition, int anchorPosition, float deltaTimeInSeconds) {
-        int delta = static_cast<int>(m_speed * deltaTimeInSeconds) * m_direction;
+    LinearMovement(float speed, int direction = 1, bool updateAnchor = false) : m_speed(speed), m_direction(direction), m_updateAnchor(updateAnchor) {}
+    std::pair<float, float> move(float currentPosition, float anchorPosition, float deltaTimeInSeconds) {
+        float delta = m_speed * deltaTimeInSeconds * m_direction;
         if (m_updateAnchor)
             anchorPosition += delta;
         return {currentPosition + delta, anchorPosition};
@@ -34,10 +34,10 @@ public:
     SinusoidMovement(float amplitude, float frequency, float phase, int direction = 1, bool updateAnchor = false)
         : m_amplitude(amplitude), m_frequency(frequency), m_accumulatedTime(0), m_phase(phase), m_direction(direction), m_updateAnchor(updateAnchor) {}
 
-    std::pair<int, int> move(int currentPosition, int anchorPosition, float deltaTimeInSeconds) {
+    std::pair<float, float> move(float currentPosition, float anchorPosition, float deltaTimeInSeconds) {
         Q_UNUSED(currentPosition);
         m_accumulatedTime += deltaTimeInSeconds;
-        int delta = static_cast<int>(m_amplitude * std::sin(2 * M_PI * m_frequency * m_accumulatedTime + m_phase * M_PI)) * m_direction;
+        float delta = m_amplitude * std::sin(2 * M_PI * m_frequency * m_accumulatedTime + m_phase * M_PI) * m_direction;
         if (m_updateAnchor)
             anchorPosition += delta;
         return {anchorPosition + delta, anchorPosition};
@@ -57,7 +57,7 @@ public:
         : underlyingStrategy(std::move(strategy)), m_interval(interval), m_moveTime(moveTime),
           m_moving(true), m_timeSinceLastChange(0) {}
 
-    std::pair<int, int> move(int currentPosition, int anchorPosition, int deltaTime) {
+    std::pair<float, float> move(float currentPosition, float anchorPosition, float deltaTime) {
         m_timeSinceLastChange += deltaTime;
         if (m_moving) {
             m_timeMoved += deltaTime;
