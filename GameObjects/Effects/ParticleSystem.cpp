@@ -28,10 +28,13 @@ void ParticleSystem::update()
                       [](const Particle &p) { return p.isDead(); }), m_particles.end());
 }
 
-void ParticleSystem::spawnParticles(int count)
+void ParticleSystem::spawnParticles(int count, QColor color, int lifespanFrames)
 {
+    bool randomColor = color == nullptr;
     for(int i = 0; i < count; i++) {
-        Particle particle(m_position, 60, this->randomColor());
+        if (randomColor)
+            color = this->randomColor();
+        Particle particle(m_position, lifespanFrames, color);
         m_particles.push_back(particle);
     }
 }

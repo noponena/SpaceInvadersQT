@@ -4,6 +4,7 @@
 #include <QPen>
 #include <QTimer>
 #include <QTimerEvent>
+#include <QColor>
 
 namespace GameObjects {
 
@@ -64,9 +65,9 @@ void EnemyShip::playOnDestructionAnimation() {
     }
 
     this->switchToPixmapItem();
-    QPointF p(m_position.x, m_position.y);
+    QPointF p(m_position.x(), m_position.y());
     Effects::ParticleSystem *particleSystem = new Effects::ParticleSystem(p);
-    particleSystem->spawnParticles(100);
+    particleSystem->spawnParticles(50);
     m_graphicsItem->scene()->addItem(particleSystem);
     particleSystem->start();
     m_frameIndex = 0;

@@ -11,8 +11,8 @@ GameObject::GameObject(const Position &position, float speed):
     m_hasCollided(false), m_collidable(true)
 {
     m_id = counter++;
-    m_anchorX = position.x;
-    m_anchorY = position.y;
+    m_anchorX = position.x();
+    m_anchorY = position.y();
 }
 
 void GameObject::update(float deltaTimeInSeconds)
@@ -67,9 +67,9 @@ void GameObject::setMovementStrategy(const Game::Movement::MovementStrategy &new
 }
 
 void GameObject::execMovement(float deltaTimeInSeconds) {
-    std::tuple<int, int, int, int> newPos = m_movementStrategy.move(m_position.x, m_position.y, m_anchorX, m_anchorY, deltaTimeInSeconds);
-    m_position.x = std::get<0>(newPos);
-    m_position.y = std::get<1>(newPos);
+    std::tuple<int, int, int, int> newPos = m_movementStrategy.move(m_position.x(), m_position.y(), m_anchorX, m_anchorY, deltaTimeInSeconds);
+    m_position.setX(std::get<0>(newPos));
+    m_position.setY(std::get<1>(newPos));
     m_anchorX = std::get<2>(newPos);
     m_anchorY = std::get<3>(newPos);
 }
@@ -81,18 +81,18 @@ int GameObject::id()
 
 void GameObject::checkXConstraints()
 {
-    if (m_position.x > m_position.maxX)
-        m_position.x = m_position.maxX;
-    else if (m_position.x < m_position.minX)
-        m_position.x = m_position.minX;
+    if (m_position.isBeyondScreenRightLimit())
+        m_position.goToRightLimit();
+    else if (m_position.isBeyondScreenLeftLimit())
+        m_position.goToLeftLimit();
 }
 
 void GameObject::checkYConstraints()
 {
-    if (m_position.y > m_position.maxY)
-        m_position.y = m_position.maxY;
-    else if (m_position.y < m_position.minY)
-        m_position.y = m_position.minY;
+    if (m_position.isBeyondScreenTopLimit())
+        m_position.goToTopLimit();
+    else if (m_position.isBeyondScreenBottomLimit())
+        m_position.goToBottomLimit();
 }
 
 void GameObject::checkXYConstraints()
@@ -103,13 +103,15 @@ void GameObject::checkXYConstraints()
 
 void GameObject::doMoveX(int amount)
 {
-    m_position.x += amount;
+    float current = m_position.x();
+    m_position.setX(current + amount);
     this->checkXConstraints();
 }
 
 void GameObject::doMoveY(int amount)
 {
-    m_position.y += amount;
+    float current = m_position.y();
+    m_position.setY(current + amount);
     this->checkYConstraints();
 }
 

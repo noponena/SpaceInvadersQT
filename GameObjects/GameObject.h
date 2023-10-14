@@ -15,25 +15,24 @@ class PlayerShip;
 class Position {
 
 public:
-    Position(int x, int y, int minX=-1, int maxX=-1, int minY=-1, int maxY=-1)
-        : x(x), y(y),
-          minX(minX), minY(minY),
-          maxX(maxX), maxY(maxY) {}
+    Position(float x, float y, float minX=-1, float maxX=-1, float minY=-1, float maxY=-1)
+        : pos(x, y),
+          bounds(minX, minY, maxX - minX, maxY - minY) {}
 
-    bool isBeyondScreenTopLimit(int offset = 0) const {
-        return this->y + offset < minY;
+    bool isBeyondScreenTopLimit(float offset = 0) const {
+        return pos.y() + offset < bounds.top();
     }
 
-    bool isBeyondScreenBottomLimit(int offset = 0) const {
-        return this->y - offset > maxY;
+    bool isBeyondScreenBottomLimit(float offset = 0) const {
+        return pos.y() - offset > bounds.bottom();
     }
 
-    bool isBeyondScreenLeftLimit(int offset = 0) const {
-        return this->x + offset < minX;
+    bool isBeyondScreenLeftLimit(float offset = 0) const {
+        return pos.x() + offset < bounds.left();
     }
 
-    bool isBeyondScreenRightLimit(int offset = 0) const {
-        return this->x - offset > maxX;
+    bool isBeyondScreenRightLimit(float offset = 0) const {
+        return pos.x() - offset > bounds.right();
     }
 
     bool isBeyondAnyLimit() const {
@@ -43,7 +42,20 @@ public:
                || isBeyondScreenRightLimit();
     }
 
-    int x, y, minX, minY, maxX, maxY;
+    float x() const { return pos.x(); }
+    float y() const { return pos.y(); }
+
+    void setX(float x) { pos.setX(x); }
+    void setY(float y) { pos.setY(y); }
+
+    void goToTopLimit() { pos.setY(bounds.top()); }
+    void goToBottomLimit() { pos.setY(bounds.bottom()); }
+    void goToLeftLimit() { pos.setX(bounds.left()); }
+    void goToRightLimit() { pos.setX(bounds.right()); }
+
+private:
+    QPointF pos;
+    QRectF bounds;  // Using QRectF to represent boundaries for more advanced manipulations if needed
 };
 
 class GameObject : public QObject {
@@ -94,7 +106,7 @@ protected:
     inline void updateGraphicsItemPosition()
     {
         if (m_graphicsItem) {
-            m_graphicsItem->setPos(m_position.x, m_position.y);
+            m_graphicsItem->setPos(m_position.x(), m_position.y());
         }
     }
     virtual void playOnDestructionAnimation() {};

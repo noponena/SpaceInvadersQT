@@ -25,7 +25,6 @@ public:
 
     void move() {
         m_position += m_velocity;
-        //qDebug() << "particle position:" << m_position;
     };
     bool isDead() const {
         return m_lifespan <= 0;

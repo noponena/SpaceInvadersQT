@@ -33,7 +33,7 @@ void PlayerShip::shoot()
     if (this->canShoot())
     {
         Position position = m_position;
-        position.y += -10;
+        position.setY(position.y() - 10);
         std::shared_ptr<Laser> laser = std::make_shared<Laser>(position, 1, Qt::GlobalColor::magenta);
         laser->initialize();
         laser->setMovementStrategy(Game::Movement::VerticalMovementStrategy(1000, -1));
