@@ -21,9 +21,12 @@ private:
     std::list<Particle> m_particles;
     QPointF m_position;
     QColor randomColor();
+    QTimer *m_updateTimer;
 public:
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
+signals:
+    void animationFinished();
 };
 
 } // namespace Effects

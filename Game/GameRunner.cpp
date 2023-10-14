@@ -76,7 +76,7 @@ void GameRunner::startGame()
 void GameRunner::gameLoop()
 {
     float deltaTimeInSeconds = static_cast<float>(m_elapsedTimer.restart()) / 1000.0f;
-    m_levelManager->update();
+    //m_levelManager->update();
     this->processInput(deltaTimeInSeconds);
     this->updateGameState(deltaTimeInSeconds);
     this->detectCollisions();

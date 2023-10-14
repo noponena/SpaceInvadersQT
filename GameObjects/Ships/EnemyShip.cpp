@@ -67,6 +67,7 @@ void EnemyShip::playOnDestructionAnimation() {
     this->switchToPixmapItem();
     QPointF p(m_position.x(), m_position.y());
     Effects::ParticleSystem *particleSystem = new Effects::ParticleSystem(p);
+    connect(particleSystem, &Effects::ParticleSystem::animationFinished, particleSystem, &QObject::deleteLater);
     particleSystem->spawnParticles(50);
     m_graphicsItem->scene()->addItem(particleSystem);
     particleSystem->start();

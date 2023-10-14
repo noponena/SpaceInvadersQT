@@ -27,12 +27,6 @@ public:
 
     void update(float deltaTimeInSeconds);
 
-    void moveLeft(float deltaTimeInSeconds);
-    void moveRight(float deltaTimeInSeconds);
-
-    void moveDown(float deltaTimeInSeconds);
-    void moveUp(float deltaTimeInSeconds);
-
     void moveX(float amount);
     void moveY(float amount);
 

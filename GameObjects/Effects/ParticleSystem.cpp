@@ -26,6 +26,11 @@ void ParticleSystem::update()
 
     m_particles.erase(std::remove_if(m_particles.begin(), m_particles.end(),
                       [](const Particle &p) { return p.isDead(); }), m_particles.end());
+
+    if (m_particles.empty()) {
+        emit animationFinished();
+        m_updateTimer->stop();
+    }
 }
 
 void ParticleSystem::spawnParticles(int count, QColor color, int lifespanFrames)
@@ -41,9 +46,9 @@ void ParticleSystem::spawnParticles(int count, QColor color, int lifespanFrames)
 
 void ParticleSystem::start()
 {
-    QTimer *updateTimer = new QTimer(this);
-    connect(updateTimer, &QTimer::timeout, this, &ParticleSystem::update);
-    updateTimer->start(16);
+    m_updateTimer = new QTimer(this);
+    connect(m_updateTimer, &QTimer::timeout, this, &ParticleSystem::update);
+    m_updateTimer->start(16);
 }
 
 QRectF ParticleSystem::boundingRect() const {

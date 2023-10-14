@@ -29,26 +29,6 @@ void GameObject::moveVertical(float deltaTimeInSeconds)
     this->doMoveY(m_currentSpeedY * deltaTimeInSeconds);
 }
 
-void GameObject::moveLeft(float deltaTimeInSeconds)
-{
-    this->doMoveX(-m_currentSpeedX * deltaTimeInSeconds);
-}
-
-void GameObject::moveRight(float deltaTimeInSeconds)
-{
-    this->doMoveX(m_currentSpeedX * deltaTimeInSeconds);
-}
-
-void GameObject::moveDown(float deltaTimeInSeconds)
-{
-    this->doMoveY(m_currentSpeedY * deltaTimeInSeconds);
-}
-
-void GameObject::moveUp(float deltaTimeInSeconds)
-{
-    this->doMoveY(-m_currentSpeedY * deltaTimeInSeconds);
-}
-
 void GameObject::accelerateLeft(float deltaTimeInSeconds)
 {
     m_currentSpeedX -= m_acceleration * deltaTimeInSeconds;

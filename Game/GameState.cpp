@@ -79,7 +79,7 @@ void GameState::initEnemyShips()
             GameObjects::Position pos(m_minX + i * xSpacing, m_minY + j * ySpacing, m_minX, m_maxX, m_minY, m_maxY);
             std::shared_ptr<GameObjects::EnemyShip> enemyShip = std::make_shared<GameObjects::EnemyShip>(10, 100, 1, pos);
             enemyShip->initialize();
-            enemyShip->setMovementStrategy(Game::Movement::CircularMovementStrategy(100, 1));
+            //enemyShip->setMovementStrategy(Game::Movement::CircularMovementStrategy(100, 1));
             this->addGameObject(enemyShip);
         }
     }
