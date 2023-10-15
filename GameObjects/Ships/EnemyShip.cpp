@@ -12,24 +12,40 @@ EnemyShip::EnemyShip(const int maxHp, int speed, const Position &position)
     : Ship(maxHp, speed, position) {}
 
 void EnemyShip::initializeGraphicsItem() {
-  // Create graphics item
-  QGraphicsPolygonItem *polygonItem = new QGraphicsPolygonItem();
+    QPixmap pixmap = getPixmap();
 
-  // Set the color and pen properties
-  polygonItem->setBrush(Qt::green);
-  polygonItem->setPen(Qt::NoPen);
+    // Create graphics item for the PNG image
+    QGraphicsPixmapItem *pixmapItem = new QGraphicsPixmapItem(pixmap);
 
-  // Create a QPolygon to represent the triangle and set it to the
-  // QGraphicsPolygonItem
-  QPolygon triangle;
-  triangle << QPoint(0, 10) << QPoint(-10, -20)
-           << QPoint(10, -20); // Assuming the ship is centered at (0, 0)
-  polygonItem->setPolygon(triangle);
+    // Assign the pixmapItem to m_graphicsItem
+    m_graphicsItem = pixmapItem;
+    m_nonTransparentBoundingRect = this->getNonTransparentBoundingRect();
+    // There's no direct color for a QPixmap, but you can get a color using other methods if required.
+    // The following line might not be applicable for a pixmap:
+    // m_originalColor = static_cast<QGraphicsPolygonItem *>(m_graphicsItem)->brush().color();
+}
 
-  // Assign the polygonItem to m_graphicsItem
-  m_graphicsItem = polygonItem;
-  m_originalColor =
-      static_cast<QGraphicsPolygonItem *>(m_graphicsItem)->brush().color();
+void EnemyShip::playOnHitAnimation()
+{
+    if (m_onHitAnimationInProgress)
+        return;
+
+    m_onHitAnimationInProgress = true;
+
+    // Load the "on hit" pixmap and set it to the graphics item
+    QPixmap onHitPixmap = this->getOnHitPixmap();
+    static_cast<QGraphicsPixmapItem*>(m_graphicsItem)->setPixmap(onHitPixmap);
+
+    m_onHitTimerId = startTimer(25);
+}
+
+void EnemyShip::timerEvent(QTimerEvent *event) {
+    if (event->timerId() == m_onHitTimerId) {
+        killTimer(m_onHitTimerId);
+        static_cast<QGraphicsPixmapItem*>(m_graphicsItem)->setPixmap(this->getPixmap());
+        m_onHitAnimationInProgress = false;
+        m_onHitTimerId = -1;
+    }
 }
 
 void EnemyShip::collideWith(GameObject &other) {
@@ -49,6 +65,41 @@ void EnemyShip::collideWithEnemyShip(EnemyShip &enemyShip) {
 
 bool EnemyShip::shouldBeDeleted() {
   return m_destroyed || m_position.isBeyondScreenBottomLimit(30);
+}
+
+QRectF EnemyShip::boundingRect() const
+{
+    return m_nonTransparentBoundingRect;
+}
+
+QRectF EnemyShip::getNonTransparentBoundingRect()
+{
+    int minX = getPixmap().width();
+    int minY = getPixmap().height();
+    int maxX = 0;
+    int maxY = 0;
+    bool foundNonTransparent = false;
+
+    QImage image = getPixmap().toImage();
+
+    for (int y = 0; y < image.height(); ++y) {
+        for (int x = 0; x < image.width(); ++x) {
+            QColor pixelColor = image.pixelColor(x, y);
+            if (pixelColor.alpha() > 0) { // or another threshold if needed
+                foundNonTransparent = true;
+                if (x < minX) minX = x;
+                if (x > maxX) maxX = x;
+                if (y < minY) minY = y;
+                if (y > maxY) maxY = y;
+            }
+        }
+    }
+
+    if (foundNonTransparent) {
+        return QRectF(minX, minY, maxX - minX + 1, maxY - minY + 1);
+    } else {
+        return QRectF();
+    }
 }
 } // namespace Ships
 

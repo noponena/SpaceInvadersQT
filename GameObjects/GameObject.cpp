@@ -175,6 +175,6 @@ bool GameObject::isCollidingWith(const GameObject &other) const {
 
 bool GameObject::isAtLimit() const { return m_position.isBeyondAnyLimit(); }
 
-const Position &GameObject::getPosition() const { return m_position; }
+Position &GameObject::getPosition() { return m_position; }
 
 } // namespace GameObjects

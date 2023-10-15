@@ -2,13 +2,10 @@
 #define WEAPON_H
 
 #include "GameObjects/Projectiles/Projectile.h"
+#include "GameObjects/Ships/Ship.h"
 #include <QElapsedTimer>
 
-namespace GameObjects {
-namespace Ships {
-class Ship;
-}
-} // namespace GameObjects
+namespace GameObjects {} // namespace GameObjects
 
 namespace Weapons {
 
@@ -25,6 +22,13 @@ public:
       std::shared_ptr<GameObjects::Projectiles::Projectile> projectile =
           this->createProjectile();
       projectile->initialize();
+      QPointF ownerCenter = m_owner->getGraphicsItem()->boundingRect().center();
+      QPointF projectileCenter = projectile->getGraphicsItem()->boundingRect().center();
+      QPointF delta = projectileCenter - ownerCenter;
+      float newX = projectile->getPosition().x() - delta.x();
+      float newY = projectile->getPosition().y() - delta.y();
+      projectile->getPosition().setPos(QPointF(newX, newY));
+
       projectile->setMovementStrategy(m_movementStrategy);
       emit projectileShot(projectile);
     }

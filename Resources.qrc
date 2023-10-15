@@ -1,5 +1,8 @@
 <RCC>
     <qresource prefix="/">
         <file>Images/explosion.png</file>
+        <file>Images/alien.png</file>
+        <file>Images/alien_on_hit.png</file>
+        <file>Images/player_laser_projectile.png</file>
     </qresource>
 </RCC>

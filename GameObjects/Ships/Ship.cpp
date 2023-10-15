@@ -2,14 +2,18 @@
 #include <QGraphicsScene>
 #include <QTimer>
 #include <QTimerEvent>
+#include <QGraphicsColorizeEffect>
+#include "Weapons/Weapon.h"
 
 namespace GameObjects {
 namespace Ships {
 Ship::Ship(const int maxHp, int speed, const Position &position)
     : GameObject(position, speed), m_maxHp(maxHp), m_speed(speed),
       m_destroyed(false) {
-  m_currentHp = maxHp;
+    m_currentHp = maxHp;
 }
+
+Ship::~Ship() = default;
 
 void Ship::shoot() { m_weapon->shoot(); }
 
@@ -45,8 +49,8 @@ void Ship::initializeDestructionAnimation() {
   int frameHeight = 400; // height of a single frame
   int columns = 4;       // number of columns of frames in the sprite sheet
   int rows = 4;          // number of rows of frames in the sprite sheet
-  int targetWidth = 20;  // The width of your ship
-  int targetHeight = 30; // The height of your ship
+  int targetWidth = 50;  // The width of your ship
+  int targetHeight = 75; // The height of your ship
   QPixmap spriteSheet(":/Images/explosion.png");
 
   for (int row = 0; row < rows; ++row) {
@@ -71,13 +75,13 @@ void Ship::playDestructionAnimation() {
     m_onHitTimerId = -1;
   }
 
-  this->switchToPixmapItem();
   m_frameIndex = 0;
   QTimer *animationTimer = new QTimer();
   connect(animationTimer, &QTimer::timeout, this, [this, animationTimer]() {
     QGraphicsPixmapItem *pixmapItem =
         qgraphicsitem_cast<QGraphicsPixmapItem *>(m_graphicsItem);
     if (pixmapItem && m_frameIndex < m_animationFrames.size()) {
+
       pixmapItem->setPixmap(m_animationFrames[m_frameIndex]);
       m_frameIndex++;
     } else {
@@ -87,10 +91,19 @@ void Ship::playDestructionAnimation() {
     }
   });
   animationTimer->start(50);
+//  QRectF rect = m_graphicsItem->boundingRect();
+//  qreal halfWidth = rect.width() / 2;
+//  qreal halfHeight = rect.height() / 2;
+//  this->moveX(halfWidth);
+//  this->moveY(halfHeight);
 }
 
 void Ship::playDestructionEffects() {
-  QPointF p(m_position.x(), m_position.y());
+
+  QRectF rect = m_graphicsItem->boundingRect();
+  qreal halfWidth = rect.width() / 2;
+  qreal halfHeight = rect.height() / 2;
+  QPointF p(m_position.x() + halfWidth, m_position.y() + halfHeight);
   Effects::ParticleSystem *particleSystem = new Effects::ParticleSystem(p);
   connect(particleSystem, &Effects::ParticleSystem::animationFinished,
           particleSystem, &QObject::deleteLater);

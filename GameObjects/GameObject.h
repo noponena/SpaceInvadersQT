@@ -55,7 +55,7 @@ public:
   void decelerateY(float deltaTimeInSeconds);
 
   // Getters & Setters
-  const Position &getPosition() const;
+  Position &getPosition();
   QGraphicsItem *getGraphicsItem() const;
   bool isCollidable() const;
   int id();
@@ -75,6 +75,7 @@ protected:
   QGraphicsItem *m_graphicsItem;
   bool m_hasCollided;
   bool m_collidable;
+  QRectF m_nonTransparentBoundingRect;
 
   // Protected Helpers & Methods
   void clearMovementStrategy();
@@ -83,6 +84,7 @@ protected:
   virtual void initializeDestructionEffects(){};
   virtual void playDestructionAnimation(){};
   virtual void playDestructionEffects(){};
+  virtual QRectF getNonTransparentBoundingRect() { return QRectF(0, 0, 0, 0); };
   virtual bool isDestroyed() { return false; };
   inline void updateGraphicsItemPosition() {
     if (m_graphicsItem) {

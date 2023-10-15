@@ -3,8 +3,11 @@
 
 #include "GameObjects/Effects/ParticleSystem.h"
 #include "GameObjects/GameObject.h"
-#include "Weapons/Weapon.h"
 #include <QElapsedTimer>
+
+namespace Weapons {
+class Weapon;
+}
 
 namespace GameObjects {
 namespace Ships {
@@ -12,7 +15,7 @@ class Ship : public GameObject {
   Q_OBJECT
 public:
   Ship(const int maxHp, int speed, const Position &position);
-  virtual ~Ship() = default;
+  virtual ~Ship();
   void shoot();
   bool shouldBeDeleted() override;
   void takeDamage(int amount);
@@ -23,8 +26,10 @@ public:
 
 protected:
   int m_currentHp, m_maxHp, m_speed, m_fireRate, m_shotCooldownMs;
+  int m_onHitTimerId = -1;
   std::unique_ptr<Weapons::Weapon> m_weapon;
   bool m_destroyed;
+  bool m_onHitAnimationInProgress = false;
   QList<QPixmap> m_animationFrames;
   QElapsedTimer m_lastShotTime;
   QColor m_originalColor;
@@ -34,15 +39,13 @@ protected:
   void playDestructionAnimation() override;
   void playDestructionEffects() override;
 
-  void playOnHitAnimation();
+  virtual void playOnHitAnimation();
 protected slots:
   void onAnimationCompleted();
 
 private:
-  int m_onHitTimerId = -1;
   void switchToPixmapItem();
   int m_frameIndex;
-  bool m_onHitAnimationInProgress = false;
 
   void timerEvent(QTimerEvent *event) override;
 signals:

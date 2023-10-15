@@ -11,10 +11,25 @@ public:
 
 private:
   Qt::GlobalColor m_color;
+  static const QPixmap& getPixmap() {
+      static QPixmap sharedPixmap(":/Images/player_laser_projectile.png");
+      qreal width = 29.055;
+      qreal height = 30.0;
+      sharedPixmap = sharedPixmap.scaled(width, height, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+      return sharedPixmap;
+  }
 
   // GameObject interface
 protected:
   void initializeGraphicsItem() override;
+
+  // QGraphicsItem interface
+public:
+  QRectF boundingRect() const override;
+
+  // GameObject interface
+protected:
+  QRectF getNonTransparentBoundingRect() override;
 };
 } // namespace Projectiles
 
