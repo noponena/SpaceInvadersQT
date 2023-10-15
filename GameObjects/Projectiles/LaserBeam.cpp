@@ -10,14 +10,13 @@ LaserBeam::LaserBeam(Position position, float speed, Qt::GlobalColor color)
 
 }
 
-void LaserBeam::initialize()
+void LaserBeam::initializeGraphicsItem()
 {
     QGraphicsRectItem* rectItem = new QGraphicsRectItem();
     rectItem->setRect(0, 0, 2, 10);
     rectItem->setBrush(m_color);
     rectItem->setPen(Qt::NoPen);
     m_graphicsItem = rectItem;
-    this->updateGraphicsItemPosition();
 }
 }
 

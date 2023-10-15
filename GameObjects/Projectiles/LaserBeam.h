@@ -10,9 +10,12 @@ class LaserBeam : public Projectile, public QGraphicsRectItem
 {
 public:
     LaserBeam(Position position, float speed, Qt::GlobalColor color);
-    void initialize() override;
 private:
     Qt::GlobalColor m_color;
+
+    // GameObject interface
+protected:
+    void initializeGraphicsItem() override;
 };
 }
 

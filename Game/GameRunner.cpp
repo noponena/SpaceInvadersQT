@@ -123,8 +123,8 @@ void GameRunner::detectCollisions()
 {
     for (auto it1 = m_gameObjects->begin(); it1 != m_gameObjects->end(); ++it1) {
         for (auto it2 = std::next(it1); it2 != m_gameObjects->end(); ++it2) {
-            if ((*it1)->isCollision(**it2)) {
-                (*it1)->doCollide(**it2);
+            if ((*it1)->isCollidingWith(**it2)) {
+                (*it1)->collide(**it2);
             }
         }
     }

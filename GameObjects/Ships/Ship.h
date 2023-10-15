@@ -15,11 +15,9 @@ public:
     Ship(const int maxHp, int speed, const Position &position);
     virtual ~Ship() = default;
     void shoot();
-    void initialize() override;
     bool shouldBeDeleted() override;
     void takeDamage(int amount);
     void heal(int amount);
-    bool isAlive();
     void updateFireRate(int amount = 1);
 
     void setWeapon(std::unique_ptr<Weapons::Weapon> newWeapon);
@@ -30,19 +28,27 @@ protected:
     bool m_destroyed;
     QList<QPixmap> m_animationFrames;
     QElapsedTimer m_lastShotTime;
+    QColor m_originalColor;
 
-    virtual void initializeDestructionAnimation();
+    virtual bool isDestroyed() override;
+    virtual void initializeDestructionAnimation() override;
+    void playDestructionAnimation() override;
+    void playDestructionEffects() override;
 
-private:
-    void die();
-
+    void playOnHitAnimation();
 protected slots:
     void onAnimationCompleted();
 
+private:
+    int m_onHitTimerId = -1;
+    void switchToPixmapItem();
+    int m_frameIndex;
+    bool m_onHitAnimationInProgress = false;
+
+    void timerEvent(QTimerEvent *event) override;
 signals:
     void animationCompleted();
     void projectileShot(const std::shared_ptr<Projectiles::Projectile>& projectile);
-
 };
 }
 

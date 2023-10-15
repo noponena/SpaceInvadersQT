@@ -7,15 +7,25 @@ namespace GameObjects {
 int GameObject::counter = 0;
 
 GameObject::GameObject(const Position &position, float speed):
-    m_targetPosition(0, 0), m_position(position), m_speed(speed),
-    m_hasCollided(false), m_collidable(true)
+    m_position(position), m_speed(speed),
+    m_hasCollided(false), m_collidable(true),
+    m_id(counter++),
+    m_destructionInitiated(false)
+{}
+
+void GameObject::initialize()
 {
-    m_id = counter++;
+    this->initializeGraphicsItem();
+    this->updateGraphicsItemPosition();
+    this->initializeDestructionAnimation();
+    this->initializeDestructionEffects();
 }
 
 void GameObject::update(float deltaTimeInSeconds)
 {
-    this->execMovement(deltaTimeInSeconds);
+    if (this->isDestroyed() && !m_destructionInitiated)
+        this->initiateDestructionProcedure();
+    this->applyMovementStrategy(deltaTimeInSeconds);
     this->updateGraphicsItemPosition();
 }
 
@@ -105,23 +115,33 @@ void GameObject::doMoveX(float amount)
 {
     float current = m_position.x();
     m_position.setX(current + amount);
-    this->checkXConstraints();
+    this->clampToXBounds();
 }
 
 void GameObject::doMoveY(float amount)
 {
     float current = m_position.y();
     m_position.setY(current + amount);
-    this->checkYConstraints();
+    this->clampToYBounds();
 }
 
-void GameObject::execMovement(float deltaTimeInSeconds) {
-    std::pair<QPointF, QPointF> newPos = m_movementStrategy.move(m_position.pos, m_position.anchorPos, deltaTimeInSeconds);
+void GameObject::applyMovementStrategy(float deltaTimeInSeconds) {
+    std::pair<QPointF, QPointF> newPos = m_movementStrategy.move
+            (m_position.pos, m_position.anchorPos, deltaTimeInSeconds);
     m_position.pos = newPos.first;
     m_position.anchorPos = newPos.second;
 }
 
-QGraphicsItem *GameObject::graphicsItem() const
+void GameObject::initiateDestructionProcedure()
+{
+    m_collidable = false;
+    m_destructionInitiated = true;
+    this->clearMovementStrategy();
+    this->playDestructionEffects();
+    this->playDestructionAnimation();
+}
+
+QGraphicsItem *GameObject::getGraphicsItem() const
 {
     return m_graphicsItem;
 }
@@ -141,7 +161,7 @@ int GameObject::id()
     return m_id;
 }
 
-void GameObject::checkXConstraints()
+void GameObject::clampToXBounds()
 {
     if (m_position.isBeyondScreenRightLimit())
         m_position.goToRightLimit();
@@ -149,7 +169,7 @@ void GameObject::checkXConstraints()
         m_position.goToLeftLimit();
 }
 
-void GameObject::checkYConstraints()
+void GameObject::clampToYBounds()
 {
     if (m_position.isBeyondScreenTopLimit())
         m_position.goToTopLimit();
@@ -157,18 +177,18 @@ void GameObject::checkYConstraints()
         m_position.goToBottomLimit();
 }
 
-void GameObject::checkXYConstraints()
+void GameObject::clampToXYBounds()
 {
-    this->checkXConstraints();
-    this->checkYConstraints();
+    this->clampToXBounds();
+    this->clampToYBounds();
 }
 
-bool GameObject::collidable() const
+bool GameObject::isCollidable() const
 {
     return m_collidable;
 }
 
-void GameObject::doCollide(GameObject& other)
+void GameObject::collide(GameObject& other)
 {
     int local_id = this->id();
     int other_id = other.id();
@@ -185,14 +205,14 @@ void GameObject::doCollide(GameObject& other)
     }
 }
 
-bool GameObject::isCollision(const GameObject &other) const
+bool GameObject::isCollidingWith(const GameObject &other) const
 {
     if (!this->m_collidable || !other.m_collidable)
     {
         return false;
     }
 
-    return this->graphicsItem()->collidesWithItem(other.graphicsItem());
+    return this->getGraphicsItem()->collidesWithItem(other.getGraphicsItem());
 }
 
 bool GameObject::isAtLimit() const
@@ -200,7 +220,7 @@ bool GameObject::isAtLimit() const
     return m_position.isBeyondAnyLimit();
 }
 
-const Position &GameObject::position() const
+const Position &GameObject::getPosition() const
 {
     return m_position;
 }

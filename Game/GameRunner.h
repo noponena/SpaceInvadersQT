@@ -52,8 +52,8 @@ private:
         { Qt::Key_Up,     [&](float dt) { m_playerShip->accelerateUp(dt);             } },
         { Qt::Key_Space,  [&](float dt) { Q_UNUSED(dt); m_playerShip->shoot();        } },
         { Qt::Key_Q,      [&](float dt) { Q_UNUSED(dt); m_gameState.initEnemyShips(); } },
-        { Qt::Key_U,  [&](float dt) { Q_UNUSED(dt); m_playerShip->updateFireRate();   } },
-        { Qt::Key_D,  [&](float dt) { Q_UNUSED(dt);m_playerShip->updateFireRate(-1);  } },
+        { Qt::Key_U,  [&](float dt) { Q_UNUSED(dt); m_playerShip->updateFireRate(-10);   } },
+        { Qt::Key_D,  [&](float dt) { Q_UNUSED(dt);m_playerShip->updateFireRate(10);  } },
     };
 
 signals:
@@ -61,14 +61,14 @@ signals:
 
 public slots:
     void onObjectAdded(const std::shared_ptr<GameObjects::GameObject>& object) {
-        m_scene.addItem(object->graphicsItem());
+        m_scene.addItem(object->getGraphicsItem());
     }
     void onObjectDeleted(const std::shared_ptr<GameObjects::GameObject>& object) {
-        m_scene.removeItem(object->graphicsItem());
+        m_scene.removeItem(object->getGraphicsItem());
     }
     void onCollisionDetected(const std::shared_ptr<GameObjects::GameObject>& obj1,
                              const std::shared_ptr<GameObjects::GameObject>& obj2) {
-        obj1->doCollide(*obj2);
+        obj1->collide(*obj2);
     }
 };
 }

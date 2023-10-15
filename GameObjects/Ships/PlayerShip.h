@@ -14,9 +14,12 @@ public:
 
     // GameObject interface
 public:
-    void initialize() override;
     void collideWith(GameObject &other) override;
     void collideWithProjectile(Projectiles::Projectile& projectile) override;
+
+    // GameObject interface
+protected:
+    void initializeGraphicsItem() override;
 };
 }
 

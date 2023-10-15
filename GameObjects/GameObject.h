@@ -19,36 +19,26 @@ class PlayerShip;
 
 class GameObject : public QObject {
     Q_OBJECT
+
 public:
+    // Constructors & Destructor
     GameObject(const Position &position, float speed);
     virtual ~GameObject() = default;
-    virtual void initialize() = 0;
+
+    // Initialization & Lifecycle
+    void initialize();
     virtual bool shouldBeDeleted() = 0;
-    virtual void collideWith(GameObject &other) {(void)other;}
-    virtual void collideWithProjectile(Projectiles::Projectile& projectile) {(void)projectile;}
-    virtual void collideWithEnemyShip(Ships::EnemyShip& enemyShip) {(void)enemyShip;}
-    virtual void collideWithPlayerShip(Ships::PlayerShip& playerShip) {(void)playerShip;}
 
+    // Collision Handlers
+    virtual void collideWith(GameObject &other) { (void)other; }
+    virtual void collideWithProjectile(Projectiles::Projectile& projectile) { (void)projectile; }
+    virtual void collideWithEnemyShip(Ships::EnemyShip& enemyShip) { (void)enemyShip; }
+    virtual void collideWithPlayerShip(Ships::PlayerShip& playerShip) { (void)playerShip; }
+
+    // Update & Movement
     void update(float deltaTimeInSeconds);
-
     void moveX(float amount);
     void moveY(float amount);
-
-    bool isAtLimit() const;
-    void doCollide(GameObject &other);
-    bool isCollision(const GameObject &other) const;
-
-    const Position &position() const;
-
-    Position m_targetPosition;
-    void lerpTowardsTarget(float t);
-    QGraphicsItem *graphicsItem() const;
-    void moveTo(const QPointF &newPosition);
-    bool collidable() const;
-    void setMovementStrategy(const Game::Movement::MovementStrategy &newMovementStrategy);
-
-    int id();
-
     void accelerateLeft(float deltaTimeInSeconds);
     void accelerateRight(float deltaTimeInSeconds);
     void decelerateX(float deltaTimeInSeconds);
@@ -57,37 +47,63 @@ public:
     void accelerateUp(float deltaTimeInSeconds);
     void accelerateDown(float deltaTimeInSeconds);
     void decelerateY(float deltaTimeInSeconds);
+
+    // Getters & Setters
+    const Position &getPosition() const;
+    QGraphicsItem *getGraphicsItem() const;
+    bool isCollidable() const;
+    int id();
+
+    // Actions & Modifiers
+    void moveTo(const QPointF &newPosition);
+    void setMovementStrategy(const Game::Movement::MovementStrategy &newMovementStrategy);
+    void collide(GameObject &other);
+    bool isAtLimit() const;
+    bool isCollidingWith(const GameObject &other) const;
+
 protected:
+    // Member Variables
     Position m_position;
     float m_speed;
     QGraphicsItem *m_graphicsItem;
     bool m_hasCollided;
     bool m_collidable;
+
+    // Protected Helpers & Methods
     void clearMovementStrategy();
-    inline void updateGraphicsItemPosition()
-    {
+    virtual void initializeGraphicsItem() = 0;
+    virtual void initializeDestructionAnimation() {};
+    virtual void initializeDestructionEffects() {};
+    virtual void playDestructionAnimation() {};
+    virtual void playDestructionEffects() {};
+    virtual bool isDestroyed() { return false; };
+    inline void updateGraphicsItemPosition() {
         if (m_graphicsItem) {
             m_graphicsItem->setPos(m_position.pos);
         }
     }
-    virtual void playOnDestructionAnimation() {};
-private:
-    inline void checkXConstraints();
-    inline void checkYConstraints();
-    inline void checkXYConstraints();
-    inline void doMoveX(float amount);
-    inline void doMoveY(float amount);
 
+private:
+    // Member Variables
     int m_id;
     float m_currentSpeedX = 0;
     float m_currentSpeedY = 0;
     float m_acceleration = 1250;
-
+    bool m_destructionInitiated;
     Game::Movement::MovementStrategy m_movementStrategy;
-    void execMovement(float deltaTimeInSeconds);
     static int counter;
     std::unordered_set<int> m_collisions;
+
+    // Private Helpers & Methods
+    inline void clampToXBounds();
+    inline void clampToYBounds();
+    inline void clampToXYBounds();
+    inline void doMoveX(float amount);
+    inline void doMoveY(float amount);
+    void applyMovementStrategy(float deltaTimeInSeconds);
+    void initiateDestructionProcedure();
 };
+
 }
 
 #endif // GAMEOBJECT_H

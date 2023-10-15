@@ -22,8 +22,8 @@ void Projectile::collideWith(GameObject &other)
 
 void Projectile::collideWithEnemyShip(Ships::EnemyShip &enemyShip)
 {
+    Q_UNUSED(enemyShip);
     m_hasCollided = true;
-    enemyShip.collideWithProjectile(*this);
 }
 
 int Projectile::getDamage() const

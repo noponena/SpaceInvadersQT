@@ -1,14 +1,14 @@
 #ifndef GAMEOBJECTS_EFFECTS_PARTICLESYSTEM_H
 #define GAMEOBJECTS_EFFECTS_PARTICLESYSTEM_H
 
-#include <QGraphicsItem>
+#include "Effect.h"
 #include "Particle.h"
 
 
 namespace GameObjects {
 namespace Effects {
 
-class ParticleSystem : public QObject, public QGraphicsItem {
+class ParticleSystem : public Effect {
     Q_OBJECT
 public:
     ParticleSystem(QPointF position);
@@ -19,7 +19,6 @@ public:
 
 private:
     std::list<Particle> m_particles;
-    QPointF m_position;
     QColor randomColor();
     QTimer *m_updateTimer;
 public:

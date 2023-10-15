@@ -5,7 +5,7 @@ namespace GameObjects {
 namespace Effects {
 
 ParticleSystem::ParticleSystem(QPointF position)
-    : m_position(position)
+    : Effect(position)
 {
 
 }

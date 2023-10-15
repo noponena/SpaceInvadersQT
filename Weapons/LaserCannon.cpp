@@ -13,7 +13,7 @@ LaserCannon::LaserCannon(float cooldownMs,
 
 std::shared_ptr<GameObjects::Projectiles::Projectile> LaserCannon::createProjectile()
 {
-    GameObjects::Position position = m_owner->position();
+    GameObjects::Position position = m_owner->getPosition();
     position.setY(position.y() - 10);
     std::shared_ptr<GameObjects::Projectiles::LaserBeam> laser = std::make_shared<GameObjects::Projectiles::LaserBeam>(position, 1, Qt::GlobalColor::magenta);
     return laser;

@@ -7,26 +7,19 @@
 
 namespace GameObjects {
 namespace Ships {
-class EnemyShip : public Ships::Ship, public QGraphicsPolygonItem
+class EnemyShip : public Ship, public QGraphicsPolygonItem
 {
     Q_OBJECT
 public:
     EnemyShip(const int maxHp, int speed, const Position &position);
-    void initialize() override;
     void collideWith(GameObject &other) override;
     void collideWithProjectile(Projectiles::Projectile& projectile) override;
     void collideWithEnemyShip(EnemyShip& enemyShip) override;
     bool shouldBeDeleted() override;
+
+    // GameObject interface
 protected:
-    void playOnDestructionAnimation() override;
-    void playOnHitAnimation();
-    void timerEvent(QTimerEvent *event) override;
-private:
-    void switchToPixmapItem();
-    int m_frameIndex;
-    int m_onHitTimerId = -1;
-    bool m_onHitAnimationInProgress = false;
-    QColor m_originalColor;
+    void initializeGraphicsItem() override;
 };
 }
 

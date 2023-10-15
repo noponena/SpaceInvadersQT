@@ -1,4 +1,7 @@
 #include "Ship.h"
+#include <QTimerEvent>
+#include <QTimer>
+#include <QGraphicsScene>
 
 namespace GameObjects {
 namespace Ships {
@@ -16,15 +19,11 @@ void Ship::shoot()
 void Ship::takeDamage(int amount)
 {
     m_currentHp -= amount;
-    if (m_currentHp < 0) {
-        m_currentHp = 0;
-        this->die();
-    }
 }
 
 void Ship::heal(int amount)
 {
-    if (this->isAlive())
+    if (this->isDestroyed())
     {
         m_currentHp += amount;
         if (m_currentHp > m_maxHp) {
@@ -33,9 +32,9 @@ void Ship::heal(int amount)
     }
 }
 
-bool Ship::isAlive()
+bool Ship::isDestroyed()
 {
-    return m_currentHp > 0;
+    return m_currentHp <= 0;
 }
 
 void Ship::updateFireRate(int amount)
@@ -79,26 +78,93 @@ void Ship::initializeDestructionAnimation()
     connect(this, &Ship::animationCompleted, this, &Ship::onAnimationCompleted);
 }
 
-void Ship::die()
-{
-    m_collidable = false;
-    this->clearMovementStrategy();
-    this->playOnDestructionAnimation();
-}
-
 void Ship::onAnimationCompleted()
 {
     m_destroyed = true;
 }
 
-void Ship::initialize()
+void Ship::playDestructionAnimation()
 {
+    if (m_onHitTimerId != -1) {
+        killTimer(m_onHitTimerId);
+        m_onHitTimerId = -1;
+    }
 
+    this->switchToPixmapItem();
+    m_frameIndex = 0;
+    QTimer *animationTimer = new QTimer();
+    connect(animationTimer, &QTimer::timeout, this, [this, animationTimer]() {
+        QGraphicsPixmapItem *pixmapItem = qgraphicsitem_cast<QGraphicsPixmapItem*>(m_graphicsItem);
+        if(pixmapItem && m_frameIndex < m_animationFrames.size()) {
+            pixmapItem->setPixmap(m_animationFrames[m_frameIndex]);
+            m_frameIndex++;
+        } else {
+            animationTimer->stop();
+            animationTimer->deleteLater();
+            emit animationCompleted();
+        }
+    });
+    animationTimer->start(50);
+}
+
+void Ship::playDestructionEffects()
+{
+    QPointF p(m_position.x(), m_position.y());
+    Effects::ParticleSystem *particleSystem = new Effects::ParticleSystem(p);
+    connect(particleSystem, &Effects::ParticleSystem::animationFinished, particleSystem, &QObject::deleteLater);
+    particleSystem->spawnParticles(50);
+    m_graphicsItem->scene()->addItem(particleSystem);
+    particleSystem->start();
 }
 
 bool Ship::shouldBeDeleted()
 {
     return m_destroyed;
+}
+
+void Ship::playOnHitAnimation()
+{
+    if (m_onHitAnimationInProgress)
+        return;
+
+    m_onHitAnimationInProgress = true;
+    QColor darkerColor = m_originalColor.darker(200);
+    static_cast<QGraphicsPolygonItem*>(m_graphicsItem)->setBrush(darkerColor);
+
+    m_onHitTimerId = startTimer(25);
+}
+
+void Ship::timerEvent(QTimerEvent *event) {
+    if (event->timerId() == m_onHitTimerId) {
+        static_cast<QGraphicsPolygonItem*>(m_graphicsItem)->setBrush(m_originalColor);
+        m_onHitAnimationInProgress = false;
+        killTimer(m_onHitTimerId);
+        m_onHitTimerId = -1;
+    }
+}
+
+void Ship::switchToPixmapItem() {
+    if (m_graphicsItem) {
+        QRectF rect = m_graphicsItem->boundingRect();
+
+        qreal halfWidth = rect.width() / 2;
+        qreal halfHeight = rect.height() / 2;
+
+        this->moveX(-halfWidth);
+        this->moveY(-halfHeight);
+
+        // Create a new QGraphicsPixmapItem
+        QGraphicsPixmapItem* pixmapItem = new QGraphicsPixmapItem();
+
+        // Replace the old m_graphicsItem with the new pixmap item
+        QGraphicsScene* scene = m_graphicsItem->scene();
+        scene->removeItem(m_graphicsItem);
+        delete m_graphicsItem;
+        m_graphicsItem = pixmapItem;
+        scene->addItem(m_graphicsItem);
+        QPointF p = pixmapItem->boundingRect().center();
+        pixmapItem->setTransformOriginPoint(p);
+    }
 }
 }
 } // namespace GameObjects
