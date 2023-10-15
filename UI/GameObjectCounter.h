@@ -5,15 +5,15 @@
 
 namespace UI {
 
-class GameObjectCounter : public QGraphicsTextItem
-{
-    Q_OBJECT
+class GameObjectCounter : public QGraphicsTextItem {
+  Q_OBJECT
 public:
-    explicit GameObjectCounter(QGraphicsItem *parent = nullptr);
+  explicit GameObjectCounter(QGraphicsItem *parent = nullptr);
 public slots:
-    void updateObjectCount(int amount);
+  void updateObjectCount(int amount);
+
 private:
-    int m_objectCount = 0;
+  int m_objectCount = 0;
 };
 
 } // namespace UI

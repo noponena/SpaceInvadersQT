@@ -3,24 +3,21 @@
 
 #include "Projectile.h"
 
-namespace GameObjects
-{
+namespace GameObjects {
 namespace Projectiles {
-class LaserBeam : public Projectile, public QGraphicsRectItem
-{
+class LaserBeam : public Projectile, public QGraphicsRectItem {
 public:
-    LaserBeam(Position position, float speed, Qt::GlobalColor color);
+  LaserBeam(Position position, float speed, Qt::GlobalColor color);
+
 private:
-    Qt::GlobalColor m_color;
+  Qt::GlobalColor m_color;
 
-    // GameObject interface
+  // GameObject interface
 protected:
-    void initializeGraphicsItem() override;
+  void initializeGraphicsItem() override;
 };
-}
+} // namespace Projectiles
 
-}
-
-
+} // namespace GameObjects
 
 #endif // LASERBEAM_H

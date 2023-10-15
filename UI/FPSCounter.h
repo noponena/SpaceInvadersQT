@@ -6,14 +6,13 @@
 namespace UI {
 
 class FPSCounter : public QGraphicsTextItem {
-    Q_OBJECT
+  Q_OBJECT
 
 public:
-    explicit FPSCounter(QGraphicsItem *parent = nullptr);
+  explicit FPSCounter(QGraphicsItem *parent = nullptr);
 
 public slots:
-    void updateFPS(int fps);
-
+  void updateFPS(int fps);
 };
 
 } // namespace UI

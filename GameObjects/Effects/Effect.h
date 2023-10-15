@@ -6,16 +6,15 @@
 namespace GameObjects {
 namespace Effects {
 
-
-class Effect: public QObject, public QGraphicsItem {
+class Effect : public QObject, public QGraphicsItem {
 public:
-    Effect(QPointF position)
-        :m_position(position) {};
+  Effect(QPointF position) : m_position(position){};
+
 protected:
-    QPointF m_position;
+  QPointF m_position;
 };
 
-}
-}
+} // namespace Effects
+} // namespace GameObjects
 
 #endif // EFFECT_H

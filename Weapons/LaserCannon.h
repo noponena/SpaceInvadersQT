@@ -5,15 +5,15 @@
 
 namespace Weapons {
 
-class LaserCannon : public Weapon
-{
+class LaserCannon : public Weapon {
 public:
-    LaserCannon(float cooldownMs,
-                Game::Movement::MovementStrategy movementStrategy);
+  LaserCannon(float cooldownMs,
+              Game::Movement::MovementStrategy movementStrategy);
 
-    // Weapon interface
+  // Weapon interface
 public:
-    std::shared_ptr<GameObjects::Projectiles::Projectile> createProjectile() override;
+  std::shared_ptr<GameObjects::Projectiles::Projectile>
+  createProjectile() override;
 };
 
 } // namespace Weapons
