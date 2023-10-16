@@ -38,6 +38,23 @@ void PlayerShip::initializeGraphicsItem() {
       1000, Game::Movement::VerticalMovementStrategy(500, -1)));
   this->updateGraphicsItemPosition();
 }
+
+QPointF PlayerShip::getPixmapScaledSize() const {
+  throw std::runtime_error("Not yet implemented!");
+}
+
+QString PlayerShip::getPixmapResourcePath() const {
+  throw std::runtime_error("Not yet implemented!");
+}
+
+QString PlayerShip::getOnHitPixmapResourcePath() const {
+  throw std::runtime_error("Not yet implemented!");
+}
+
+QPixmap PlayerShip::getPixmap() const {
+  static QPixmap pixmap = GameObject::getOnHitPixmap();
+  return pixmap;
+}
 } // namespace Ships
 
 } // namespace GameObjects

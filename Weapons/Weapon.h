@@ -23,7 +23,8 @@ public:
           this->createProjectile();
       projectile->initialize();
       QPointF ownerCenter = m_owner->getGraphicsItem()->boundingRect().center();
-      QPointF projectileCenter = projectile->getGraphicsItem()->boundingRect().center();
+      QPointF projectileCenter =
+          projectile->getGraphicsItem()->boundingRect().center();
       QPointF delta = projectileCenter - ownerCenter;
       float newX = projectile->getPosition().x() - delta.x();
       float newY = projectile->getPosition().y() - delta.y();

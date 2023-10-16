@@ -19,6 +19,11 @@ public:
   // GameObject interface
 protected:
   void initializeGraphicsItem() override;
+
+  QPointF getPixmapScaledSize() const override;
+  QString getPixmapResourcePath() const override;
+  QString getOnHitPixmapResourcePath() const override;
+  QPixmap getPixmap() const override;
 };
 } // namespace Ships
 

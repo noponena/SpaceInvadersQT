@@ -5,6 +5,7 @@
 #include "Position.h"
 #include <QGraphicsItem>
 #include <QObject>
+#include <stdexcept>
 #include <unordered_set>
 
 namespace GameObjects {
@@ -86,11 +87,23 @@ protected:
   virtual void playDestructionEffects(){};
   virtual QRectF getNonTransparentBoundingRect() { return QRectF(0, 0, 0, 0); };
   virtual bool isDestroyed() { return false; };
+
+  virtual QPointF getPixmapScaledSize() const = 0;
   inline void updateGraphicsItemPosition() {
     if (m_graphicsItem) {
       m_graphicsItem->setPos(m_position.pos);
     }
   }
+
+  virtual QString getPixmapResourcePath() const = 0;
+  virtual QString getOnHitPixmapResourcePath() const {
+    throw std::runtime_error("Function not implemented");
+  }
+  virtual QPixmap getPixmap() const;
+  virtual QPixmap getOnHitPixmap() const;
+
+  QPixmap loadPixmap(const QString &path) const;
+  QPixmap scalePixmap(QPixmap &pixmap) const;
 
 private:
   // Member Variables

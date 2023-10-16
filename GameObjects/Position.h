@@ -47,7 +47,7 @@ public:
   void goToBottomLimit() { pos.setY(bounds.bottom()); }
   void goToLeftLimit() { pos.setX(bounds.left()); }
   void goToRightLimit() { pos.setX(bounds.right()); }
-  void setPos(QPointF newPos) {pos = newPos;};
+  void setPos(QPointF newPos) { pos = newPos; };
 };
 
 } // namespace GameObjects

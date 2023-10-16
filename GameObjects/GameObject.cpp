@@ -123,6 +123,28 @@ QGraphicsItem *GameObject::getGraphicsItem() const { return m_graphicsItem; }
 
 void GameObject::clearMovementStrategy() { m_movementStrategy.clear(); }
 
+QPixmap GameObject::loadPixmap(const QString &path) const {
+  QPixmap pixmap = QPixmap(path);
+  return pixmap;
+}
+
+QPixmap GameObject::getPixmap() const {
+  QPixmap pixmap = this->loadPixmap(this->getPixmapResourcePath());
+  return this->scalePixmap(pixmap);
+}
+
+QPixmap GameObject::getOnHitPixmap() const {
+  QPixmap pixmap = this->loadPixmap(this->getOnHitPixmapResourcePath());
+  return this->scalePixmap(pixmap);
+}
+
+QPixmap GameObject::scalePixmap(QPixmap &pixmap) const {
+  QPointF size = this->getPixmapScaledSize();
+  pixmap = pixmap.scaled(size.x(), size.y(), Qt::KeepAspectRatio,
+                         Qt::SmoothTransformation);
+  return pixmap;
+}
+
 void GameObject::setMovementStrategy(
     const Game::Movement::MovementStrategy &newMovementStrategy) {
   m_movementStrategy = newMovementStrategy;

@@ -1,16 +1,16 @@
 #include "Ship.h"
+#include "Weapons/Weapon.h"
+#include <QGraphicsColorizeEffect>
 #include <QGraphicsScene>
 #include <QTimer>
 #include <QTimerEvent>
-#include <QGraphicsColorizeEffect>
-#include "Weapons/Weapon.h"
 
 namespace GameObjects {
 namespace Ships {
 Ship::Ship(const int maxHp, int speed, const Position &position)
     : GameObject(position, speed), m_maxHp(maxHp), m_speed(speed),
       m_destroyed(false) {
-    m_currentHp = maxHp;
+  m_currentHp = maxHp;
 }
 
 Ship::~Ship() = default;
@@ -91,11 +91,11 @@ void Ship::playDestructionAnimation() {
     }
   });
   animationTimer->start(50);
-//  QRectF rect = m_graphicsItem->boundingRect();
-//  qreal halfWidth = rect.width() / 2;
-//  qreal halfHeight = rect.height() / 2;
-//  this->moveX(halfWidth);
-//  this->moveY(halfHeight);
+  //  QRectF rect = m_graphicsItem->boundingRect();
+  //  qreal halfWidth = rect.width() / 2;
+  //  qreal halfHeight = rect.height() / 2;
+  //  this->moveX(halfWidth);
+  //  this->moveY(halfHeight);
 }
 
 void Ship::playDestructionEffects() {
