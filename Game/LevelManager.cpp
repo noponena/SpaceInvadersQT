@@ -25,7 +25,7 @@ void LevelManager::update() {
     // 2. Create a new enemy ship
     GameObjects::Position pos(randomX, y, minX, maxX, minY, maxY);
     std::shared_ptr<GameObjects::Ships::EnemyShip> enemyShip =
-        std::make_shared<GameObjects::Ships::EnemyShip>(10, 100, pos);
+        std::make_shared<GameObjects::Ships::EnemyShip>(3, 100, pos);
     enemyShip->initialize();
     enemyShip->setMovementStrategy(
         Game::Movement::VerticalMovementStrategy(100, 1));

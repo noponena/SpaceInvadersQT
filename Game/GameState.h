@@ -40,9 +40,9 @@ signals:
   void objectAdded(const std::shared_ptr<GameObjects::GameObject> &object);
 
 public slots:
-  void onProjectileShot(
-      const std::shared_ptr<GameObjects::Projectiles::Projectile> &projectile) {
-    this->addGameObject(projectile);
+  void onObjectCreated(
+      const std::shared_ptr<GameObjects::GameObject> &object) {
+    this->addGameObject(object);
   }
 };
 } // namespace Game

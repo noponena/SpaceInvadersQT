@@ -44,14 +44,11 @@ protected slots:
   void onAnimationCompleted();
 
 private:
-  void switchToPixmapItem();
   int m_frameIndex;
 
   void timerEvent(QTimerEvent *event) override;
 signals:
   void animationCompleted();
-  void
-  projectileShot(const std::shared_ptr<Projectiles::Projectile> &projectile);
 };
 } // namespace Ships
 

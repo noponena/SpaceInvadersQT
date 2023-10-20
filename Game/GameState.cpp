@@ -1,4 +1,5 @@
 #include "GameState.h"
+#include "Weapons/LaserCannon.h"
 #include <iostream>
 #include <sstream>
 
@@ -15,6 +16,8 @@ void GameState::initialize() {
 }
 
 void GameState::addGameObject(std::shared_ptr<GameObjects::GameObject> object) {
+  connect(object.get(), &GameObjects::GameObject::objectCreated,
+          this, &GameState::onObjectCreated);
   m_gameObjects.push_back(object);
   emit objectAdded(object);
 }
@@ -54,11 +57,9 @@ void GameState::initPlayerShip() {
       std::make_shared<GameObjects::Ships::PlayerShip>(
           100, m_playersShipStartSpeed, pos);
   playerShip->initialize();
+  playerShip->setWeapon(std::make_unique<Weapons::LaserCannon>(
+      1000, Game::Movement::VerticalMovementStrategy(500, -1)));
   m_playerShip = playerShip;
-
-  connect(playerShip.get(), &GameObjects::Ships::PlayerShip::projectileShot,
-          this, &GameState::onProjectileShot);
-
   this->addGameObject(std::move(playerShip));
 }
 

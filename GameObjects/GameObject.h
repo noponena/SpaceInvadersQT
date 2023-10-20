@@ -80,7 +80,6 @@ protected:
 
   // Protected Helpers & Methods
   void clearMovementStrategy();
-  virtual void initializeGraphicsItem() = 0;
   virtual void initializeDestructionAnimation(){};
   virtual void initializeDestructionEffects(){};
   virtual void playDestructionAnimation(){};
@@ -122,8 +121,12 @@ private:
   inline void clampToXYBounds();
   inline void doMoveX(float amount);
   inline void doMoveY(float amount);
+  void initializeGraphicsItem();
   void applyMovementStrategy(float deltaTimeInSeconds);
   void initiateDestructionProcedure();
+
+signals:
+  void objectCreated(const std::shared_ptr<GameObjects::GameObject> &object);
 };
 
 } // namespace GameObjects

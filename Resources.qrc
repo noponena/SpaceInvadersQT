@@ -4,5 +4,6 @@
         <file>Images/alien.png</file>
         <file>Images/alien_on_hit.png</file>
         <file>Images/player_laser_projectile.png</file>
+        <file>Images/player_ship.png</file>
     </qresource>
 </RCC>

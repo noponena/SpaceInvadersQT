@@ -9,13 +9,6 @@ class LaserBeam : public Projectile, public QGraphicsRectItem {
 public:
   LaserBeam(Position position, float speed, Qt::GlobalColor color);
 
-private:
-  Qt::GlobalColor m_color;
-
-  // GameObject interface
-protected:
-  void initializeGraphicsItem() override;
-
   // QGraphicsItem interface
 public:
   QRectF boundingRect() const override;
@@ -23,12 +16,12 @@ public:
   // GameObject interface
 protected:
   QRectF getNonTransparentBoundingRect() override;
-
-  // GameObject interface
-protected:
   QPointF getPixmapScaledSize() const override;
   QString getPixmapResourcePath() const override;
   QPixmap getPixmap() const override;
+
+private:
+  Qt::GlobalColor m_color;
 };
 } // namespace Projectiles
 

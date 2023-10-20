@@ -18,9 +18,6 @@ public:
 
   // GameObject interface
 protected:
-  void initializeGraphicsItem() override;
-
-protected:
   void playOnHitAnimation() override;
   void timerEvent(QTimerEvent *event) override;
   QRectF getNonTransparentBoundingRect() override;

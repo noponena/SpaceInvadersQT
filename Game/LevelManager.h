@@ -5,7 +5,8 @@
 #include "GameState.h"
 
 namespace Game {
-class LevelManager {
+class LevelManager : public QObject {
+    Q_OBJECT
 public:
   LevelManager(GameState &gameState);
   void update();

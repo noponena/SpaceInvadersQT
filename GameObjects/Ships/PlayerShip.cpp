@@ -17,38 +17,14 @@ void PlayerShip::collideWithProjectile(Projectiles::Projectile &projectile) {
   Q_UNUSED(projectile)
 }
 
-void PlayerShip::initializeGraphicsItem() {
-  // Create a new QGraphicsPolygonItem
-  QGraphicsPolygonItem *polygonItem = new QGraphicsPolygonItem();
-
-  // Set the color and pen properties
-  polygonItem->setBrush(Qt::cyan);
-  polygonItem->setPen(Qt::NoPen);
-  polygonItem->setPen(QPen(Qt::black));
-
-  // Create a QPolygon to represent the triangle and set it to the
-  // QGraphicsPolygonItem
-  QPolygon triangle;
-  triangle << QPoint(0, -10) << QPoint(-5, 10) << QPoint(5, 10);
-  polygonItem->setPolygon(triangle);
-
-  // Assign the polygonItem to m_graphicsItem
-  m_graphicsItem = polygonItem;
-  this->setWeapon(std::make_unique<Weapons::LaserCannon>(
-      1000, Game::Movement::VerticalMovementStrategy(500, -1)));
-  this->updateGraphicsItemPosition();
-}
-
-QPointF PlayerShip::getPixmapScaledSize() const {
-  throw std::runtime_error("Not yet implemented!");
-}
+QPointF PlayerShip::getPixmapScaledSize() const { return QPointF(50.0, 75.0); }
 
 QString PlayerShip::getPixmapResourcePath() const {
-  throw std::runtime_error("Not yet implemented!");
+  return QString(":/Images/player_ship.png");
 }
 
 QString PlayerShip::getOnHitPixmapResourcePath() const {
-  throw std::runtime_error("Not yet implemented!");
+  return QString(":/Images/player_ship.png");
 }
 
 QPixmap PlayerShip::getPixmap() const {

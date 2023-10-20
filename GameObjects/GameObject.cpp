@@ -195,6 +195,17 @@ bool GameObject::isCollidingWith(const GameObject &other) const {
   return this->getGraphicsItem()->collidesWithItem(other.getGraphicsItem());
 }
 
+void GameObject::initializeGraphicsItem() {
+  // Load the pixmap
+  QPixmap pixmap = getPixmap();
+
+  // Create graphics item for the PNG image
+  QGraphicsPixmapItem *pixmapItem = new QGraphicsPixmapItem(pixmap);
+
+  // Assign the pixmapItem to m_graphicsItem
+  m_graphicsItem = pixmapItem;
+}
+
 bool GameObject::isAtLimit() const { return m_position.isBeyondAnyLimit(); }
 
 Position &GameObject::getPosition() { return m_position; }

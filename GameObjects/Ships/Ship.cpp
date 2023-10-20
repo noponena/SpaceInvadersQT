@@ -41,7 +41,7 @@ void Ship::setWeapon(std::unique_ptr<Weapons::Weapon> newWeapon) {
   QObject::connect(
       m_weapon.get(), &Weapons::Weapon::projectileShot, this,
       [this](const std::shared_ptr<GameObjects::Projectiles::Projectile>
-                 &projectile) { emit this->projectileShot(projectile); });
+                 &projectile) { emit this->objectCreated(projectile); });
 }
 
 void Ship::initializeDestructionAnimation() {
@@ -91,11 +91,6 @@ void Ship::playDestructionAnimation() {
     }
   });
   animationTimer->start(50);
-  //  QRectF rect = m_graphicsItem->boundingRect();
-  //  qreal halfWidth = rect.width() / 2;
-  //  qreal halfHeight = rect.height() / 2;
-  //  this->moveX(halfWidth);
-  //  this->moveY(halfHeight);
 }
 
 void Ship::playDestructionEffects() {
@@ -107,7 +102,7 @@ void Ship::playDestructionEffects() {
   Effects::ParticleSystem *particleSystem = new Effects::ParticleSystem(p);
   connect(particleSystem, &Effects::ParticleSystem::animationFinished,
           particleSystem, &QObject::deleteLater);
-  particleSystem->spawnParticles(50);
+  particleSystem->spawnParticles(1000);
   m_graphicsItem->scene()->addItem(particleSystem);
   particleSystem->start();
 }
@@ -132,30 +127,6 @@ void Ship::timerEvent(QTimerEvent *event) {
     m_onHitAnimationInProgress = false;
     killTimer(m_onHitTimerId);
     m_onHitTimerId = -1;
-  }
-}
-
-void Ship::switchToPixmapItem() {
-  if (m_graphicsItem) {
-    QRectF rect = m_graphicsItem->boundingRect();
-
-    qreal halfWidth = rect.width() / 2;
-    qreal halfHeight = rect.height() / 2;
-
-    this->moveX(-halfWidth);
-    this->moveY(-halfHeight);
-
-    // Create a new QGraphicsPixmapItem
-    QGraphicsPixmapItem *pixmapItem = new QGraphicsPixmapItem();
-
-    // Replace the old m_graphicsItem with the new pixmap item
-    QGraphicsScene *scene = m_graphicsItem->scene();
-    scene->removeItem(m_graphicsItem);
-    delete m_graphicsItem;
-    m_graphicsItem = pixmapItem;
-    scene->addItem(m_graphicsItem);
-    QPointF p = pixmapItem->boundingRect().center();
-    pixmapItem->setTransformOriginPoint(p);
   }
 }
 } // namespace Ships

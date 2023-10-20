@@ -11,21 +11,6 @@ namespace Ships {
 EnemyShip::EnemyShip(const int maxHp, int speed, const Position &position)
     : Ship(maxHp, speed, position) {}
 
-void EnemyShip::initializeGraphicsItem() {
-  QPixmap pixmap = getPixmap();
-
-  // Create graphics item for the PNG image
-  QGraphicsPixmapItem *pixmapItem = new QGraphicsPixmapItem(pixmap);
-
-  // Assign the pixmapItem to m_graphicsItem
-  m_graphicsItem = pixmapItem;
-  m_nonTransparentBoundingRect = this->getNonTransparentBoundingRect();
-  // There's no direct color for a QPixmap, but you can get a color using other
-  // methods if required. The following line might not be applicable for a
-  // pixmap: m_originalColor = static_cast<QGraphicsPolygonItem
-  // *>(m_graphicsItem)->brush().color();
-}
-
 void EnemyShip::playOnHitAnimation() {
   if (m_onHitAnimationInProgress)
     return;

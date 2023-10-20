@@ -6,22 +6,6 @@ namespace Projectiles {
 LaserBeam::LaserBeam(Position position, float speed, Qt::GlobalColor color)
     : Projectile(position, speed), m_color(color) {}
 
-void LaserBeam::initializeGraphicsItem() {
-  //  QGraphicsRectItem *rectItem = new QGraphicsRectItem();
-  //  rectItem->setRect(0, 0, 2, 10);
-  //  rectItem->setBrush(m_color);
-  //  rectItem->setPen(Qt::NoPen);
-  //  m_graphicsItem = rectItem;
-  QPixmap pixmap = getPixmap();
-
-  // Create graphics item for the PNG image
-  QGraphicsPixmapItem *pixmapItem = new QGraphicsPixmapItem(pixmap);
-
-  // Assign the pixmapItem to m_graphicsItem
-  m_graphicsItem = pixmapItem;
-  m_nonTransparentBoundingRect = getNonTransparentBoundingRect();
-}
-
 QRectF LaserBeam::boundingRect() const { return m_nonTransparentBoundingRect; }
 
 QRectF LaserBeam::getNonTransparentBoundingRect() {
