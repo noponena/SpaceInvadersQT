@@ -82,7 +82,7 @@ protected:
   QGraphicsItem *m_graphicsItem;
   bool m_hasCollided;
   bool m_collidable;
-  QRectF m_nonTransparentBoundingRect;
+  std::unordered_set<int> m_collisions;
 
   // Protected Helpers & Methods
   void clearMovementStrategy();
@@ -90,7 +90,7 @@ protected:
   virtual void initializeDestructionEffects(){};
   virtual void playDestructionAnimation(){};
   virtual void playDestructionEffects(){};
-  virtual QRectF getNonTransparentBoundingRect() { return QRectF(0, 0, 0, 0); };
+  virtual void initiateDestructionProcedure();
   virtual bool isDestroyed() { return false; };
 
   virtual QPointF getPixmapScaledSize() const = 0;
@@ -119,7 +119,6 @@ private:
   bool m_destructionInitiated;
   Game::Movement::MovementStrategy m_movementStrategy;
   static long long unsigned counter;
-  std::unordered_set<int> m_collisions;
 
   // Private Helpers & Methods
   inline void clampToXBounds();
@@ -129,7 +128,6 @@ private:
   inline void doMoveY(float amount);
   void initializeGraphicsItem();
   void applyMovementStrategy(float deltaTimeInSeconds);
-  void initiateDestructionProcedure();
 
 signals:
   void objectCreated(const std::shared_ptr<GameObjects::GameObject> &object);

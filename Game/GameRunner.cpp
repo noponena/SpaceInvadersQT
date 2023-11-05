@@ -1,5 +1,6 @@
 #include "GameRunner.h"
 #include "GameObjects/Ships/PlayerShip.h"
+#include "GameObjects/Collectables/StellarPool.h"
 #include "UI/FPSCounter.h"
 #include "UI/GameObjectCounter.h"
 #include <QOpenGLWidget>
@@ -55,6 +56,7 @@ void GameRunner::setupConnections() {
 void GameRunner::startGame() {
   // Initialize game state
   qDebug() << "starting game..";
+  //GameObjects::Collectables::StellarPool::initializePool(10);
   m_gameState.setSize(this->scene()->sceneRect().width(),
                       this->scene()->sceneRect().height());
   m_gameState.initialize();
@@ -75,7 +77,7 @@ void GameRunner::startGame() {
 void GameRunner::gameLoop() {
   float deltaTimeInSeconds =
       static_cast<float>(m_elapsedTimer.restart()) / 1000.0f;
-  //m_levelManager->update();
+  m_levelManager->update();
   this->processInput(deltaTimeInSeconds);
   this->updateGameState(deltaTimeInSeconds);
   m_collisionDetector->detectQuadTree();

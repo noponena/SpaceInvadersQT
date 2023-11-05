@@ -59,7 +59,7 @@ void GameState::initPlayerShip() {
           100, m_playersShipStartSpeed, pos);
   playerShip->initialize();
   playerShip->setWeapon(std::make_unique<Weapons::LaserCannon>(
-      1000, Game::Movement::VerticalMovementStrategy(50, -1)));
+      1000, Game::Movement::VerticalMovementStrategy(500, -1)));
   m_playerShip = playerShip;
   this->addGameObject(std::move(playerShip));
 }

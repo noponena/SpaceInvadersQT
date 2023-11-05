@@ -41,7 +41,7 @@ void CollisionDetector::detectQuadTree() {
     }
 
     checkedPairs.clear();
-    std::cout << "Collision checks performed: " << collisionCheckCount << std::endl;
+    //std::cout << "Collision checks performed: " << collisionCheckCount << std::endl;
 }
 
 void CollisionDetector::detect()
@@ -60,7 +60,7 @@ void CollisionDetector::detect()
     }
 
     // Output the number of collision checks performed.
-    std::cout << "Collision checks performed: " << collisionCheckCount << std::endl;
+    //std::cout << "Collision checks performed: " << collisionCheckCount << std::endl;
 }
 
 

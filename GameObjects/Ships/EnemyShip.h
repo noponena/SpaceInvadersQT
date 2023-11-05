@@ -3,6 +3,7 @@
 
 #include "GameObjects/Projectiles/LaserBeam.h"
 #include "GameObjects/Projectiles/Projectile.h"
+#include "GameObjects/Collectables/Stellar.h"
 #include "Ship.h"
 
 namespace GameObjects {
@@ -20,8 +21,6 @@ public:
 protected:
   void playOnHitAnimation() override;
   void timerEvent(QTimerEvent *event) override;
-  QRectF getNonTransparentBoundingRect() override;
-  QRectF boundingRect() const override;
 
   // GameObject interface
 protected:
@@ -30,6 +29,8 @@ protected:
   QString getOnHitPixmapResourcePath() const override;
   QPixmap getPixmap() const override;
   QPixmap getOnHitPixmap() const override;
+  void initiateDestructionProcedure() override;
+  virtual void spawnCollectables(int amount);
 };
 } // namespace Ships
 

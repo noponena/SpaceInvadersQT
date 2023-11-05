@@ -1,5 +1,6 @@
 #include "EnemyShip.h"
 #include "GameObjects/Effects/ParticleSystem.h"
+#include "GameObjects/Collectables/StellarPool.h"
 #include <QColor>
 #include <QGraphicsScene>
 #include <QPen>
@@ -10,6 +11,22 @@ namespace GameObjects {
 namespace Ships {
 EnemyShip::EnemyShip(const int maxHp, int speed, const Position &position)
     : Ship(maxHp, speed, position) {}
+
+void EnemyShip::initiateDestructionProcedure() {
+    GameObject::initiateDestructionProcedure();
+    this->spawnCollectables(3);
+}
+
+void EnemyShip::spawnCollectables(int amount)
+{
+    QPointF center = this->getBoundingBox().center();
+    GameObjects::Position position(center.x(), center.y());
+    for (int i = 0; i < amount; i++) {
+        std::shared_ptr<GameObjects::Collectables::Stellar> stellar = std::make_shared<GameObjects::Collectables::Stellar>(position);
+        stellar->initialize();
+        emit objectCreated(stellar);
+    }
+}
 
 void EnemyShip::playOnHitAnimation() {
   if (m_onHitAnimationInProgress)
@@ -53,8 +70,6 @@ bool EnemyShip::shouldBeDeleted() {
   return m_destroyed || m_position.isBeyondScreenBottomLimit(30);
 }
 
-QRectF EnemyShip::boundingRect() const { return m_nonTransparentBoundingRect; }
-
 QPointF EnemyShip::getPixmapScaledSize() const { return QPointF(50.0, 75.0); }
 
 QString EnemyShip::getPixmapResourcePath() const {
@@ -75,38 +90,6 @@ QPixmap EnemyShip::getOnHitPixmap() const {
   return pixmap;
 }
 
-QRectF EnemyShip::getNonTransparentBoundingRect() {
-  int minX = getPixmap().width();
-  int minY = getPixmap().height();
-  int maxX = 0;
-  int maxY = 0;
-  bool foundNonTransparent = false;
-
-  QImage image = getPixmap().toImage();
-
-  for (int y = 0; y < image.height(); ++y) {
-    for (int x = 0; x < image.width(); ++x) {
-      QColor pixelColor = image.pixelColor(x, y);
-      if (pixelColor.alpha() > 0) { // or another threshold if needed
-        foundNonTransparent = true;
-        if (x < minX)
-          minX = x;
-        if (x > maxX)
-          maxX = x;
-        if (y < minY)
-          minY = y;
-        if (y > maxY)
-          maxY = y;
-      }
-    }
-  }
-
-  if (foundNonTransparent) {
-    return QRectF(minX, minY, maxX - minX + 1, maxY - minY + 1);
-  } else {
-    return QRectF();
-  }
-}
 } // namespace Ships
 
 } // namespace GameObjects

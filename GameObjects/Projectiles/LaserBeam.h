@@ -9,13 +9,8 @@ class LaserBeam : public Projectile, public QGraphicsRectItem {
 public:
   LaserBeam(Position position, float speed, Qt::GlobalColor color);
 
-  // QGraphicsItem interface
-public:
-  QRectF boundingRect() const override;
-
   // GameObject interface
 protected:
-  QRectF getNonTransparentBoundingRect() override;
   QPointF getPixmapScaledSize() const override;
   QString getPixmapResourcePath() const override;
   QPixmap getPixmap() const override;
