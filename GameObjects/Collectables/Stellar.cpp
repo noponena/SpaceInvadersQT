@@ -22,6 +22,11 @@ QPixmap Stellar::getPixmap() const {
     return pixmap;
 }
 
+void Stellar::collideWith(GameObject &other)
+{
+    other.collideWithStellarToken(*this);
+}
+
 }
 }
 

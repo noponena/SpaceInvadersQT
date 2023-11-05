@@ -15,6 +15,7 @@ public:
 public:
   void collideWith(GameObject &other) override;
   void collideWithProjectile(Projectiles::Projectile &projectile) override;
+  void collideWithStellarToken(Collectables::Stellar &stellarToken) override;
 
   // GameObject interface
 protected:
@@ -22,6 +23,8 @@ protected:
   QString getPixmapResourcePath() const override;
   QString getOnHitPixmapResourcePath() const override;
   QPixmap getPixmap() const override;
+signals:
+  void stellarTokenCollected();
 };
 } // namespace Ships
 

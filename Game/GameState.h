@@ -26,8 +26,11 @@ public:
 
   int m_minX, m_minY, m_maxX, m_maxY, m_windowWidth, m_windowHeight;
 
+  const unsigned &stellarTokens() const;
+
 private:
   std::list<std::shared_ptr<GameObjects::GameObject>> m_gameObjects;
+  unsigned m_stellarTokens;
   float m_playersShipStartSpeed;
   void initPlayerShip();
   void initMovementConstrains();
@@ -43,6 +46,9 @@ public slots:
   void onObjectCreated(
       const std::shared_ptr<GameObjects::GameObject> &object) {
     this->addGameObject(object);
+  }
+  void onStellarTokenCollected() {
+    m_stellarTokens++;
   }
 };
 } // namespace Game

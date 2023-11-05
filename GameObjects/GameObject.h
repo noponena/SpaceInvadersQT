@@ -17,6 +17,14 @@ namespace Ships {
 class EnemyShip;
 class PlayerShip;
 } // namespace Ships
+namespace Collectables {
+class Stellar;
+}
+
+struct UpdateContext {
+    float deltaTimeInSeconds;
+    QPointF playerPosition;
+};
 
 class GameObject : public QObject {
   Q_OBJECT
@@ -31,19 +39,22 @@ public:
   virtual bool shouldBeDeleted() = 0;
 
   // Collision Handlers
-  virtual void collideWith(GameObject &other) { (void)other; }
+  virtual void collideWith(GameObject &other) { Q_UNUSED(other); }
   virtual void collideWithProjectile(Projectiles::Projectile &projectile) {
-    (void)projectile;
+    Q_UNUSED(projectile);
   }
   virtual void collideWithEnemyShip(Ships::EnemyShip &enemyShip) {
-    (void)enemyShip;
+    Q_UNUSED(enemyShip);
   }
   virtual void collideWithPlayerShip(Ships::PlayerShip &playerShip) {
-    (void)playerShip;
+    Q_UNUSED(playerShip);
+  }
+  virtual void collideWithStellarToken(Collectables::Stellar &stellarToken) {
+    Q_UNUSED(stellarToken);
   }
 
   // Update & Movement
-  virtual void update(float deltaTimeInSeconds);
+  virtual void update(UpdateContext context);
   void moveX(float amount);
   void moveY(float amount);
   void accelerateLeft(float deltaTimeInSeconds);
@@ -57,6 +68,7 @@ public:
 
   // Getters & Setters
   Position getPosition() const;
+  QPointF getCenterPosition() const;
   void setPosition(Position newPosition);
   QGraphicsItem *getGraphicsItem() const;
   bool isCollidable() const;

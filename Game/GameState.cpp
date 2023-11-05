@@ -12,6 +12,7 @@ GameState::GameState(QObject *parent) : QObject(parent) {
 void GameState::initialize() {
   this->initMovementConstrains();
   this->initPlayerShip();
+  m_stellarTokens = 0;
 //  for (int i = 0; i < 1; i++)
 //    this->initEnemyShips();
 }
@@ -34,9 +35,10 @@ void GameState::setSize(int width, int height) {
 }
 
 void GameState::update(float deltaTimeInSeconds) {
+  GameObjects::UpdateContext context{ deltaTimeInSeconds, m_playerShip->getCenterPosition() };
   auto it = m_gameObjects.begin();
   while (it != m_gameObjects.end()) {
-    (*it)->update(deltaTimeInSeconds);
+    (*it)->update(context);
     if ((*it)->shouldBeDeleted()) {
       emit objectDeleted(*it);
       it = m_gameObjects.erase(it);
@@ -61,6 +63,8 @@ void GameState::initPlayerShip() {
   playerShip->setWeapon(std::make_unique<Weapons::LaserCannon>(
       1000, Game::Movement::VerticalMovementStrategy(500, -1)));
   m_playerShip = playerShip;
+  connect(m_playerShip.get(), &GameObjects::Ships::PlayerShip::stellarTokenCollected,
+          this, &GameState::onStellarTokenCollected);
   this->addGameObject(std::move(playerShip));
 }
 
@@ -95,6 +99,11 @@ void GameState::initMovementConstrains() {
 
 const std::shared_ptr<GameObjects::Ships::PlayerShip> &
 GameState::playerShip() const {
-  return m_playerShip;
+    return m_playerShip;
+}
+
+const unsigned &GameState::stellarTokens() const
+{
+    return m_stellarTokens;
 }
 } // namespace Game

@@ -17,10 +17,10 @@ void GameObject::initialize() {
   this->initializeDestructionEffects();
 }
 
-void GameObject::update(float deltaTimeInSeconds) {
+void GameObject::update(UpdateContext context) {
   if (this->isDestroyed() && !m_destructionInitiated)
     this->initiateDestructionProcedure();
-  this->applyMovementStrategy(deltaTimeInSeconds);
+  this->applyMovementStrategy(context.deltaTimeInSeconds);
   this->updateGraphicsItemPosition();
 }
 
@@ -204,6 +204,12 @@ void GameObject::initializeGraphicsItem() {
 bool GameObject::isAtLimit() const { return m_position.isBeyondAnyLimit(); }
 
 Position GameObject::getPosition() const { return m_position; }
+
+QPointF GameObject::getCenterPosition() const
+{
+    QRectF sceneRect = this->getBoundingBox();
+    return sceneRect.center();
+}
 
 void GameObject::setPosition(Position newPosition)
 {

@@ -14,7 +14,13 @@ void PlayerShip::collideWith(GameObject &other) {
 }
 
 void PlayerShip::collideWithProjectile(Projectiles::Projectile &projectile) {
-  Q_UNUSED(projectile)
+    Q_UNUSED(projectile)
+}
+
+void PlayerShip::collideWithStellarToken(Collectables::Stellar &stellarToken)
+{
+    Q_UNUSED(stellarToken);
+    emit stellarTokenCollected();
 }
 
 QPointF PlayerShip::getPixmapScaledSize() const { return QPointF(50.0, 75.0); }

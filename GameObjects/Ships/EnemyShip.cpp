@@ -24,6 +24,7 @@ void EnemyShip::spawnCollectables(int amount)
     for (int i = 0; i < amount; i++) {
         std::shared_ptr<GameObjects::Collectables::Stellar> stellar = std::make_shared<GameObjects::Collectables::Stellar>(position);
         stellar->initialize();
+        stellar->activateMagneticEffect();
         emit objectCreated(stellar);
     }
 }

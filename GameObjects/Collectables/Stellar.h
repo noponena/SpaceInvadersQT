@@ -18,6 +18,10 @@ protected:
     QPointF getPixmapScaledSize() const override;
     QString getPixmapResourcePath() const override;
     QPixmap getPixmap() const override;
+
+    // GameObject interface
+public:
+    void collideWith(GameObject &other) override;
 };
 }
 

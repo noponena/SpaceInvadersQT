@@ -8,6 +8,7 @@
 #include <QGraphicsView>
 #include <QKeyEvent>
 #include <QWheelEvent>
+#include <QLabel>
 
 namespace Game {
 class GameRunner : public QGraphicsView {
@@ -31,6 +32,7 @@ private:
   QSet<int> m_pressedKeys;
   QGraphicsScene m_scene;
   int m_frameCount = 0;
+  QGraphicsTextItem* m_stellarTokens;
 
   void setupView();
   void setupCounters();

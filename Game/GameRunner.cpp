@@ -33,10 +33,16 @@ void GameRunner::setupView() {
 void GameRunner::setupCounters() {
   UI::FPSCounter *fpsCounter = new UI::FPSCounter();
   UI::GameObjectCounter *gameObjectCounter = new UI::GameObjectCounter();
+  m_stellarTokens = new QGraphicsTextItem();
+  m_stellarTokens->setPlainText("Stellar tokens: 0");
+  m_stellarTokens->setDefaultTextColor(Qt::white);
+  m_stellarTokens->setFont(QFont("times", 12));
   fpsCounter->setPos(0, 0);
   gameObjectCounter->setPos(0, fpsCounter->boundingRect().height() - 10);
+  m_stellarTokens->setPos(0, gameObjectCounter->boundingRect().height() - 10 + 20);
   scene()->addItem(fpsCounter);
   scene()->addItem(gameObjectCounter);
+  scene()->addItem(m_stellarTokens);
 
   connect(&m_gameState, &GameState::objectAdded, this,
           [=]() { gameObjectCounter->updateObjectCount(1); });
@@ -82,6 +88,7 @@ void GameRunner::gameLoop() {
   this->updateGameState(deltaTimeInSeconds);
   m_collisionDetector->detectQuadTree();
   this->updateFps();
+  m_stellarTokens->setPlainText("Stellar tokens: " + QString::number(m_gameState.stellarTokens()));
 }
 
 void GameRunner::processInput(float deltaTime) {
