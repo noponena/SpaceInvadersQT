@@ -3,6 +3,7 @@
 
 #include "GameState.h"
 #include "LevelManager.h"
+#include "CollisionDetection/CollisionDetector.h"
 #include <QElapsedTimer>
 #include <QGraphicsView>
 #include <QKeyEvent>
@@ -23,6 +24,7 @@ protected:
 private:
   std::unique_ptr<LevelManager> m_levelManager;
   std::shared_ptr<GameObjects::Ships::PlayerShip> m_playerShip;
+  CollisionDetector *m_collisionDetector;
   QElapsedTimer m_elapsedTimer;
   QElapsedTimer m_fpsTimer;
   Game::GameState m_gameState;
@@ -38,7 +40,6 @@ private:
   inline void processInput(float deltaTime);
   inline void updateGameState(float deltaTime);
   inline void updateFps();
-  inline void detectCollisions();
 
   const std::list<std::shared_ptr<GameObjects::GameObject>> *m_gameObjects;
 
@@ -79,11 +80,6 @@ public slots:
   }
   void onObjectDeleted(const std::shared_ptr<GameObjects::GameObject> &object) {
     m_scene.removeItem(object->getGraphicsItem());
-  }
-  void
-  onCollisionDetected(const std::shared_ptr<GameObjects::GameObject> &obj1,
-                      const std::shared_ptr<GameObjects::GameObject> &obj2) {
-    obj1->collide(*obj2);
   }
 };
 } // namespace Game

@@ -12,7 +12,8 @@ GameState::GameState(QObject *parent) : QObject(parent) {
 void GameState::initialize() {
   this->initMovementConstrains();
   this->initPlayerShip();
-  // this->initEnemyShips();
+//  for (int i = 0; i < 1; i++)
+//    this->initEnemyShips();
 }
 
 void GameState::addGameObject(std::shared_ptr<GameObjects::GameObject> object) {
@@ -58,7 +59,7 @@ void GameState::initPlayerShip() {
           100, m_playersShipStartSpeed, pos);
   playerShip->initialize();
   playerShip->setWeapon(std::make_unique<Weapons::LaserCannon>(
-      1000, Game::Movement::VerticalMovementStrategy(500, -1)));
+      1000, Game::Movement::VerticalMovementStrategy(50, -1)));
   m_playerShip = playerShip;
   this->addGameObject(std::move(playerShip));
 }
@@ -73,7 +74,7 @@ void GameState::initEnemyShips() {
   qDebug() << "Initializing" << rows * cols << "enemy ships.";
   for (int j = 1; j <= rows; j++) {
     for (int i = 1; i <= cols; i++) {
-      GameObjects::Position pos(m_minX + i * xSpacing, m_minY + j * ySpacing,
+      GameObjects::Position pos(m_minX + i * xSpacing - 500, m_minY + j * ySpacing + 500,
                                 m_minX, m_maxX, m_minY, m_maxY);
       std::shared_ptr<GameObjects::Ships::EnemyShip> enemyShip =
           std::make_shared<GameObjects::Ships::EnemyShip>(10, 100, pos);
@@ -86,10 +87,10 @@ void GameState::initEnemyShips() {
 }
 
 void GameState::initMovementConstrains() {
-  m_minX = 5;
-  m_maxX = m_windowWidth - 25;
-  m_minY = 5;
-  m_maxY = m_windowHeight - 50;
+  m_minX = 0;
+  m_maxX = m_windowWidth - 70;
+  m_minY = 0;
+  m_maxY = m_windowHeight - 85;
 }
 
 const std::shared_ptr<GameObjects::Ships::PlayerShip> &

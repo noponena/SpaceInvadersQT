@@ -9,3 +9,4 @@ SOURCES += \
     $$PWD/LevelManager.cpp
 
 include(Movement/Movement.pri)
+include(CollisionDetection/CollisionDetection.pri)

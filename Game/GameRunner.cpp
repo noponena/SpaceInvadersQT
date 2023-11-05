@@ -61,6 +61,7 @@ void GameRunner::startGame() {
   m_playerShip = m_gameState.playerShip();
   m_gameObjects = &(m_gameState.gameObjects());
   m_levelManager = std::make_unique<LevelManager>(m_gameState);
+  m_collisionDetector = new CollisionDetector(m_gameState.gameObjects());
 
   // Create and start game loop timer
   QTimer *timer = new QTimer(this);
@@ -74,10 +75,10 @@ void GameRunner::startGame() {
 void GameRunner::gameLoop() {
   float deltaTimeInSeconds =
       static_cast<float>(m_elapsedTimer.restart()) / 1000.0f;
-  m_levelManager->update();
+  //m_levelManager->update();
   this->processInput(deltaTimeInSeconds);
   this->updateGameState(deltaTimeInSeconds);
-  this->detectCollisions();
+  m_collisionDetector->detectQuadTree();
   this->updateFps();
 }
 
@@ -115,16 +116,6 @@ void GameRunner::updateFps() {
     emit fpsUpdated(m_frameCount);
     m_frameCount = 0;
     m_fpsTimer.restart();
-  }
-}
-
-void GameRunner::detectCollisions() {
-  for (auto it1 = m_gameObjects->begin(); it1 != m_gameObjects->end(); ++it1) {
-    for (auto it2 = std::next(it1); it2 != m_gameObjects->end(); ++it2) {
-      if ((*it1)->isCollidingWith(**it2)) {
-        (*it1)->collide(**it2);
-      }
-    }
   }
 }
 

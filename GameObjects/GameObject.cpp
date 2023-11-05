@@ -4,7 +4,7 @@
 
 namespace GameObjects {
 
-int GameObject::counter = 0;
+long long unsigned GameObject::counter = 0;
 
 GameObject::GameObject(const Position &position, float speed)
     : m_position(position), m_speed(speed), m_hasCollided(false),
@@ -150,7 +150,7 @@ void GameObject::setMovementStrategy(
   m_movementStrategy = newMovementStrategy;
 }
 
-int GameObject::id() { return m_id; }
+long long unsigned GameObject::id() { return m_id; }
 
 void GameObject::clampToXBounds() {
   if (m_position.isBeyondScreenRightLimit())
@@ -201,6 +201,9 @@ void GameObject::initializeGraphicsItem() {
 
   // Create graphics item for the PNG image
   QGraphicsPixmapItem *pixmapItem = new QGraphicsPixmapItem(pixmap);
+//  pixmapItem->setTransformOriginPoint(pixmapItem->boundingRect().center());
+//  pixmapItem->setRotation(90);
+
 
   // Assign the pixmapItem to m_graphicsItem
   m_graphicsItem = pixmapItem;
@@ -208,6 +211,11 @@ void GameObject::initializeGraphicsItem() {
 
 bool GameObject::isAtLimit() const { return m_position.isBeyondAnyLimit(); }
 
-Position &GameObject::getPosition() { return m_position; }
+Position GameObject::getPosition() const { return m_position; }
+
+void GameObject::setPosition(Position newPosition)
+{
+    m_position = newPosition;
+}
 
 } // namespace GameObjects

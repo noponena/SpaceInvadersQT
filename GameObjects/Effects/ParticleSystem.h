@@ -12,7 +12,6 @@ class ParticleSystem : public Effect {
 public:
   ParticleSystem(QPointF position);
   void update();
-  void draw(QPainter &painter);
   void spawnParticles(int count, QColor color = nullptr,
                       int lifespanFrames = 60);
   void start();

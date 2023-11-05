@@ -28,7 +28,9 @@ public:
       QPointF delta = projectileCenter - ownerCenter;
       float newX = projectile->getPosition().x() - delta.x();
       float newY = projectile->getPosition().y() - delta.y();
-      projectile->getPosition().setPos(QPointF(newX, newY));
+      GameObjects::Position projectilePosition = projectile->getPosition();
+      projectilePosition.setPos(QPointF(newX, newY));
+      projectile->setPosition(projectilePosition);
 
       projectile->setMovementStrategy(m_movementStrategy);
       emit projectileShot(projectile);

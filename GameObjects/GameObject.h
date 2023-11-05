@@ -43,7 +43,7 @@ public:
   }
 
   // Update & Movement
-  void update(float deltaTimeInSeconds);
+  virtual void update(float deltaTimeInSeconds);
   void moveX(float amount);
   void moveY(float amount);
   void accelerateLeft(float deltaTimeInSeconds);
@@ -56,10 +56,16 @@ public:
   void decelerateY(float deltaTimeInSeconds);
 
   // Getters & Setters
-  Position &getPosition();
+  Position getPosition() const;
+  void setPosition(Position newPosition);
   QGraphicsItem *getGraphicsItem() const;
   bool isCollidable() const;
-  int id();
+  long long unsigned id();
+  QRectF getBoundingBox() const {
+      QRectF localRect = m_graphicsItem->boundingRect();
+      QRectF sceneRect = m_graphicsItem->mapToScene(localRect).boundingRect();
+      return sceneRect;
+  }
 
   // Actions & Modifiers
   void moveTo(const QPointF &newPosition);
@@ -106,13 +112,13 @@ protected:
 
 private:
   // Member Variables
-  int m_id;
+  long long unsigned m_id;
   float m_currentSpeedX = 0;
   float m_currentSpeedY = 0;
   float m_acceleration = 1250;
   bool m_destructionInitiated;
   Game::Movement::MovementStrategy m_movementStrategy;
-  static int counter;
+  static long long unsigned counter;
   std::unordered_set<int> m_collisions;
 
   // Private Helpers & Methods
