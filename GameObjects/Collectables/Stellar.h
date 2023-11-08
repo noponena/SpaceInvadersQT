@@ -3,6 +3,8 @@
 
 #include "Collectable.h"
 
+#include <bits/shared_ptr.h>
+
 namespace GameObjects {
 namespace Collectables {
 
@@ -15,8 +17,6 @@ public:
 public:
     bool shouldBeDeleted() override;
 protected:
-    QPointF getPixmapScaledSize() const override;
-    QString getPixmapResourcePath() const override;
     QPixmap getPixmap() const override;
 
     // GameObject interface

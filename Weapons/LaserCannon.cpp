@@ -6,7 +6,8 @@ namespace Weapons {
 
 LaserCannon::LaserCannon(float cooldownMs,
                          Game::Movement::MovementStrategy movementStrategy)
-    : Weapon(cooldownMs, movementStrategy) {}
+    : Weapon(cooldownMs, 100, movementStrategy)
+{}
 
 std::shared_ptr<GameObjects::Projectiles::Projectile>
 LaserCannon::createProjectile() {

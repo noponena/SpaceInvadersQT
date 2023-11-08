@@ -4,8 +4,6 @@
 namespace GameObjects {
 namespace Effects {
 
-ParticleSystem::ParticleSystem(QPointF position) : Effect(position) {}
-
 QColor ParticleSystem::randomColor() {
   int r = QRandomGenerator::global()->bounded(256);
   int g = QRandomGenerator::global()->bounded(256);
@@ -26,7 +24,6 @@ void ParticleSystem::update() {
 
   if (m_particles.empty()) {
     emit animationFinished();
-    m_updateTimer->stop();
   }
 }
 
@@ -39,12 +36,6 @@ void ParticleSystem::spawnParticles(int count, QColor color,
     Particle particle(m_position, lifespanFrames, color);
     m_particles.push_back(particle);
   }
-}
-
-void ParticleSystem::start() {
-  m_updateTimer = new QTimer(this);
-  connect(m_updateTimer, &QTimer::timeout, this, &ParticleSystem::update);
-  m_updateTimer->start(16);
 }
 
 QRectF ParticleSystem::boundingRect() const {
@@ -77,6 +68,15 @@ void ParticleSystem::paint(QPainter *painter,
   for (Particle &particle : m_particles) {
     particle.draw(*painter);
   }
+}
+
+void ParticleSystem::setPosition(QPointF newPosition)
+{
+    for (Particle &p : m_particles) {
+        p.setPosition(newPosition);
+    }
+
+    m_position = newPosition;
 }
 
 } // namespace Effects

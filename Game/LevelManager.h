@@ -1,7 +1,6 @@
 #ifndef LEVELMANAGER_H
 #define LEVELMANAGER_H
 
-#include "GameObjects/Ships/EnemyShip.h"
 #include "GameState.h"
 
 namespace Game {

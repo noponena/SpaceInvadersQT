@@ -2,9 +2,11 @@
 #define PROJECTILE_H
 
 #include "GameObjects/GameObject.h"
+#include <QUrl>
 
 namespace GameObjects {
 namespace Projectiles {
+
 class Projectile : public GameObject {
 public:
   Projectile(Position pos, float speed, bool hostile = false, int damage = 1);
@@ -17,7 +19,7 @@ public:
 
   bool hostile() const;
 
-protected:
+  protected:
   bool m_hostile;
 
 private:

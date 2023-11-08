@@ -3,6 +3,7 @@
 
 #include "GameObjects/Projectiles/Projectile.h"
 #include "GameObjects/Ships/Ship.h"
+#include "Game/Audio/SoundManager.h"
 #include <QElapsedTimer>
 
 namespace GameObjects {} // namespace GameObjects
@@ -12,55 +13,27 @@ namespace Weapons {
 class Weapon : public QObject {
   Q_OBJECT
 public:
-  Weapon(float cooldownMs, Game::Movement::MovementStrategy movementStrategy)
-      : m_owner(nullptr), m_cooldownMs(cooldownMs),
-        m_movementStrategy(movementStrategy) {}
+  Weapon(float cooldownMs, float minCooldownMs, Game::Movement::MovementStrategy movementStrategy);
   virtual ~Weapon() = default;
-
-  void shoot() {
-    if (this->canShoot()) {
-      std::shared_ptr<GameObjects::Projectiles::Projectile> projectile =
-          this->createProjectile();
-      projectile->initialize();
-      QPointF ownerCenter = m_owner->getGraphicsItem()->boundingRect().center();
-      QPointF projectileCenter =
-          projectile->getGraphicsItem()->boundingRect().center();
-      QPointF delta = projectileCenter - ownerCenter;
-      float newX = projectile->getPosition().x() - delta.x();
-      float newY = projectile->getPosition().y() - delta.y();
-      GameObjects::Position projectilePosition = projectile->getPosition();
-      projectilePosition.setPos(QPointF(newX, newY));
-      projectile->setPosition(projectilePosition);
-
-      projectile->setMovementStrategy(m_movementStrategy);
-      emit projectileShot(projectile);
-    }
-  }
-
   virtual std::shared_ptr<GameObjects::Projectiles::Projectile>
   createProjectile() = 0;
 
-  void setOwner(GameObjects::Ships::Ship *newOwner) { m_owner = newOwner; }
-
-  void updateWeaponCooldown(float amount) { m_cooldownMs += amount; }
+  void shoot();
+  void setOwner(GameObjects::Ships::Ship *newOwner);
+  void updateWeaponCooldown(float amount);
 
 protected:
   GameObjects::Ships::Ship *m_owner;
+  Game::Audio::SoundManager m_soundManager;
 
 private:
   float m_cooldownMs;
-  QElapsedTimer m_lastShotTime;
+  float m_minCooldownMs;
+  QElapsedTimer m_lastShotTimer;
   Game::Movement::MovementStrategy m_movementStrategy;
 
-  bool canShoot() {
-    int elapsed = m_lastShotTime.elapsed();
-    if (elapsed < m_cooldownMs) {
-      return false;
-    }
-
-    m_lastShotTime.restart();
-    return true;
-  }
+  bool canShoot();
+  void clampCooldownMs();
 
 signals:
   void projectileShot(

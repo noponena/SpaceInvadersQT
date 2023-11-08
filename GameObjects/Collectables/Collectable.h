@@ -2,6 +2,8 @@
 #define COLLECTABLE_H
 
 #include "GameObjects/GameObject.h"
+#include "GameObjects/Ships/PlayerShip.h"
+#include "GameObjects/Ships/Ship.h"
 #include <QVector2D>
 #include <QRandomGenerator>
 
@@ -22,51 +24,34 @@ public:
     {
         m_magneticVelocity = QPointF(0, 0);
     }
-  bool m_isMagnetic = false;
+    ~Collectable() {};
+
   bool m_collected = false;
   bool m_hasInitiatedMovement = false;
   bool m_stopped = false;
-  float m_magneticRadius = 200.0f;
-  float m_magneticStrength = 100.0f;
-
-  void activateMagneticEffect() {
-    m_isMagnetic = true;
-  }
-
-  void deactivateMagneticEffect() {
-    m_isMagnetic = false;
-  }
-
-  void reset() {
-      m_hasInitiatedMovement = false;
-      m_stopped = false;
-      m_collected = false;
-      m_hasCollided = false;
-      m_collisions.clear();
-      m_collidable = true;
-  }
+  float m_dampingFactor = 0.9f;
 
   void update(UpdateContext context) override {
       GameObject::update(context);
-      QPointF currentPlayerPosition = context.playerPosition;
+      QPointF currentPlayerPosition = context.playerShip.getCenterPosition();
       Position currentPosition = this->getPosition();
       QPointF direction = currentPlayerPosition - currentPosition.pos;
-      bool isWithinMagneticRange = QVector2D(direction).length() < m_magneticRadius;
-      float dampingFactor = 0.9f;
+      Ships::magnetism magnetism = context.playerShip.magnetism();
+      bool isWithinMagneticRange = QVector2D(direction).length() < magnetism.magneticRadius;
 
       // Separate the initial and magnetic movements
       switch (m_movementState) {
         case MovementState::Initial:
           if (!m_hasInitiatedMovement) {
             float angle = QRandomGenerator::global()->bounded(2.0 * M_PI);
-            float initialSpeed = 200;
+            float initialSpeed = QRandomGenerator::global()->bounded(50, 200);
             m_initialVelocity.setX(initialSpeed * cos(angle));
             m_initialVelocity.setY(initialSpeed * sin(angle));
             m_hasInitiatedMovement = true;
           }
 
           // Deceleration for initial movement
-          m_initialVelocity *= dampingFactor;
+          m_initialVelocity *= m_dampingFactor;
 
           if (QVector2D(m_initialVelocity).length() < 0.1) {
             m_movementState = MovementState::Stopped;  // Transition to stopped state
@@ -85,17 +70,17 @@ public:
               break;
           }
 
-          direction = QVector2D(direction).normalized().toPointF() * m_magneticStrength;
+          direction = QVector2D(direction).normalized().toPointF() * magnetism.magneticStrength;
 
           m_magneticVelocity += direction;
-          m_magneticVelocity *= dampingFactor;
+          m_magneticVelocity *= m_dampingFactor;
           currentPosition.setX(currentPosition.x() + m_magneticVelocity.x() * context.deltaTimeInSeconds);
           currentPosition.setY(currentPosition.y() + m_magneticVelocity.y() * context.deltaTimeInSeconds);
           this->setPosition(currentPosition);
           break;
 
         case MovementState::Stopped:
-          if (m_isMagnetic) {
+          if (magnetism.isMagnetic) {
             if (isWithinMagneticRange) {
               m_movementState = MovementState::Magnetic;
             }
@@ -103,14 +88,6 @@ public:
           break;
       }
     }
-
-  // GameObject interface
-public:
-  bool shouldBeDeleted() override;
-
-protected:
-  QPointF getPixmapScaledSize() const override;
-  QString getPixmapResourcePath() const override;
 
   // GameObject interface
 public:
@@ -122,6 +99,9 @@ private:
   MovementState m_movementState = MovementState::Initial;
   QPointF m_initialVelocity;
   QPointF m_magneticVelocity;
+
+protected:
+  bool isDestroyed() override { return m_collected; }
 };
 
 } // namespace Collectables

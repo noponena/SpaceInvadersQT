@@ -24,9 +24,6 @@ protected:
 
   // GameObject interface
 protected:
-  QPointF getPixmapScaledSize() const override;
-  QString getPixmapResourcePath() const override;
-  QString getOnHitPixmapResourcePath() const override;
   QPixmap getPixmap() const override;
   QPixmap getOnHitPixmap() const override;
   void initiateDestructionProcedure() override;

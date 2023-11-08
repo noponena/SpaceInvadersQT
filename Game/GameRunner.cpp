@@ -1,6 +1,5 @@
 #include "GameRunner.h"
 #include "GameObjects/Ships/PlayerShip.h"
-#include "GameObjects/Collectables/StellarPool.h"
 #include "UI/FPSCounter.h"
 #include "UI/GameObjectCounter.h"
 #include <QOpenGLWidget>
@@ -13,6 +12,7 @@ GameRunner::GameRunner(QWidget *parent)
   setupCounters();
   setupConnections();
   m_elapsedTimer.start();
+  m_fpsTimer.start();
 }
 
 void GameRunner::setupView() {

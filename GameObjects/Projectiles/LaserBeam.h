@@ -5,14 +5,12 @@
 
 namespace GameObjects {
 namespace Projectiles {
-class LaserBeam : public Projectile, public QGraphicsRectItem {
+class LaserBeam : public Projectile {
 public:
   LaserBeam(Position position, float speed, Qt::GlobalColor color);
 
   // GameObject interface
 protected:
-  QPointF getPixmapScaledSize() const override;
-  QString getPixmapResourcePath() const override;
   QPixmap getPixmap() const override;
 
 private:

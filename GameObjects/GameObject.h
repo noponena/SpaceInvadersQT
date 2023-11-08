@@ -1,14 +1,22 @@
 #ifndef GAMEOBJECT_H
 #define GAMEOBJECT_H
 
-#include "Game/Movement/MovementStrategy.h"
 #include "Position.h"
+#include "Game/Movement/MovementStrategy.h"
+#include "Game/Audio/SoundManager.h"
+#include <QUrl>
 #include <QGraphicsItem>
 #include <QObject>
 #include <stdexcept>
 #include <unordered_set>
 
 namespace GameObjects {
+
+struct SoundInfo {
+    bool enabled = false;
+    QUrl url;
+    unsigned soundLengthMs;
+};
 
 namespace Projectiles {
 class Projectile;
@@ -23,7 +31,7 @@ class Stellar;
 
 struct UpdateContext {
     float deltaTimeInSeconds;
-    QPointF playerPosition;
+    const Ships::PlayerShip& playerShip;
 };
 
 class GameObject : public QObject {
@@ -87,6 +95,7 @@ public:
   bool isAtLimit() const;
   bool isCollidingWith(const GameObject &other) const;
 
+  void setPosition(QPointF newPosition);
 protected:
   // Member Variables
   Position m_position;
@@ -94,7 +103,14 @@ protected:
   QGraphicsItem *m_graphicsItem;
   bool m_hasCollided;
   bool m_collidable;
+  bool m_destroyed;
   std::unordered_set<int> m_collisions;
+  QPointF m_pixmapScale;
+  QString m_pixmapResourcePath;
+  QString m_onHitPixmapResourcePath;
+
+  struct SoundInfo m_spawnSoundInfo;
+  struct SoundInfo m_destructionSoundInfo;
 
   // Protected Helpers & Methods
   void clearMovementStrategy();
@@ -105,17 +121,16 @@ protected:
   virtual void initiateDestructionProcedure();
   virtual bool isDestroyed() { return false; };
 
-  virtual QPointF getPixmapScaledSize() const = 0;
   inline void updateGraphicsItemPosition() {
     if (m_graphicsItem) {
       m_graphicsItem->setPos(m_position.pos);
     }
   }
 
-  virtual QString getPixmapResourcePath() const = 0;
-  virtual QString getOnHitPixmapResourcePath() const {
-    throw std::runtime_error("Function not implemented");
-  }
+  QPointF getPixmapScaledSize() const;
+  QString getPixmapResourcePath() const;
+  QString getOnHitPixmapResourcePath() const;
+
   virtual QPixmap getPixmap() const;
   virtual QPixmap getOnHitPixmap() const;
 
@@ -131,6 +146,7 @@ private:
   bool m_destructionInitiated;
   Game::Movement::MovementStrategy m_movementStrategy;
   static long long unsigned counter;
+  Game::Audio::SoundManager m_soundManager;
 
   // Private Helpers & Methods
   inline void clampToXBounds();
@@ -140,6 +156,9 @@ private:
   inline void doMoveY(float amount);
   void initializeGraphicsItem();
   void applyMovementStrategy(float deltaTimeInSeconds);
+
+  void playSpawnSound();
+  void playDestructionSound();
 
 signals:
   void objectCreated(const std::shared_ptr<GameObjects::GameObject> &object);

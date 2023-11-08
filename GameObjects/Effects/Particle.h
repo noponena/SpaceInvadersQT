@@ -25,6 +25,7 @@ public:
 
   void move() { m_position += m_velocity; };
   bool isDead() const { return m_lifespan <= 0; };
+
   void draw(QPainter &painter) {
     painter.save();
 
@@ -36,7 +37,8 @@ public:
     painter.setBrush(currentColor);
     painter.setPen(Qt::NoPen);
 
-    painter.drawEllipse(m_position, 1, 1);
+    QRectF rect(m_position, m_position + QPointF(1, 1));
+    painter.drawRect(rect);
     painter.restore();
   }
 
@@ -48,6 +50,7 @@ public:
   }
 
   QPointF position() const;
+  void setPosition(QPointF newPosition);
 
 private:
   QPointF m_position;
@@ -58,6 +61,11 @@ private:
 };
 
 inline QPointF Particle::position() const { return m_position; }
+
+inline void Particle::setPosition(QPointF newPosition)
+{
+    m_position = newPosition;
+}
 
 } // namespace Effects
 } // namespace GameObjects

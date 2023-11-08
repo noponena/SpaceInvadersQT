@@ -11,6 +11,11 @@ class Weapon;
 
 namespace GameObjects {
 namespace Ships {
+struct magnetism {
+    bool isMagnetic;
+    float magneticRadius;
+    float magneticStrength;
+};
 class Ship : public GameObject {
   Q_OBJECT
 public:
@@ -24,15 +29,27 @@ public:
 
   void setWeapon(std::unique_ptr<Weapons::Weapon> newWeapon);
 
+  static QPixmap& loadSharedSpriteSheet(const QString &path) {
+      static QPixmap m_sharedSpriteSheet;
+      if (m_sharedSpriteSheet.isNull()) {
+          m_sharedSpriteSheet.load(path);
+      }
+      return m_sharedSpriteSheet;
+  }
+
+  const magnetism &magnetism() const;
+
 protected:
   int m_currentHp, m_maxHp, m_speed, m_fireRate, m_shotCooldownMs;
   int m_onHitTimerId = -1;
   std::unique_ptr<Weapons::Weapon> m_weapon;
-  bool m_destroyed;
   bool m_onHitAnimationInProgress = false;
   QList<QPixmap> m_animationFrames;
-  QElapsedTimer m_lastShotTime;
   QColor m_originalColor;
+  QTimer *m_animationTimer;
+  Effects::ParticleSystem *m_particleSystem;
+  qreal m_halfWidth;
+  qreal m_halfHeight;
 
   virtual bool isDestroyed() override;
   virtual void initializeDestructionAnimation() override;
@@ -45,10 +62,15 @@ protected slots:
 
 private:
   int m_frameIndex;
+  struct magnetism m_magnetism;
 
   void timerEvent(QTimerEvent *event) override;
 signals:
   void animationCompleted();
+
+  // GameObject interface
+protected:
+  void initializeDestructionEffects() override;
 };
 } // namespace Ships
 

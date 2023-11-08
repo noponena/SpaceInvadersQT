@@ -1,12 +1,13 @@
 #include "PlayerShip.h"
-#include "Weapons/LaserCannon.h"
 #include <QPen>
 
 namespace GameObjects {
 namespace Ships {
 PlayerShip::PlayerShip(const int maxHp, float speed, const Position &position)
-    : Ship(maxHp, speed, position) {
-  m_lastShotTime.start();
+    : Ship(maxHp, speed, position)
+{
+    m_pixmapResourcePath = ":/Images/player_ship.png";
+    m_pixmapScale = QPointF(50.0, 75.0);
 }
 
 void PlayerShip::collideWith(GameObject &other) {
@@ -23,18 +24,8 @@ void PlayerShip::collideWithStellarToken(Collectables::Stellar &stellarToken)
     emit stellarTokenCollected();
 }
 
-QPointF PlayerShip::getPixmapScaledSize() const { return QPointF(50.0, 75.0); }
-
-QString PlayerShip::getPixmapResourcePath() const {
-  return QString(":/Images/player_ship.png");
-}
-
-QString PlayerShip::getOnHitPixmapResourcePath() const {
-  return QString(":/Images/player_ship.png");
-}
-
 QPixmap PlayerShip::getPixmap() const {
-  static QPixmap pixmap = GameObject::getOnHitPixmap();
+  static QPixmap pixmap = GameObject::getPixmap();
   return pixmap;
 }
 } // namespace Ships

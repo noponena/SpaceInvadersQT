@@ -8,11 +8,18 @@ namespace Effects {
 
 class Effect : public QObject, public QGraphicsItem {
 public:
-  Effect(QPointF position) : m_position(position){};
+  Effect() : m_position(){};
+
+  virtual void setPosition(QPointF newPosition);
 
 protected:
   QPointF m_position;
 };
+
+inline void Effect::setPosition(QPointF newPosition)
+{
+    m_position = newPosition;
+}
 
 } // namespace Effects
 } // namespace GameObjects

@@ -21,7 +21,7 @@ public:
         } else {
             auto collectable = pool.front();
             pool.pop();
-            collectable->reset();
+            //collectable->reset();
             collectable->setPosition(position);
             qDebug() << "pool size:" << pool.size();
             return collectable;

@@ -10,11 +10,9 @@ namespace Effects {
 class ParticleSystem : public Effect {
   Q_OBJECT
 public:
-  ParticleSystem(QPointF position);
   void update();
   void spawnParticles(int count, QColor color = nullptr,
-                      int lifespanFrames = 60);
-  void start();
+                      int lifespanFrames = 20);
 
 private:
   std::list<Particle> m_particles;
@@ -27,6 +25,10 @@ public:
              QWidget *widget) override;
 signals:
   void animationFinished();
+
+  // Effect interface
+public:
+  void setPosition(QPointF newPosition) override;
 };
 
 } // namespace Effects

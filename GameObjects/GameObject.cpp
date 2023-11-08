@@ -1,5 +1,4 @@
 #include "GameObject.h"
-#include "Utils/Utils.h"
 #include <cmath>
 
 namespace GameObjects {
@@ -8,9 +7,10 @@ long long unsigned GameObject::counter = 0;
 
 GameObject::GameObject(const Position &position, float speed)
     : m_position(position), m_speed(speed), m_hasCollided(false),
-      m_collidable(true), m_id(counter++), m_destructionInitiated(false) {}
+      m_collidable(true), m_destroyed(false), m_id(counter++), m_destructionInitiated(false) {}
 
 void GameObject::initialize() {
+  this->playSpawnSound();
   this->initializeGraphicsItem();
   this->updateGraphicsItemPosition();
   this->initializeDestructionAnimation();
@@ -111,12 +111,40 @@ void GameObject::applyMovementStrategy(float deltaTimeInSeconds) {
   m_position.anchorPos = newPos.second;
 }
 
+void GameObject::playSpawnSound()
+{
+  m_soundManager.playSoundEffect(m_spawnSoundInfo);
+}
+
+void GameObject::playDestructionSound()
+{
+  m_soundManager.playSoundEffect(m_destructionSoundInfo);
+}
+
 void GameObject::initiateDestructionProcedure() {
   m_collidable = false;
   m_destructionInitiated = true;
+  this->playDestructionSound();
   this->clearMovementStrategy();
   this->playDestructionEffects();
   this->playDestructionAnimation();
+}
+
+QPointF GameObject::getPixmapScaledSize() const
+{
+  return m_pixmapScale;
+}
+
+QString GameObject::getPixmapResourcePath() const
+{
+  return m_pixmapResourcePath;
+}
+
+QString GameObject::getOnHitPixmapResourcePath() const
+{
+  if (m_onHitPixmapResourcePath.isEmpty())
+    return this->getPixmapResourcePath();
+  return m_onHitPixmapResourcePath;
 }
 
 QGraphicsItem *GameObject::getGraphicsItem() const { return m_graphicsItem; }
@@ -214,6 +242,11 @@ QPointF GameObject::getCenterPosition() const
 void GameObject::setPosition(Position newPosition)
 {
     m_position = newPosition;
+}
+
+void GameObject::setPosition(QPointF newPosition)
+{
+    m_position.setPos(newPosition);
 }
 
 } // namespace GameObjects

@@ -3,4 +3,5 @@ HEADERS += \
     $$PWD/Weapon.h
 
 SOURCES += \
-    $$PWD/LaserCannon.cpp
+    $$PWD/LaserCannon.cpp \
+    $$PWD/Weapon.cpp

@@ -1,6 +1,4 @@
 #include "EnemyShip.h"
-#include "GameObjects/Effects/ParticleSystem.h"
-#include "GameObjects/Collectables/StellarPool.h"
 #include <QColor>
 #include <QGraphicsScene>
 #include <QPen>
@@ -10,21 +8,27 @@
 namespace GameObjects {
 namespace Ships {
 EnemyShip::EnemyShip(const int maxHp, int speed, const Position &position)
-    : Ship(maxHp, speed, position) {}
+    : Ship(maxHp, speed, position)
+{
+    m_pixmapResourcePath = ":/Images/alien.png";
+    m_onHitPixmapResourcePath = ":/Images/alien_on_hit.png";
+    m_pixmapScale = QPointF(50.0, 75.0);
+    m_destructionSoundInfo = SoundInfo({true, QUrl("qrc:/Sounds/explosion.wav"), 1000});
+}
 
 void EnemyShip::initiateDestructionProcedure() {
     GameObject::initiateDestructionProcedure();
-    this->spawnCollectables(3);
+    this->spawnCollectables(5);
 }
 
 void EnemyShip::spawnCollectables(int amount)
 {
     QPointF center = this->getBoundingBox().center();
     GameObjects::Position position(center.x(), center.y());
+    position.setBounds(this->getPosition().getBounds());
     for (int i = 0; i < amount; i++) {
         std::shared_ptr<GameObjects::Collectables::Stellar> stellar = std::make_shared<GameObjects::Collectables::Stellar>(position);
         stellar->initialize();
-        stellar->activateMagneticEffect();
         emit objectCreated(stellar);
     }
 }
@@ -69,16 +73,6 @@ void EnemyShip::collideWithEnemyShip(EnemyShip &enemyShip) {
 
 bool EnemyShip::shouldBeDeleted() {
   return m_destroyed || m_position.isBeyondScreenBottomLimit(30);
-}
-
-QPointF EnemyShip::getPixmapScaledSize() const { return QPointF(50.0, 75.0); }
-
-QString EnemyShip::getPixmapResourcePath() const {
-  return QString(":/Images/alien.png");
-}
-
-QString EnemyShip::getOnHitPixmapResourcePath() const {
-  return QString(":/Images/alien_on_hit.png");
 }
 
 QPixmap EnemyShip::getPixmap() const {

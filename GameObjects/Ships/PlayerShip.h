@@ -19,9 +19,6 @@ public:
 
   // GameObject interface
 protected:
-  QPointF getPixmapScaledSize() const override;
-  QString getPixmapResourcePath() const override;
-  QString getOnHitPixmapResourcePath() const override;
   QPixmap getPixmap() const override;
 signals:
   void stellarTokenCollected();

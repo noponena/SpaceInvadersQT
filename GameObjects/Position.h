@@ -43,6 +43,16 @@ public:
   void setX(float x) { pos.setX(x); }
   void setY(float y) { pos.setY(y); }
 
+  const QRectF &getBounds() const
+  {
+      return bounds;
+  }
+
+  void setBounds(const QRectF &newBounds)
+  {
+      bounds = newBounds;
+  }
+
   void goToTopLimit() { pos.setY(bounds.top()); }
   void goToBottomLimit() { pos.setY(bounds.bottom()); }
   void goToLeftLimit() { pos.setX(bounds.left()); }

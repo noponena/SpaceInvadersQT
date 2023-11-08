@@ -6,5 +6,8 @@
         <file>Images/player_laser_projectile.png</file>
         <file>Images/player_ship.png</file>
         <file>Images/coin.png</file>
+        <file>Sounds/laser.wav</file>
+        <file>Sounds/explosion.wav</file>
+        <file>Sounds/collect.wav</file>
     </qresource>
 </RCC>
