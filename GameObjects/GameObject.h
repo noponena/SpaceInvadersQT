@@ -3,20 +3,15 @@
 
 #include "Position.h"
 #include "Game/Movement/MovementStrategy.h"
-#include "Game/Audio/SoundManager.h"
+#include "Game/Audio/SoundInfo.h"
 #include <QUrl>
 #include <QGraphicsItem>
 #include <QObject>
 #include <stdexcept>
 #include <unordered_set>
 
-namespace GameObjects {
 
-struct SoundInfo {
-    bool enabled = false;
-    QUrl url;
-    unsigned soundLengthMs;
-};
+namespace GameObjects {
 
 namespace Projectiles {
 class Projectile;
@@ -109,8 +104,8 @@ protected:
   QString m_pixmapResourcePath;
   QString m_onHitPixmapResourcePath;
 
-  struct SoundInfo m_spawnSoundInfo;
-  struct SoundInfo m_destructionSoundInfo;
+  struct Game::Audio::SoundInfo m_spawnSoundInfo;
+  struct Game::Audio::SoundInfo m_destructionSoundInfo;
 
   // Protected Helpers & Methods
   void clearMovementStrategy();
@@ -144,9 +139,9 @@ private:
   float m_currentSpeedY = 0;
   float m_acceleration = 1250;
   bool m_destructionInitiated;
+  //Game::Audio::SoundManager m_soundManager;
   Game::Movement::MovementStrategy m_movementStrategy;
   static long long unsigned counter;
-  Game::Audio::SoundManager m_soundManager;
 
   // Private Helpers & Methods
   inline void clampToXBounds();

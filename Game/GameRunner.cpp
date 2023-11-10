@@ -62,7 +62,6 @@ void GameRunner::setupConnections() {
 void GameRunner::startGame() {
   // Initialize game state
   qDebug() << "starting game..";
-  //GameObjects::Collectables::StellarPool::initializePool(10);
   m_gameState.setSize(this->scene()->sceneRect().width(),
                       this->scene()->sceneRect().height());
   m_gameState.initialize();

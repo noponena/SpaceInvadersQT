@@ -1,4 +1,5 @@
 #include "GameObject.h"
+#include "Game/Audio/SoundManager.h"
 #include <cmath>
 
 namespace GameObjects {
@@ -113,12 +114,12 @@ void GameObject::applyMovementStrategy(float deltaTimeInSeconds) {
 
 void GameObject::playSpawnSound()
 {
-  m_soundManager.playSoundEffect(m_spawnSoundInfo);
+  Game::Audio::SoundManager::getInstance().playSoundEffect(m_spawnSoundInfo);
 }
 
 void GameObject::playDestructionSound()
 {
-  m_soundManager.playSoundEffect(m_destructionSoundInfo);
+  Game::Audio::SoundManager::getInstance().playSoundEffect(m_destructionSoundInfo);
 }
 
 void GameObject::initiateDestructionProcedure() {

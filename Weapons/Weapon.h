@@ -3,7 +3,6 @@
 
 #include "GameObjects/Projectiles/Projectile.h"
 #include "GameObjects/Ships/Ship.h"
-#include "Game/Audio/SoundManager.h"
 #include <QElapsedTimer>
 
 namespace GameObjects {} // namespace GameObjects
@@ -24,7 +23,6 @@ public:
 
 protected:
   GameObjects::Ships::Ship *m_owner;
-  Game::Audio::SoundManager m_soundManager;
 
 private:
   float m_cooldownMs;

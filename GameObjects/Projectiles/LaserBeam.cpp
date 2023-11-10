@@ -1,4 +1,5 @@
 #include "LaserBeam.h"
+#include "Game/Audio/SoundInfo.h"
 #include <QPen>
 
 namespace GameObjects {
@@ -6,7 +7,7 @@ namespace Projectiles {
 LaserBeam::LaserBeam(Position position, float speed, Qt::GlobalColor color)
     : Projectile(position, speed), m_color(color)
 {
-    m_spawnSoundInfo = SoundInfo({true, QUrl("qrc:/Sounds/laser.wav"), 1000});
+    m_spawnSoundInfo = Game::Audio::SoundInfo({true, Game::Audio::SoundEffect::LASER, 1.0f});
     m_pixmapResourcePath = ":/Images/player_laser_projectile.png";
     m_pixmapScale = QPointF(29.055, 30.0);
 }

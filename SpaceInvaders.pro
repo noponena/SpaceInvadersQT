@@ -19,6 +19,12 @@ include(GameObjects/GameObjects.pri)
 include(Game/Game.pri)
 include(Weapons/Weapons.pri)
 
+INCLUDEPATH += "C:/Users/aaron/OneDrive/Tiedostot/Aaro/Personal/Projects/QT/SpaceInvadersQT/Thirdparty/OpenAL/include"
+LIBS += -L"C:/Users/aaron/OneDrive/Tiedostot/Aaro/Personal/Projects/QT/SpaceInvadersQT/Thirdparty/OpenAL/libs/Win64" -lOpenAL32
+
+INCLUDEPATH += "C:/Users/aaron/OneDrive/Tiedostot/Aaro/Personal/Projects/QT/SpaceInvadersQT/Thirdparty/libsndfile/include"
+LIBS += -L"C:/Users/aaron/OneDrive/Tiedostot/Aaro/Personal/Projects/QT/SpaceInvadersQT/Thirdparty/libsndfile/lib" -llibsndfile-1
+
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin

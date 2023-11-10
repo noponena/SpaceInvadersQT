@@ -1,4 +1,5 @@
 #include "EnemyShip.h"
+#include "Game/Audio/SoundInfo.h"
 #include <QColor>
 #include <QGraphicsScene>
 #include <QPen>
@@ -13,7 +14,7 @@ EnemyShip::EnemyShip(const int maxHp, int speed, const Position &position)
     m_pixmapResourcePath = ":/Images/alien.png";
     m_onHitPixmapResourcePath = ":/Images/alien_on_hit.png";
     m_pixmapScale = QPointF(50.0, 75.0);
-    m_destructionSoundInfo = SoundInfo({true, QUrl("qrc:/Sounds/explosion.wav"), 1000});
+    m_destructionSoundInfo = Game::Audio::SoundInfo({true, Game::Audio::SoundEffect::LESSER_ENEMY_DESTROYED, 1.0f});
 }
 
 void EnemyShip::initiateDestructionProcedure() {

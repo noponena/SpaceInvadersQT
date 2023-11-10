@@ -1,5 +1,6 @@
 #include "GameState.h"
 #include "Weapons/LaserCannon.h"
+#include "GameObjects/Ships/EnemyShip.h"
 #include <iostream>
 #include <sstream>
 

@@ -1,4 +1,5 @@
 #include "Stellar.h"
+#include "Game/Audio/SoundInfo.h"
 
 namespace GameObjects {
 namespace Collectables {
@@ -7,7 +8,7 @@ Stellar::Stellar(const Position &position)
 {
     m_pixmapResourcePath = ":/Images/coin.png";
     m_pixmapScale = QPointF(5.0, 5.0);
-    m_destructionSoundInfo = SoundInfo({true, QUrl("qrc:/Sounds/collect.wav"), 1000});
+    m_destructionSoundInfo = Game::Audio::SoundInfo({true, Game::Audio::SoundEffect::STELLAR_COIN_COLLECTED, 1.0f});
 }
 
 bool Stellar::shouldBeDeleted()

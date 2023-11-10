@@ -3,7 +3,6 @@
 
 #include "GameObjects/GameObject.h"
 #include "GameObjects/Projectiles/LaserBeam.h"
-#include "GameObjects/Ships/EnemyShip.h"
 #include "GameObjects/Ships/PlayerShip.h"
 
 namespace Game {
