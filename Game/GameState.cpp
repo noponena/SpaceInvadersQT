@@ -18,15 +18,15 @@ void GameState::initialize() {
 //    this->initEnemyShips();
 }
 
-void GameState::addGameObject(std::shared_ptr<GameObjects::GameObject> object) {
-  connect(object.get(), &GameObjects::GameObject::objectCreated,
+void GameState::addGameObject(GameObjects::GameObject *object) {
+  connect(object, &GameObjects::GameObject::objectCreated,
           this, &GameState::onObjectCreated);
-  m_gameObjects.push_back(object);
+  m_gameObjects.emplace_back(object);
   emit objectAdded(object);
 }
 
 void GameState::removeGameObject(
-    std::shared_ptr<GameObjects::GameObject> object) {
+    std::unique_ptr<GameObjects::GameObject> object) {
   m_gameObjects.remove(object);
 }
 
@@ -36,12 +36,12 @@ void GameState::setSize(int width, int height) {
 }
 
 void GameState::update(float deltaTimeInSeconds) {
-  GameObjects::UpdateContext context{ deltaTimeInSeconds, *(m_playerShip.get()) };
+  GameObjects::UpdateContext context{ deltaTimeInSeconds, *(m_playerShip) };
   auto it = m_gameObjects.begin();
   while (it != m_gameObjects.end()) {
     (*it)->update(context);
     if ((*it)->shouldBeDeleted()) {
-      emit objectDeleted(*it);
+      emit objectDeleted(it->get());
       it = m_gameObjects.erase(it);
     } else {
       ++it;
@@ -49,24 +49,24 @@ void GameState::update(float deltaTimeInSeconds) {
   }
 }
 
-const std::list<std::shared_ptr<GameObjects::GameObject>> &
-GameState::gameObjects() const {
+const std::list<std::unique_ptr<GameObjects::GameObject> > &GameState::gameObjects() const {
   return m_gameObjects;
 }
 
 void GameState::initPlayerShip() {
+
   GameObjects::Position pos(m_windowWidth / 2, m_maxY, m_minX, m_maxX, m_minY,
                             m_maxY);
-  std::shared_ptr<GameObjects::Ships::PlayerShip> playerShip =
-      std::make_shared<GameObjects::Ships::PlayerShip>(
+  GameObjects::Ships::PlayerShip *playerShip =
+      new GameObjects::Ships::PlayerShip(
           100, m_playersShipStartSpeed, pos);
   playerShip->initialize();
   playerShip->setWeapon(std::make_unique<Weapons::LaserCannon>(
       0, Game::Movement::VerticalMovementStrategy(500, -1)));
   m_playerShip = playerShip;
-  connect(m_playerShip.get(), &GameObjects::Ships::PlayerShip::stellarTokenCollected,
+  connect(m_playerShip, &GameObjects::Ships::PlayerShip::stellarTokenCollected,
           this, &GameState::onStellarTokenCollected);
-  this->addGameObject(std::move(playerShip));
+  this->addGameObject(playerShip);
 }
 
 void GameState::initEnemyShips() {
@@ -81,8 +81,8 @@ void GameState::initEnemyShips() {
     for (int i = 1; i <= cols; i++) {
       GameObjects::Position pos(m_minX + i * xSpacing - 500, m_minY + j * ySpacing + 500,
                                 m_minX, m_maxX, m_minY, m_maxY);
-      std::shared_ptr<GameObjects::Ships::EnemyShip> enemyShip =
-          std::make_shared<GameObjects::Ships::EnemyShip>(10, 100, pos);
+      GameObjects::Ships::EnemyShip *enemyShip =
+          new GameObjects::Ships::EnemyShip(10, 100, pos);
       enemyShip->initialize();
       // enemyShip->setMovementStrategy(Game::Movement::CircularMovementStrategy(100,
       // 1));
@@ -98,7 +98,7 @@ void GameState::initMovementConstrains() {
   m_maxY = m_windowHeight - 85;
 }
 
-const std::shared_ptr<GameObjects::Ships::PlayerShip> &
+GameObjects::Ships::PlayerShip*
 GameState::playerShip() const {
     return m_playerShip;
 }

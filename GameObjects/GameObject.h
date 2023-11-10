@@ -156,7 +156,7 @@ private:
   void playDestructionSound();
 
 signals:
-  void objectCreated(const std::shared_ptr<GameObjects::GameObject> &object);
+  void objectCreated(GameObjects::GameObject *object);
 };
 
 } // namespace GameObjects

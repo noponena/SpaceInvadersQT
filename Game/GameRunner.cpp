@@ -1,13 +1,12 @@
 #include "GameRunner.h"
 #include "GameObjects/Ships/PlayerShip.h"
-#include "UI/FPSCounter.h"
-#include "UI/GameObjectCounter.h"
 #include <QOpenGLWidget>
 #include <QTimer>
 
 namespace Game {
 GameRunner::GameRunner(QWidget *parent)
-    : QGraphicsView(parent), m_scene(new QGraphicsScene(this)) {
+    : QGraphicsView(parent), m_scene(new QGraphicsScene(this)),
+    m_continuousShoot(false), m_continuousEnemySpawn(false) {
   setupView();
   setupCounters();
   setupConnections();
@@ -31,24 +30,24 @@ void GameRunner::setupView() {
 }
 
 void GameRunner::setupCounters() {
-  UI::FPSCounter *fpsCounter = new UI::FPSCounter();
-  UI::GameObjectCounter *gameObjectCounter = new UI::GameObjectCounter();
+  m_fpsCounter = new UI::FPSCounter();
+  m_gameObjectCounter = new UI::GameObjectCounter();
   m_stellarTokens = new QGraphicsTextItem();
   m_stellarTokens->setPlainText("Stellar tokens: 0");
   m_stellarTokens->setDefaultTextColor(Qt::white);
   m_stellarTokens->setFont(QFont("times", 12));
-  fpsCounter->setPos(0, 0);
-  gameObjectCounter->setPos(0, fpsCounter->boundingRect().height() - 10);
-  m_stellarTokens->setPos(0, gameObjectCounter->boundingRect().height() - 10 + 20);
-  scene()->addItem(fpsCounter);
-  scene()->addItem(gameObjectCounter);
+  m_fpsCounter->setPos(0, 0);
+  m_gameObjectCounter->setPos(0, m_fpsCounter->boundingRect().height() - 10);
+  m_stellarTokens->setPos(0, m_gameObjectCounter->boundingRect().height() - 10 + 20);
+  scene()->addItem(m_fpsCounter);
+  scene()->addItem(m_gameObjectCounter);
   scene()->addItem(m_stellarTokens);
 
-  connect(&m_gameState, &GameState::objectAdded, this,
-          [=]() { gameObjectCounter->updateObjectCount(1); });
-  connect(&m_gameState, &GameState::objectDeleted, this,
-          [=]() { gameObjectCounter->updateObjectCount(-1); });
-  connect(this, &GameRunner::fpsUpdated, fpsCounter,
+//  connect(&m_gameState, &GameState::objectAdded, this,
+//          [=]() { gameObjectCounter->updateObjectCount(1); });
+//  connect(&m_gameState, &GameState::objectDeleted, this,
+//          [=]() { gameObjectCounter->updateObjectCount(-1); });
+  connect(this, &GameRunner::fpsUpdated, m_fpsCounter,
           &UI::FPSCounter::updateFPS);
 }
 
@@ -82,7 +81,11 @@ void GameRunner::startGame() {
 void GameRunner::gameLoop() {
   float deltaTimeInSeconds =
       static_cast<float>(m_elapsedTimer.restart()) / 1000.0f;
-  m_levelManager->update();
+  if (m_continuousEnemySpawn)
+    m_levelManager->update();
+  if (m_continuousShoot)
+    m_playerShip->shoot();
+
   this->processInput(deltaTimeInSeconds);
   this->updateGameState(deltaTimeInSeconds);
   m_collisionDetector->detectQuadTree();

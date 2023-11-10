@@ -6,14 +6,14 @@ namespace Weapons {
 
 LaserCannon::LaserCannon(float cooldownMs,
                          Game::Movement::MovementStrategy movementStrategy)
-    : Weapon(cooldownMs, 100, movementStrategy)
+    : Weapon(cooldownMs, 200, movementStrategy)
 {}
 
-std::shared_ptr<GameObjects::Projectiles::Projectile>
+GameObjects::Projectiles::Projectile*
 LaserCannon::createProjectile() {
   GameObjects::Position position = m_owner->getPosition();
-  std::shared_ptr<GameObjects::Projectiles::LaserBeam> laser =
-      std::make_shared<GameObjects::Projectiles::LaserBeam>(
+  GameObjects::Projectiles::LaserBeam *laser =
+      new GameObjects::Projectiles::LaserBeam(
           position, 1, Qt::GlobalColor::magenta);
 
   return laser;

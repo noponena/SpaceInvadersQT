@@ -8,7 +8,7 @@ Stellar::Stellar(const Position &position)
 {
     m_pixmapResourcePath = ":/Images/coin.png";
     m_pixmapScale = QPointF(5.0, 5.0);
-    m_destructionSoundInfo = Game::Audio::SoundInfo({true, Game::Audio::SoundEffect::STELLAR_COIN_COLLECTED, 1.0f});
+    m_destructionSoundInfo = Game::Audio::SoundInfo({true, Game::Audio::SoundEffect::STELLAR_COIN_COLLECTED});
 }
 
 bool Stellar::shouldBeDeleted()

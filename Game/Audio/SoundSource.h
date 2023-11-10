@@ -8,7 +8,7 @@ namespace Audio {
 class SoundSource
 {
 public:
-	SoundSource();
+    SoundSource(const float &gain = 1.0f);
 	~SoundSource();
 
     void Play(const ALuint buffer_to_play);
@@ -16,7 +16,6 @@ public:
 private:
 	ALuint p_Source;
 	float p_Pitch = 1.f;
-	float p_Gain = 1.f;
 	float p_Position[3] = { 0,0,0 };
 	float p_Velocity[3] = { 0,0,0 };
 	bool p_LoopSound = false;

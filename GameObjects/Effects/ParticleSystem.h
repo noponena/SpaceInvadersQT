@@ -17,7 +17,6 @@ public:
 private:
   std::list<Particle> m_particles;
   QColor randomColor();
-  QTimer *m_updateTimer;
 
 public:
   QRectF boundingRect() const override;

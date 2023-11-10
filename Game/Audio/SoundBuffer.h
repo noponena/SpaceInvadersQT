@@ -1,6 +1,7 @@
 #pragma once
 #include <AL/al.h>
 #include <vector>
+#include <QString>
 
 
 namespace Game {
@@ -11,6 +12,7 @@ class SoundBuffer
 public:
 	static SoundBuffer* get();
 
+    ALuint addSoundEffectFromResource(const QString &resourcePath);
 	ALuint addSoundEffect(const char* filename);
 	bool removeSoundEffect(const ALuint& buffer);
 

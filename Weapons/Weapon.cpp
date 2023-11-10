@@ -15,7 +15,8 @@ Weapons::Weapon::Weapon(float cooldownMs,
 void Weapons::Weapon::shoot()
 {
     if (this->canShoot()) {
-      std::shared_ptr<GameObjects::Projectiles::Projectile> projectile =
+      m_lastShotTimer.restart();
+      GameObjects::Projectiles::Projectile *projectile =
           this->createProjectile();
       projectile->initialize();
 
@@ -51,7 +52,6 @@ bool Weapons::Weapon::canShoot()
       return false;
     }
 
-    m_lastShotTimer.restart();
     return true;
 }
 

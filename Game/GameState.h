@@ -13,38 +13,37 @@ public:
   GameState(QObject *parent = nullptr);
 
   void initialize();
-  void addGameObject(std::shared_ptr<GameObjects::GameObject> object);
-  void removeGameObject(std::shared_ptr<GameObjects::GameObject> object);
+  void addGameObject(GameObjects::GameObject *object);
+  void removeGameObject(std::unique_ptr<GameObjects::GameObject> object);
   void setSize(int width, int height);
   void update(float deltaTimeInSeconds);
   void initEnemyShips();
 
-  const std::list<std::shared_ptr<GameObjects::GameObject>> &
+  const std::list<std::unique_ptr<GameObjects::GameObject>> &
   gameObjects() const;
-  const std::shared_ptr<GameObjects::Ships::PlayerShip> &playerShip() const;
+  GameObjects::Ships::PlayerShip *playerShip() const;
 
   int m_minX, m_minY, m_maxX, m_maxY, m_windowWidth, m_windowHeight;
 
   const unsigned &stellarTokens() const;
 
 private:
-  std::list<std::shared_ptr<GameObjects::GameObject>> m_gameObjects;
+  std::list<std::unique_ptr<GameObjects::GameObject>> m_gameObjects;
   unsigned m_stellarTokens;
   float m_playersShipStartSpeed;
   void initPlayerShip();
   void initMovementConstrains();
   void
   addLaser(const std::shared_ptr<GameObjects::Projectiles::LaserBeam> &laser);
-  std::shared_ptr<GameObjects::Ships::PlayerShip> m_playerShip;
+  GameObjects::Ships::PlayerShip *m_playerShip;
 
 signals:
-  void objectDeleted(const std::shared_ptr<GameObjects::GameObject> &object);
-  void objectAdded(const std::shared_ptr<GameObjects::GameObject> &object);
+  void objectDeleted(const GameObjects::GameObject *object);
+  void objectAdded(const GameObjects::GameObject *object);
 
 public slots:
-  void onObjectCreated(
-      const std::shared_ptr<GameObjects::GameObject> &object) {
-    this->addGameObject(object);
+  void onObjectCreated(GameObjects::GameObject *object) {
+      this->addGameObject(object);
   }
   void onStellarTokenCollected() {
     m_stellarTokens++;

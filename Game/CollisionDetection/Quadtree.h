@@ -27,7 +27,7 @@ public:
         }
     }
 
-    void insert(std::shared_ptr<GameObjects::GameObject> object) {
+    void insert(GameObjects::GameObject *object) {
         if (m_nodes[0]) {
             GameObjects::Position position = object->getPosition();
             int x = position.x();
@@ -63,9 +63,9 @@ public:
         }
     }
 
-    std::vector<std::shared_ptr<GameObjects::GameObject>> query(std::shared_ptr<GameObjects::GameObject> object) {
+    std::vector<GameObjects::GameObject*> query(GameObjects::GameObject* object) {
         QRectF range = object->getBoundingBox();
-        std::vector<std::shared_ptr<GameObjects::GameObject>> possibleCollisions;
+        std::vector<GameObjects::GameObject*> possibleCollisions;
         if (!m_bounds.intersects(range)) {
             return possibleCollisions; // Empty vector
         }
@@ -81,7 +81,7 @@ public:
 
         if (m_nodes[0]) {
             for (const auto& subnode : m_nodes) {
-                std::vector<std::shared_ptr<GameObjects::GameObject>> subnodeCollisions = subnode->query(object);
+                std::vector<GameObjects::GameObject*> subnodeCollisions = subnode->query(object);
                 possibleCollisions.insert(possibleCollisions.end(),
                                           subnodeCollisions.begin(), subnodeCollisions.end());
             }
@@ -96,7 +96,7 @@ private:
 
     int m_level;
     QRectF m_bounds;
-    std::vector<std::shared_ptr<GameObjects::GameObject>> m_objects;
+    std::vector<GameObjects::GameObject*> m_objects;
     std::vector<std::unique_ptr<Quadtree>> m_nodes;
 
     void split() {

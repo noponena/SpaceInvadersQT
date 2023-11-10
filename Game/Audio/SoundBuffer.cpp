@@ -4,6 +4,8 @@
 #include <climits>
 #include <cstdlib>
 #include <AL/alext.h>
+#include <QFile>
+#include <QTemporaryFile>
 
 namespace Game {
 namespace Audio {
@@ -12,6 +14,35 @@ SoundBuffer* SoundBuffer::get()
 {
 	static SoundBuffer* sndbuf = new SoundBuffer();
 	return sndbuf;
+}
+
+ALuint SoundBuffer::addSoundEffectFromResource(const QString& resourcePath)
+{
+    QFile resourceFile(resourcePath);
+    if (!resourceFile.open(QIODevice::ReadOnly)) {
+        // Handle error - unable to open resource file
+        return 0;
+    }
+
+    // Read the resource file data into a QByteArray
+    QByteArray fileData = resourceFile.readAll();
+
+    // Write data to a temporary file
+    QTemporaryFile tempFile;
+    if (!tempFile.open()) {
+        // Handle error - unable to open temporary file
+        return 0;
+    }
+    tempFile.write(fileData);
+    tempFile.flush(); // Ensure data is written to disk
+
+    // Use the temporary file's filename with libsndfile
+    ALuint buffer = addSoundEffect(tempFile.fileName().toUtf8().constData());
+
+    // Close the temporary file; it will be automatically deleted
+    tempFile.close();
+
+    return buffer;
 }
 
 ALuint SoundBuffer::addSoundEffect(const char* filename)

@@ -12,8 +12,7 @@ public:
 
   // Weapon interface
 public:
-  std::shared_ptr<GameObjects::Projectiles::Projectile>
-  createProjectile() override;
+  GameObjects::Projectiles::Projectile *createProjectile() override;
 };
 
 } // namespace Weapons

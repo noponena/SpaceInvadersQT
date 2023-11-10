@@ -14,7 +14,7 @@ class Weapon : public QObject {
 public:
   Weapon(float cooldownMs, float minCooldownMs, Game::Movement::MovementStrategy movementStrategy);
   virtual ~Weapon() = default;
-  virtual std::shared_ptr<GameObjects::Projectiles::Projectile>
+  virtual GameObjects::Projectiles::Projectile*
   createProjectile() = 0;
 
   void shoot();
@@ -35,7 +35,7 @@ private:
 
 signals:
   void projectileShot(
-      const std::shared_ptr<GameObjects::Projectiles::Projectile> &projectile);
+      GameObjects::Projectiles::Projectile *projectile);
 };
 
 } // namespace Weapons

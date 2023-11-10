@@ -46,8 +46,8 @@ protected:
   bool m_onHitAnimationInProgress = false;
   QList<QPixmap> m_animationFrames;
   QColor m_originalColor;
-  QTimer *m_animationTimer;
-  Effects::ParticleSystem *m_particleSystem;
+  std::unique_ptr<QTimer> m_animationTimer;
+  std::unique_ptr<Effects::ParticleSystem> m_particleSystem;
   qreal m_halfWidth;
   qreal m_halfHeight;
 

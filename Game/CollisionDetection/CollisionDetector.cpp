@@ -1,7 +1,7 @@
 #include "CollisionDetector.h"
 #include <set>
 
-CollisionDetector::CollisionDetector(const std::list<std::shared_ptr<GameObjects::GameObject>>& gameObjects):
+CollisionDetector::CollisionDetector(const std::list<std::unique_ptr<GameObjects::GameObject> > &gameObjects):
     m_gameObjects(gameObjects)
 {
     m_quadtree = std::make_unique<Quadtree>(0, QRectF{0, 0, 1920, 1080});
@@ -16,14 +16,14 @@ void CollisionDetector::detectQuadTree() {
 
     // Insert all game objects into the quadtree.
     for (const auto& object : m_gameObjects) {
-        m_quadtree->insert(object);
+        m_quadtree->insert(object.get());
     }
 
     // Check for potential collisions.
     std::set<std::pair<long long unsigned, long long unsigned>> checkedPairs;
 
     for (const auto& object : m_gameObjects) {
-        auto potentialCollisions = m_quadtree->query(object);
+        auto potentialCollisions = m_quadtree->query(object.get());
 
         for (auto& potentialObject : potentialCollisions) {
             auto sortedPair = (object->id() < potentialObject->id())

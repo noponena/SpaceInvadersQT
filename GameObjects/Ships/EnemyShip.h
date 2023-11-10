@@ -1,14 +1,12 @@
 #ifndef GAMEOBJECTS_ENEMYSHIP_H
 #define GAMEOBJECTS_ENEMYSHIP_H
 
-#include "GameObjects/Projectiles/LaserBeam.h"
 #include "GameObjects/Projectiles/Projectile.h"
-#include "GameObjects/Collectables/Stellar.h"
 #include "Ship.h"
 
 namespace GameObjects {
 namespace Ships {
-class EnemyShip : public Ship, public QGraphicsPolygonItem {
+class EnemyShip : public Ship {
   Q_OBJECT
 public:
   EnemyShip(const int maxHp, int speed, const Position &position);

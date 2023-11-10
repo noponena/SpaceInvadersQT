@@ -9,12 +9,12 @@
 class CollisionDetector
 {
 public:
-    CollisionDetector(const std::list<std::shared_ptr<GameObjects::GameObject>>& gameObjects);
+    CollisionDetector(const std::list<std::unique_ptr<GameObjects::GameObject>>& gameObjects);
     void detectQuadTree();
     void detect();
 
 private:
-    const std::list<std::shared_ptr<GameObjects::GameObject>>& m_gameObjects;
+    const std::list<std::unique_ptr<GameObjects::GameObject>>& m_gameObjects;
     std::unique_ptr<Quadtree> m_quadtree;
 };
 

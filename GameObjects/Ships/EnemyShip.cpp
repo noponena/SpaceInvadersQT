@@ -1,5 +1,6 @@
 #include "EnemyShip.h"
 #include "Game/Audio/SoundInfo.h"
+#include "GameObjects/Collectables/Stellar.h"
 #include <QColor>
 #include <QGraphicsScene>
 #include <QPen>
@@ -14,12 +15,13 @@ EnemyShip::EnemyShip(const int maxHp, int speed, const Position &position)
     m_pixmapResourcePath = ":/Images/alien.png";
     m_onHitPixmapResourcePath = ":/Images/alien_on_hit.png";
     m_pixmapScale = QPointF(50.0, 75.0);
-    m_destructionSoundInfo = Game::Audio::SoundInfo({true, Game::Audio::SoundEffect::LESSER_ENEMY_DESTROYED, 1.0f});
+    m_destructionSoundInfo = Game::Audio::SoundInfo({true, Game::Audio::SoundEffect::LESSER_ENEMY_DESTROYED});
 }
 
 void EnemyShip::initiateDestructionProcedure() {
     GameObject::initiateDestructionProcedure();
-    this->spawnCollectables(5);
+    int count = QRandomGenerator::global()->bounded(2, 5);
+    this->spawnCollectables(count);
 }
 
 void EnemyShip::spawnCollectables(int amount)
@@ -28,7 +30,7 @@ void EnemyShip::spawnCollectables(int amount)
     GameObjects::Position position(center.x(), center.y());
     position.setBounds(this->getPosition().getBounds());
     for (int i = 0; i < amount; i++) {
-        std::shared_ptr<GameObjects::Collectables::Stellar> stellar = std::make_shared<GameObjects::Collectables::Stellar>(position);
+        GameObjects::Collectables::Stellar *stellar = new GameObjects::Collectables::Stellar(position);
         stellar->initialize();
         emit objectCreated(stellar);
     }
@@ -73,7 +75,7 @@ void EnemyShip::collideWithEnemyShip(EnemyShip &enemyShip) {
 }
 
 bool EnemyShip::shouldBeDeleted() {
-  return m_destroyed || m_position.isBeyondScreenBottomLimit(30);
+  return m_destroyed || m_position.isBeyondScreenBottomLimit(35);
 }
 
 QPixmap EnemyShip::getPixmap() const {

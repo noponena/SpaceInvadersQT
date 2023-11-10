@@ -1,12 +1,11 @@
 #ifndef PLAYERSHIP_H
 #define PLAYERSHIP_H
 
-#include "GameObjects/Projectiles/LaserBeam.h"
 #include "Ship.h"
 
 namespace GameObjects {
 namespace Ships {
-class PlayerShip : public Ship, public QGraphicsPolygonItem {
+class PlayerShip : public Ship {
   Q_OBJECT
 public:
   PlayerShip(const int maxHp, float speed, const Position &position);

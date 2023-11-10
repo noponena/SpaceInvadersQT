@@ -4,6 +4,8 @@
 #include "GameState.h"
 #include "LevelManager.h"
 #include "CollisionDetection/CollisionDetector.h"
+#include "UI/FPSCounter.h"
+#include "UI/GameObjectCounter.h"
 #include <QElapsedTimer>
 #include <QGraphicsView>
 #include <QKeyEvent>
@@ -24,7 +26,7 @@ protected:
 
 private:
   std::unique_ptr<LevelManager> m_levelManager;
-  std::shared_ptr<GameObjects::Ships::PlayerShip> m_playerShip;
+  GameObjects::Ships::PlayerShip *m_playerShip;
   CollisionDetector *m_collisionDetector;
   QElapsedTimer m_elapsedTimer;
   QElapsedTimer m_fpsTimer;
@@ -33,6 +35,11 @@ private:
   QGraphicsScene m_scene;
   int m_frameCount = 0;
   QGraphicsTextItem* m_stellarTokens;
+  bool m_continuousShoot;
+  bool m_continuousEnemySpawn;
+
+  UI::FPSCounter *m_fpsCounter;
+  UI::GameObjectCounter *m_gameObjectCounter;
 
   void setupView();
   void setupCounters();
@@ -43,7 +50,7 @@ private:
   inline void updateGameState(float deltaTime);
   inline void updateFps();
 
-  const std::list<std::shared_ptr<GameObjects::GameObject>> *m_gameObjects;
+  const std::list<std::unique_ptr<GameObjects::GameObject>> *m_gameObjects;
 
   using Action = std::function<void(float)>;
   const std::unordered_map<int, Action> m_keyActions{
@@ -71,17 +78,31 @@ private:
          Q_UNUSED(dt);
          m_playerShip->updateFireRate(10);
        }},
+      {Qt::Key_C,
+       [&](float dt) {
+           Q_UNUSED(dt);
+           m_continuousShoot = !m_continuousShoot;
+           m_pressedKeys.remove(Qt::Key_C);
+       }},
+      {Qt::Key_S,
+       [&](float dt) {
+           Q_UNUSED(dt);
+           m_continuousEnemySpawn = !m_continuousEnemySpawn;
+           m_pressedKeys.remove(Qt::Key_S);
+       }},
   };
 
 signals:
   void fpsUpdated(int fps);
 
 public slots:
-  void onObjectAdded(const std::shared_ptr<GameObjects::GameObject> &object) {
+  void onObjectAdded(const GameObjects::GameObject *object) {
     m_scene.addItem(object->getGraphicsItem());
+    m_gameObjectCounter->updateObjectCount(1);
   }
-  void onObjectDeleted(const std::shared_ptr<GameObjects::GameObject> &object) {
+  void onObjectDeleted(const GameObjects::GameObject *object) {
     m_scene.removeItem(object->getGraphicsItem());
+    m_gameObjectCounter->updateObjectCount(-1);
   }
 };
 } // namespace Game

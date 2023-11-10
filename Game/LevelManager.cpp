@@ -12,7 +12,7 @@ LevelManager::LevelManager(GameState &gameState)
 
 void LevelManager::update() {
   float currentTime = m_elapsedTimer.elapsed();
-  if (currentTime - m_lastSpawnTime >= m_spawnFrequency) {
+    if (currentTime - m_lastSpawnTime >= m_spawnIntervalMs) {
     // 1. Generate a random x position between minX and maxX
     std::random_device rd;  // obtain a random number from hardware
     std::mt19937 eng(rd()); // seed the generator
@@ -28,8 +28,8 @@ void LevelManager::update() {
 
     // 2. Create a new enemy ship
     GameObjects::Position pos(randomX, y, minX, maxX, minY, maxY);
-    std::shared_ptr<GameObjects::Ships::EnemyShip> enemyShip =
-        std::make_shared<GameObjects::Ships::EnemyShip>(1, 100, pos);
+    GameObjects::Ships::EnemyShip *enemyShip =
+        new GameObjects::Ships::EnemyShip(1, 100, pos);
     enemyShip->initialize();
     enemyShip->setMovementStrategy(
         Game::Movement::VerticalMovementStrategy(100, 1));

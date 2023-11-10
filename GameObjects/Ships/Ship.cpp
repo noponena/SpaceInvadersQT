@@ -14,10 +14,13 @@ Ship::Ship(const int maxHp, int speed, const Position &position)
       m_magnetism({true, 100.0f, 100.0f})
 {
   m_currentHp = maxHp;
-  m_animationTimer = new QTimer();
+  m_animationTimer = std::make_unique<QTimer>();
 }
 
-Ship::~Ship() = default;
+Ship::~Ship()
+{
+
+}
 
 void Ship::shoot() { m_weapon->shoot(); }
 
@@ -44,8 +47,8 @@ void Ship::setWeapon(std::unique_ptr<Weapons::Weapon> newWeapon) {
 
   QObject::connect(
       m_weapon.get(), &Weapons::Weapon::projectileShot, this,
-      [this](const std::shared_ptr<GameObjects::Projectiles::Projectile>
-                 &projectile) { emit this->objectCreated(projectile); });
+      [this](GameObjects::Projectiles::Projectile *projectile)
+      { emit this->objectCreated(projectile); });
 }
 
 void Ship::initializeDestructionAnimation() {
@@ -72,7 +75,7 @@ void Ship::initializeDestructionAnimation() {
   connect(this, &Ship::animationCompleted, this, &Ship::onAnimationCompleted);
 }
 
-void Ship::onAnimationCompleted() { m_destroyed = true; }
+void Ship::onAnimationCompleted() { m_destroyed = true;}
 
 const magnetism &Ship::magnetism() const
 {
@@ -84,19 +87,16 @@ void Ship::playDestructionAnimation() {
     killTimer(m_onHitTimerId);
     m_onHitTimerId = -1;
   }
-
   m_frameIndex = 0;
   QGraphicsPixmapItem *pixmapItem =
       qgraphicsitem_cast<QGraphicsPixmapItem *>(m_graphicsItem);
-  connect(m_animationTimer, &QTimer::timeout, this, [this, pixmapItem]() {
-
+  connect(m_animationTimer.get(), &QTimer::timeout, this, [this, pixmapItem]() {
     if (pixmapItem && m_frameIndex < m_animationFrames.size()) {
 
       pixmapItem->setPixmap(m_animationFrames[m_frameIndex]);
       m_frameIndex++;
     } else {
       m_animationTimer->stop();
-      m_animationTimer->deleteLater();
       emit animationCompleted();
     }
   });
@@ -107,7 +107,7 @@ void Ship::playDestructionEffects()
 {
   QPointF p(m_position.x() + m_halfWidth, m_position.y() + m_halfHeight);
   m_particleSystem->setPosition(p);
-  m_graphicsItem->scene()->addItem(m_particleSystem);
+  m_graphicsItem->scene()->addItem(m_particleSystem.get());
 }
 
 bool Ship::shouldBeDeleted() { return m_destroyed; }
@@ -138,9 +138,7 @@ void Ship::initializeDestructionEffects()
     QRectF rect = m_graphicsItem->boundingRect();
     m_halfWidth = rect.width() / 2;
     m_halfHeight = rect.height() / 2;
-    m_particleSystem = new Effects::ParticleSystem();
-    connect(m_particleSystem, &Effects::ParticleSystem::animationFinished,
-            m_particleSystem, &QObject::deleteLater);
+    m_particleSystem = std::make_unique<Effects::ParticleSystem>();
     m_particleSystem->spawnParticles(200);
 }
 } // namespace Ships

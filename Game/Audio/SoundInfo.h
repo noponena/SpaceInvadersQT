@@ -13,7 +13,7 @@ enum SoundEffect {
 struct SoundInfo {
     bool enabled = false;
     SoundEffect soundEffect;
-    float gain;
+    float gain = 1.0f;
 };
 
 }

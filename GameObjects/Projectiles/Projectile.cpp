@@ -8,7 +8,7 @@ Projectile::Projectile(Position pos, float speed, bool hostile, int damage)
     : GameObject(pos, speed), m_hostile(hostile), m_damage(damage) {}
 
 bool Projectile::shouldBeDeleted() {
-  return m_position.isBeyondScreenTopLimit(); //|| m_hasCollided;
+  return m_position.isBeyondScreenTopLimit(10); //|| m_hasCollided;
 }
 
 void Projectile::collideWith(GameObject &other) {
