@@ -1,12 +1,12 @@
 #include "GameState.h"
-#include "Weapons/LaserCannon.h"
+#include "Weapons/PrimaryWeapon.h"
 #include "GameObjects/Ships/EnemyShip.h"
 #include <iostream>
 #include <sstream>
 
 namespace Game {
 
-GameState::GameState(QObject *parent) : QObject(parent) {
+GameState::GameState(QObject *parent) : QObject(parent), m_playerShipDeletedFromScene(false) {
   m_playersShipStartSpeed = 500;
 }
 
@@ -36,7 +36,11 @@ void GameState::setSize(int width, int height) {
 }
 
 void GameState::update(float deltaTimeInSeconds) {
-  GameObjects::UpdateContext context{ deltaTimeInSeconds, *(m_playerShip) };
+  GameObjects::UpdateContext context{ deltaTimeInSeconds, *m_playerShip };
+  if (!m_playerShipDeletedFromScene && m_playerShip->isDestroyed()) {
+      emit objectDeleted(m_playerShip);
+      m_playerShipDeletedFromScene = true;
+  }
   auto it = m_gameObjects.begin();
   while (it != m_gameObjects.end()) {
     (*it)->update(context);
@@ -59,10 +63,13 @@ void GameState::initPlayerShip() {
                             m_maxY);
   GameObjects::Ships::PlayerShip *playerShip =
       new GameObjects::Ships::PlayerShip(
-          100, m_playersShipStartSpeed, pos);
+          10, m_playersShipStartSpeed, pos);
   playerShip->initialize();
-  playerShip->setWeapon(std::make_unique<Weapons::LaserCannon>(
-      0, Game::Movement::VerticalMovementStrategy(500, -1)));
+  std::unique_ptr<Weapons::PrimaryWeapon<GameObjects::Projectiles::LaserBeam>>
+      weapon = std::make_unique<Weapons::PrimaryWeapon<GameObjects::Projectiles::LaserBeam>>(
+      0, Game::Movement::VerticalMovementStrategy(1000, -1));
+  //weapon->addProperty(Weapons::WeaponProperty::PIERCING);
+  playerShip->setWeapon(std::move(weapon));
   m_playerShip = playerShip;
   connect(m_playerShip, &GameObjects::Ships::PlayerShip::stellarTokenCollected,
           this, &GameState::onStellarTokenCollected);

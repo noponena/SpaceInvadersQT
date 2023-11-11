@@ -8,7 +8,11 @@ long long unsigned GameObject::counter = 0;
 
 GameObject::GameObject(const Position &position, float speed)
     : m_position(position), m_speed(speed), m_hasCollided(false),
-      m_collidable(true), m_destroyed(false), m_id(counter++), m_destructionInitiated(false) {}
+    m_collidable(true), m_destroyed(false), m_soundEnabled(true),
+    m_onHitPixmapResourcePath(""), m_id(counter++), m_destructionInitiated(false)
+{
+    m_objectType = ObjectType::UNDEFINED;
+}
 
 void GameObject::initialize() {
   this->playSpawnSound();
@@ -19,7 +23,7 @@ void GameObject::initialize() {
 }
 
 void GameObject::update(UpdateContext context) {
-  if (this->isDestroyed() && !m_destructionInitiated)
+  if (this->isDead() && !m_destructionInitiated)
     this->initiateDestructionProcedure();
   this->applyMovementStrategy(context.deltaTimeInSeconds);
   this->updateGraphicsItemPosition();
@@ -248,6 +252,21 @@ void GameObject::setPosition(Position newPosition)
 void GameObject::setPosition(QPointF newPosition)
 {
     m_position.setPos(newPosition);
+}
+
+void GameObject::setSoundEnabled(bool newSoundEnabled)
+{
+    m_spawnSoundInfo.enabled = newSoundEnabled;
+}
+
+ObjectType GameObject::objectType() const
+{
+    return m_objectType;
+}
+
+bool GameObject::isDestroyed() const
+{
+    return m_destroyed;
 }
 
 } // namespace GameObjects

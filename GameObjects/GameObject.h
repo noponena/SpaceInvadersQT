@@ -13,6 +13,14 @@
 
 namespace GameObjects {
 
+enum class ObjectType {
+    UNDEFINED,
+    PLAYER_SHIP,
+    ENEMY_SHIP,
+    PROJECTILE,
+    COLLECTABLE
+};
+
 namespace Projectiles {
 class Projectile;
 }
@@ -34,7 +42,7 @@ class GameObject : public QObject {
 
 public:
   // Constructors & Destructor
-  GameObject(const Position &position, float speed);
+    GameObject(const Position &position, float speed);
   virtual ~GameObject() = default;
 
   // Initialization & Lifecycle
@@ -91,7 +99,14 @@ public:
   bool isCollidingWith(const GameObject &other) const;
 
   void setPosition(QPointF newPosition);
-protected:
+  void setSoundEnabled(bool newSoundEnabled);
+
+  ObjectType objectType() const;
+
+  bool isDestroyed() const;
+
+  protected:
+  ObjectType m_objectType;
   // Member Variables
   Position m_position;
   float m_speed;
@@ -99,6 +114,7 @@ protected:
   bool m_hasCollided;
   bool m_collidable;
   bool m_destroyed;
+  bool m_soundEnabled;
   std::unordered_set<int> m_collisions;
   QPointF m_pixmapScale;
   QString m_pixmapResourcePath;
@@ -114,7 +130,7 @@ protected:
   virtual void playDestructionAnimation(){};
   virtual void playDestructionEffects(){};
   virtual void initiateDestructionProcedure();
-  virtual bool isDestroyed() { return false; };
+  virtual bool isDead() { return false; };
 
   inline void updateGraphicsItemPosition() {
     if (m_graphicsItem) {

@@ -1,5 +1,7 @@
 #include "LevelManager.h"
 #include "GameObjects/Ships/EnemyShip.h"
+#include "GameObjects/Projectiles/BasicEnemyLaserBeam.h"
+#include "Weapons/PrimaryWeapon.h"
 #include <random>
 
 namespace Game {
@@ -29,8 +31,12 @@ void LevelManager::update() {
     // 2. Create a new enemy ship
     GameObjects::Position pos(randomX, y, minX, maxX, minY, maxY);
     GameObjects::Ships::EnemyShip *enemyShip =
-        new GameObjects::Ships::EnemyShip(1, 100, pos);
+        new GameObjects::Ships::EnemyShip(3, 100, pos);
     enemyShip->initialize();
+    std::unique_ptr<Weapons::PrimaryWeapon<GameObjects::Projectiles::BasicEnemyLaser>>
+        weapon = std::make_unique<Weapons::PrimaryWeapon<GameObjects::Projectiles::BasicEnemyLaser>>(2000, Game::Movement::VerticalMovementStrategy(500, 1), true, 1);
+    weapon->enableSound();
+    enemyShip->setWeapon(std::move(weapon));
     enemyShip->setMovementStrategy(
         Game::Movement::VerticalMovementStrategy(100, 1));
 

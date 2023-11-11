@@ -39,7 +39,9 @@ public:
 
   const magnetism &magnetism() const;
 
-protected:
+  int currentHp() const;
+
+  protected:
   int m_currentHp, m_maxHp, m_speed, m_fireRate, m_shotCooldownMs;
   int m_onHitTimerId = -1;
   std::unique_ptr<Weapons::Weapon> m_weapon;
@@ -51,7 +53,7 @@ protected:
   qreal m_halfWidth;
   qreal m_halfHeight;
 
-  virtual bool isDestroyed() override;
+  virtual bool isDead() override;
   virtual void initializeDestructionAnimation() override;
   void playDestructionAnimation() override;
   void playDestructionEffects() override;

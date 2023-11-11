@@ -30,8 +30,13 @@ public:
   bool m_hasInitiatedMovement = false;
   bool m_stopped = false;
   float m_dampingFactor = 0.9f;
+  float m_timeToLiveMs = 30000;
+  float m_lifetimeElapsedMs = 0;
+  bool m_lifeSpanExceeded = false;
 
   void update(UpdateContext context) override {
+      m_lifetimeElapsedMs += context.deltaTimeInSeconds * 1000;
+      m_lifeSpanExceeded = m_lifetimeElapsedMs >= m_timeToLiveMs;
       GameObject::update(context);
       QPointF currentPlayerPosition = context.playerShip.getCenterPosition();
       Position currentPosition = this->getPosition();
@@ -101,7 +106,7 @@ private:
   QPointF m_magneticVelocity;
 
 protected:
-  bool isDestroyed() override { return m_collected; }
+  bool isDead() override { return m_collected; }
 };
 
 } // namespace Collectables

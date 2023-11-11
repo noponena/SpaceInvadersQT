@@ -4,9 +4,11 @@
 namespace Game {
 namespace Audio {
 
-enum SoundEffect {
+enum class SoundEffect {
     LASER,
+    LESSER_ENEMY_LASER,
     STELLAR_COIN_COLLECTED,
+    PLAYER_DESTROYED,
     LESSER_ENEMY_DESTROYED,
 };
 

@@ -32,9 +32,9 @@ public:
     return pos.x() - offset > bounds.right();
   }
 
-  bool isBeyondAnyLimit() const {
-    return isBeyondScreenTopLimit() || isBeyondScreenBottomLimit() ||
-           isBeyondScreenLeftLimit() || isBeyondScreenRightLimit();
+  bool isBeyondAnyLimit(float offset = 0) const {
+    return isBeyondScreenTopLimit(offset) || isBeyondScreenBottomLimit(offset) ||
+           isBeyondScreenLeftLimit(offset) || isBeyondScreenRightLimit(offset);
   }
 
   float x() const { return pos.x(); }

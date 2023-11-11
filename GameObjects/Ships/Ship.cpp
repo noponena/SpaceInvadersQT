@@ -27,7 +27,7 @@ void Ship::shoot() { m_weapon->shoot(); }
 void Ship::takeDamage(int amount) { m_currentHp -= amount; }
 
 void Ship::heal(int amount) {
-  if (this->isDestroyed()) {
+  if (this->isDead()) {
     m_currentHp += amount;
     if (m_currentHp > m_maxHp) {
       m_currentHp = m_maxHp;
@@ -35,7 +35,7 @@ void Ship::heal(int amount) {
   }
 }
 
-bool Ship::isDestroyed() { return m_currentHp <= 0; }
+bool Ship::isDead() { return m_currentHp <= 0; }
 
 void Ship::updateFireRate(int amount) {
   m_weapon->updateWeaponCooldown(amount);
@@ -79,7 +79,12 @@ void Ship::onAnimationCompleted() { m_destroyed = true;}
 
 const magnetism &Ship::magnetism() const
 {
-    return m_magnetism;
+  return m_magnetism;
+}
+
+int Ship::currentHp() const
+{
+  return m_currentHp;
 }
 
 void Ship::playDestructionAnimation() {
@@ -116,19 +121,20 @@ void Ship::playOnHitAnimation() {
   if (m_onHitAnimationInProgress)
     return;
 
+  // Load the "on hit" pixmap and set it to the graphics item
+  QPixmap onHitPixmap = this->getOnHitPixmap();
   m_onHitAnimationInProgress = true;
-  QColor darkerColor = m_originalColor.darker(200);
-  static_cast<QGraphicsPolygonItem *>(m_graphicsItem)->setBrush(darkerColor);
+  static_cast<QGraphicsPixmapItem *>(m_graphicsItem)->setPixmap(onHitPixmap);
+  m_onHitTimerId = startTimer(100);
 
-  m_onHitTimerId = startTimer(25);
 }
 
 void Ship::timerEvent(QTimerEvent *event) {
   if (event->timerId() == m_onHitTimerId) {
-    static_cast<QGraphicsPolygonItem *>(m_graphicsItem)
-        ->setBrush(m_originalColor);
-    m_onHitAnimationInProgress = false;
     killTimer(m_onHitTimerId);
+    static_cast<QGraphicsPixmapItem *>(m_graphicsItem)
+        ->setPixmap(this->getPixmap());
+    m_onHitAnimationInProgress = false;
     m_onHitTimerId = -1;
   }
 }

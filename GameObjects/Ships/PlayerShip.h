@@ -21,6 +21,10 @@ protected:
   QPixmap getPixmap() const override;
 signals:
   void stellarTokenCollected();
+
+    // GameObject interface
+public:
+    bool shouldBeDeleted() override;
 };
 } // namespace Ships
 

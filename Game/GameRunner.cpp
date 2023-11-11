@@ -6,12 +6,13 @@
 namespace Game {
 GameRunner::GameRunner(QWidget *parent)
     : QGraphicsView(parent), m_scene(new QGraphicsScene(this)),
-    m_continuousShoot(false), m_continuousEnemySpawn(false) {
+    m_continuousShoot(false), m_continuousEnemySpawn(true), m_gameOver(false) {
   setupView();
   setupCounters();
   setupConnections();
   m_elapsedTimer.start();
   m_fpsTimer.start();
+  m_gameTimer = new QTimer(this);
 }
 
 void GameRunner::setupView() {
@@ -32,21 +33,30 @@ void GameRunner::setupView() {
 void GameRunner::setupCounters() {
   m_fpsCounter = new UI::FPSCounter();
   m_gameObjectCounter = new UI::GameObjectCounter();
+
   m_stellarTokens = new QGraphicsTextItem();
   m_stellarTokens->setPlainText("Stellar tokens: 0");
   m_stellarTokens->setDefaultTextColor(Qt::white);
   m_stellarTokens->setFont(QFont("times", 12));
+
+  m_playerHp = new QGraphicsTextItem();
+  m_playerHp->setDefaultTextColor(Qt::white);
+  m_playerHp->setFont(QFont("times", 12));
+
+  m_gameOverInfo = new QGraphicsTextItem();
+  m_gameOverInfo->setDefaultTextColor(Qt::white);
+  m_gameOverInfo->setFont(QFont("times", 64));
+
   m_fpsCounter->setPos(0, 0);
   m_gameObjectCounter->setPos(0, m_fpsCounter->boundingRect().height() - 10);
   m_stellarTokens->setPos(0, m_gameObjectCounter->boundingRect().height() - 10 + 20);
+  m_playerHp->setPos(0, m_gameObjectCounter->boundingRect().height() - 10 + 40);
+
   scene()->addItem(m_fpsCounter);
   scene()->addItem(m_gameObjectCounter);
   scene()->addItem(m_stellarTokens);
-
-//  connect(&m_gameState, &GameState::objectAdded, this,
-//          [=]() { gameObjectCounter->updateObjectCount(1); });
-//  connect(&m_gameState, &GameState::objectDeleted, this,
-//          [=]() { gameObjectCounter->updateObjectCount(-1); });
+  scene()->addItem(m_playerHp);
+  scene()->addItem(m_gameOverInfo);
   connect(this, &GameRunner::fpsUpdated, m_fpsCounter,
           &UI::FPSCounter::updateFPS);
 }
@@ -70,9 +80,9 @@ void GameRunner::startGame() {
   m_collisionDetector = new CollisionDetector(m_gameState.gameObjects());
 
   // Create and start game loop timer
-  QTimer *timer = new QTimer(this);
-  connect(timer, &QTimer::timeout, this, &GameRunner::gameLoop);
-  timer->start(16); // Approx. 60 frames per second
+
+  connect(m_gameTimer, &QTimer::timeout, this, &GameRunner::gameLoop);
+  m_gameTimer->start(16); // Approx. 60 frames per second
 
   // Hide menu and show game window
   // ...
@@ -90,10 +100,26 @@ void GameRunner::gameLoop() {
   this->updateGameState(deltaTimeInSeconds);
   m_collisionDetector->detectQuadTree();
   this->updateFps();
-  m_stellarTokens->setPlainText("Stellar tokens: " + QString::number(m_gameState.stellarTokens()));
+
+  if (!m_gameOver) {
+    int playerHp = m_playerShip->currentHp();
+    m_stellarTokens->setPlainText("Stellar tokens: " + QString::number(m_gameState.stellarTokens()));
+    m_playerHp->setPlainText("Player HP: " + QString::number(playerHp));
+    if (playerHp <= 0) {
+        m_gameOver = true;
+        m_gameOverInfo->setPlainText("GAME OVER");
+        QRectF textBoundingRect = m_gameOverInfo->boundingRect();
+        QRectF sceneRect = scene()->sceneRect();
+        QPointF centerPosition = QPointF((sceneRect.width() - textBoundingRect.width()) / 2.0,
+                                         (sceneRect.height() - textBoundingRect.height()) / 2.0);
+        m_gameOverInfo->setPos(centerPosition);
+    }
+  }
 }
 
 void GameRunner::processInput(float deltaTime) {
+  if (m_gameOver)
+    return;
   for (const auto &[key, action] : m_keyActions) {
     if (m_pressedKeys.contains(key))
       action(deltaTime);

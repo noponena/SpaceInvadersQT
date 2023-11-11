@@ -36,12 +36,16 @@ void SoundManager::loadSounds()
 {
     SoundDevice::get();
     uint32_t laser = SoundBuffer::get()->addSoundEffectFromResource(":/Sounds/laser.wav");
+    uint32_t lesserEnemyLaser = SoundBuffer::get()->addSoundEffectFromResource(":/Sounds/lesser_enemy_laser.wav");
+    uint32_t playerDestroyed = SoundBuffer::get()->addSoundEffectFromResource(":/Sounds/player_explosion.wav");
     uint32_t lesserEnemyDestroyed = SoundBuffer::get()->addSoundEffectFromResource(":/Sounds/explosion.wav");
     uint32_t stellarCoinCollected = SoundBuffer::get()->addSoundEffectFromResource(":/Sounds/collect.wav");
     SoundSource src;
-    m_sounds[LASER] = std::make_pair(laser, 0.2f);
-    m_sounds[LESSER_ENEMY_DESTROYED] = std::make_pair(lesserEnemyDestroyed, 1.0f);
-    m_sounds[STELLAR_COIN_COLLECTED] = std::make_pair(stellarCoinCollected, 1.0f);
+    m_sounds[SoundEffect::LASER] = std::make_pair(laser, 0.2f);
+    m_sounds[SoundEffect::LESSER_ENEMY_LASER] = std::make_pair(lesserEnemyLaser, 0.1f);
+    m_sounds[SoundEffect::PLAYER_DESTROYED] = std::make_pair(playerDestroyed, 1.0f);
+    m_sounds[SoundEffect::LESSER_ENEMY_DESTROYED] = std::make_pair(lesserEnemyDestroyed, 1.0f);
+    m_sounds[SoundEffect::STELLAR_COIN_COLLECTED] = std::make_pair(stellarCoinCollected, 1.0f);
 }
 
 

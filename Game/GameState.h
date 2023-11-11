@@ -29,6 +29,7 @@ public:
 
 private:
   std::list<std::unique_ptr<GameObjects::GameObject>> m_gameObjects;
+  bool m_playerShipDeletedFromScene;
   unsigned m_stellarTokens;
   float m_playersShipStartSpeed;
   void initPlayerShip();

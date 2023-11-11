@@ -8,9 +8,6 @@ CollisionDetector::CollisionDetector(const std::list<std::unique_ptr<GameObjects
 }
 
 void CollisionDetector::detectQuadTree() {
-    // Counter for the number of collision checks performed.
-    int collisionCheckCount = 0;
-
     // Clear the quadtree for fresh insertion of objects.
     m_quadtree->clear();
 
@@ -31,7 +28,6 @@ void CollisionDetector::detectQuadTree() {
                               : std::make_pair(potentialObject->id(), object->id());
 
             if (checkedPairs.find(sortedPair) == checkedPairs.end()) {
-                collisionCheckCount++;
                 if (object->isCollidingWith(*potentialObject)) {
                     object->collide(*potentialObject);
                 }
@@ -41,26 +37,17 @@ void CollisionDetector::detectQuadTree() {
     }
 
     checkedPairs.clear();
-    //std::cout << "Collision checks performed: " << collisionCheckCount << std::endl;
 }
 
 void CollisionDetector::detect()
 {
-    // Counter for the number of collision checks performed.
-    int collisionCheckCount = 0;
-
     for (auto it1 = m_gameObjects.begin(); it1 != m_gameObjects.end(); ++it1) {
       for (auto it2 = std::next(it1); it2 != m_gameObjects.end(); ++it2) {
-        // Increment the counter before checking for collision.
-        collisionCheckCount++;
         if ((*it1)->isCollidingWith(**it2)) {
           (*it1)->collide(**it2);
         }
       }
     }
-
-    // Output the number of collision checks performed.
-    //std::cout << "Collision checks performed: " << collisionCheckCount << std::endl;
 }
 
 

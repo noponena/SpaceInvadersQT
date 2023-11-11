@@ -12,10 +12,11 @@ namespace Ships {
 EnemyShip::EnemyShip(const int maxHp, int speed, const Position &position)
     : Ship(maxHp, speed, position)
 {
+    m_objectType = ObjectType::ENEMY_SHIP;
     m_pixmapResourcePath = ":/Images/alien.png";
     m_onHitPixmapResourcePath = ":/Images/alien_on_hit.png";
     m_pixmapScale = QPointF(50.0, 75.0);
-    m_destructionSoundInfo = Game::Audio::SoundInfo({true, Game::Audio::SoundEffect::LESSER_ENEMY_DESTROYED});
+    m_destructionSoundInfo = Game::Audio::SoundInfo({m_soundEnabled, Game::Audio::SoundEffect::LESSER_ENEMY_DESTROYED});
 }
 
 void EnemyShip::initiateDestructionProcedure() {
@@ -36,27 +37,10 @@ void EnemyShip::spawnCollectables(int amount)
     }
 }
 
-void EnemyShip::playOnHitAnimation() {
-  if (m_onHitAnimationInProgress)
-    return;
-
-  m_onHitAnimationInProgress = true;
-
-  // Load the "on hit" pixmap and set it to the graphics item
-  QPixmap onHitPixmap = this->getOnHitPixmap();
-  static_cast<QGraphicsPixmapItem *>(m_graphicsItem)->setPixmap(onHitPixmap);
-
-  m_onHitTimerId = startTimer(100);
-}
-
-void EnemyShip::timerEvent(QTimerEvent *event) {
-  if (event->timerId() == m_onHitTimerId) {
-    killTimer(m_onHitTimerId);
-    static_cast<QGraphicsPixmapItem *>(m_graphicsItem)
-        ->setPixmap(this->getPixmap());
-    m_onHitAnimationInProgress = false;
-    m_onHitTimerId = -1;
-  }
+void EnemyShip::update(UpdateContext context)
+{
+    GameObject::update(context);
+    this->shoot();
 }
 
 void EnemyShip::collideWith(GameObject &other) {
@@ -64,9 +48,12 @@ void EnemyShip::collideWith(GameObject &other) {
 }
 
 void EnemyShip::collideWithProjectile(Projectiles::Projectile &projectile) {
-  this->takeDamage(projectile.getDamage());
-  if (!this->isDestroyed())
-    this->playOnHitAnimation();
+  if (!projectile.hostile())
+  {
+    this->takeDamage(projectile.getDamage());
+        if (!this->isDead())
+        this->playOnHitAnimation();
+  }
 }
 
 void EnemyShip::collideWithEnemyShip(EnemyShip &enemyShip) {

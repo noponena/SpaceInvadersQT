@@ -1,8 +1,6 @@
 HEADERS += \
     $$PWD/Collectable.h \
-    $$PWD/Stellar.h \
-    $$PWD/StellarPool.h
+    $$PWD/Stellar.h
 
 SOURCES += \
-    $$PWD/Stellar.cpp \
-    $$PWD/StellarPool.cpp
+    $$PWD/Stellar.cpp

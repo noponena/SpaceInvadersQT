@@ -2,9 +2,9 @@
 
 Weapons::Weapon::Weapon(float cooldownMs,
                         float minCooldownMs,
-                        Game::Movement::MovementStrategy movementStrategy)
-    : m_owner(nullptr), m_cooldownMs(cooldownMs), m_minCooldownMs(minCooldownMs),
-    m_movementStrategy(movementStrategy)
+                        Game::Movement::MovementStrategy movementStrategy, bool hostile, int damage)
+    : m_owner(nullptr), m_hostile(hostile), m_damage(damage), m_soundEnabled(true),
+    m_cooldownMs(cooldownMs), m_minCooldownMs(minCooldownMs), m_movementStrategy(movementStrategy)
 {
     {
       this->clampCooldownMs();
@@ -43,6 +43,26 @@ void Weapons::Weapon::updateWeaponCooldown(float amount)
 {
     m_cooldownMs += amount;
     clampCooldownMs();
+}
+
+void Weapons::Weapon::enableSound()
+{
+    m_soundEnabled = true;
+}
+
+void Weapons::Weapon::disableSound()
+{
+    m_soundEnabled = false;
+}
+
+void Weapons::Weapon::addProperty(WeaponProperty property)
+{
+    m_properties.insert(property);
+}
+
+void Weapons::Weapon::removeProperty(WeaponProperty property)
+{
+    m_properties.erase(property);
 }
 
 bool Weapons::Weapon::canShoot()

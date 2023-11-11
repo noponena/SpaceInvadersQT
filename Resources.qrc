@@ -9,5 +9,7 @@
         <file>Sounds/laser.wav</file>
         <file>Sounds/explosion.wav</file>
         <file>Sounds/collect.wav</file>
+        <file>Sounds/player_explosion.wav</file>
+        <file>Sounds/lesser_enemy_laser.wav</file>
     </qresource>
 </RCC>

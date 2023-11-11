@@ -25,6 +25,7 @@ protected:
   void wheelEvent(QWheelEvent *event) override { event->ignore(); }
 
 private:
+  QTimer *m_gameTimer;
   std::unique_ptr<LevelManager> m_levelManager;
   GameObjects::Ships::PlayerShip *m_playerShip;
   CollisionDetector *m_collisionDetector;
@@ -35,8 +36,11 @@ private:
   QGraphicsScene m_scene;
   int m_frameCount = 0;
   QGraphicsTextItem* m_stellarTokens;
+  QGraphicsTextItem* m_playerHp;
+  QGraphicsTextItem* m_gameOverInfo;
   bool m_continuousShoot;
   bool m_continuousEnemySpawn;
+  bool m_gameOver;
 
   UI::FPSCounter *m_fpsCounter;
   UI::GameObjectCounter *m_gameObjectCounter;
