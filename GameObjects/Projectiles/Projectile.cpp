@@ -6,7 +6,10 @@ namespace GameObjects {
 namespace Projectiles {
 
 Projectile::Projectile(Position pos, float speed, bool hostile, int damage, std::set<Weapons::WeaponProperty> properties)
-    : GameObject(pos, speed), m_hostile(hostile), m_damage(damage), m_properties(properties) {}
+    : GameObject(pos, speed), m_hostile(hostile), m_damage(damage), m_properties(properties)
+{
+    m_objectType = ObjectType::PROJECTILE;
+}
 
 bool Projectile::shouldBeDeleted() {
     bool isPiercing = m_properties.find(Weapons::WeaponProperty::PIERCING) != m_properties.end();

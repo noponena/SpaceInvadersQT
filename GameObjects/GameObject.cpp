@@ -8,7 +8,7 @@ long long unsigned GameObject::counter = 0;
 
 GameObject::GameObject(const Position &position, float speed)
     : m_position(position), m_speed(speed), m_hasCollided(false),
-    m_collidable(true), m_destroyed(false), m_soundEnabled(true),
+    m_collidable(true), m_destructionComplete(false), m_soundEnabled(true),
     m_onHitPixmapResourcePath(""), m_id(counter++), m_destructionInitiated(false)
 {
     m_objectType = ObjectType::UNDEFINED;
@@ -22,7 +22,7 @@ void GameObject::initialize() {
   this->initializeDestructionEffects();
 }
 
-void GameObject::update(UpdateContext context) {
+void GameObject::update(const UpdateContext &context) {
   if (this->isDead() && !m_destructionInitiated)
     this->initiateDestructionProcedure();
   this->applyMovementStrategy(context.deltaTimeInSeconds);
@@ -183,6 +183,11 @@ void GameObject::setMovementStrategy(
   m_movementStrategy = newMovementStrategy;
 }
 
+void GameObject::addMovementStrategy(Game::Movement::MovementStrategy &newMovementStrategy)
+{
+  m_movementStrategy = m_movementStrategy + newMovementStrategy;
+}
+
 long long unsigned GameObject::id() { return m_id; }
 
 void GameObject::clampToXBounds() {
@@ -266,7 +271,7 @@ ObjectType GameObject::objectType() const
 
 bool GameObject::isDestroyed() const
 {
-    return m_destroyed;
+    return m_destructionComplete;
 }
 
 } // namespace GameObjects

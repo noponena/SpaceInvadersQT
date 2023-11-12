@@ -65,7 +65,7 @@ public:
   }
 
   // Update & Movement
-  virtual void update(UpdateContext context);
+  virtual void update(const UpdateContext &context);
   void moveX(float amount);
   void moveY(float amount);
   void accelerateLeft(float deltaTimeInSeconds);
@@ -94,6 +94,7 @@ public:
   void moveTo(const QPointF &newPosition);
   void setMovementStrategy(
       const Game::Movement::MovementStrategy &newMovementStrategy);
+  void addMovementStrategy(Game::Movement::MovementStrategy &newMovementStrategy);
   void collide(GameObject &other);
   bool isAtLimit() const;
   bool isCollidingWith(const GameObject &other) const;
@@ -104,6 +105,7 @@ public:
   ObjectType objectType() const;
 
   bool isDestroyed() const;
+  virtual bool isDead() { return false; };
 
   protected:
   ObjectType m_objectType;
@@ -113,7 +115,7 @@ public:
   QGraphicsItem *m_graphicsItem;
   bool m_hasCollided;
   bool m_collidable;
-  bool m_destroyed;
+  bool m_destructionComplete;
   bool m_soundEnabled;
   std::unordered_set<int> m_collisions;
   QPointF m_pixmapScale;
@@ -130,7 +132,6 @@ public:
   virtual void playDestructionAnimation(){};
   virtual void playDestructionEffects(){};
   virtual void initiateDestructionProcedure();
-  virtual bool isDead() { return false; };
 
   inline void updateGraphicsItemPosition() {
     if (m_graphicsItem) {

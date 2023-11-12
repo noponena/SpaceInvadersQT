@@ -8,6 +8,19 @@
 #include <QDebug>
 
 namespace Game {
+namespace Movement {
+class LinearMovement;
+class SinusoidMovement;
+class StationaryMovement;
+class IntervalMovement;
+}
+}
+
+using AxisMovementStrategy =
+    std::variant<Game::Movement::LinearMovement, Game::Movement::SinusoidMovement,
+                 Game::Movement::StationaryMovement, Game::Movement::IntervalMovement>;
+
+namespace Game {
 
 namespace Movement {
 
@@ -53,45 +66,59 @@ public:
   }
 };
 
+class StationaryMovement {
+public:
+  std::pair<float, float> move(float currentPosition, float anchorPosition,
+                               float deltaTimeInSeconds) {
+    Q_UNUSED(deltaTimeInSeconds);
+    return {currentPosition, anchorPosition};
+  }
+};
+
 class IntervalMovement {
-  using UnderlyingStrategy = std::variant<LinearMovement, SinusoidMovement>;
-  UnderlyingStrategy underlyingStrategy;
-  int m_interval;
-  int m_moveTime;
-  bool m_moving;
-  int m_timeSinceLastChange;
-  int m_timeMoved;
+  std::vector<AxisMovementStrategy> m_underlyingStrategies;
+  std::vector<float> m_intervalsInSeconds;
+  float m_timeSinceLastChange;
+  unsigned long long m_strategyIndex;
+  unsigned long long m_intervalIndex;
 
 public:
-  IntervalMovement(UnderlyingStrategy strategy, int interval, int moveTime)
-      : underlyingStrategy(std::move(strategy)), m_interval(interval),
-        m_moveTime(moveTime), m_moving(true), m_timeSinceLastChange(0) {}
+  IntervalMovement(std::vector<AxisMovementStrategy> strategies, std::vector<float> intervalsInSeconds)
+        : m_underlyingStrategies(strategies), m_intervalsInSeconds(intervalsInSeconds),
+        m_timeSinceLastChange(0), m_strategyIndex(0), m_intervalIndex(0) {}
+
+
+  IntervalMovement(std::vector<AxisMovementStrategy> strategies, float intervalInSeconds)
+      : m_underlyingStrategies(strategies), m_intervalsInSeconds(std::vector({intervalInSeconds})),
+      m_timeSinceLastChange(0), m_strategyIndex(0), m_intervalIndex(0) {}
 
   std::pair<float, float> move(float currentPosition, float anchorPosition,
-                               float deltaTime) {
-    m_timeSinceLastChange += deltaTime;
-    if (m_moving) {
-      m_timeMoved += deltaTime;
-      if (m_timeMoved >= m_moveTime) {
-        // Switch to stationary phase
-        m_moving = false;
-        m_timeMoved = 0;
-        m_timeSinceLastChange = 0; // reset the time since last change
-      } else {
-        return std::visit(
-            [currentPosition, anchorPosition, deltaTime](auto &strategy) {
-              return strategy.move(currentPosition, anchorPosition, deltaTime);
-            },
-            underlyingStrategy);
-      }
-    } else if (m_timeSinceLastChange >= m_interval) {
-      // Switch to moving phase
-      m_moving = true;
-      m_timeSinceLastChange = 0; // reset the time since last change
+                               float deltaTimeInSeconds) {
+    m_timeSinceLastChange += deltaTimeInSeconds;
+    AxisMovementStrategy underlyingStrategy = m_underlyingStrategies[m_strategyIndex];
+    float intervalInSeconds = m_intervalsInSeconds[m_intervalIndex];
+
+    if (m_timeSinceLastChange > intervalInSeconds) {
+      m_timeSinceLastChange = 0;
+      incrementStrategyIndex();
+      incrementIntervalIndex();
     }
 
-    return {currentPosition,
-            anchorPosition}; // Return current position if not moving
+    return std::visit(
+        [currentPosition, anchorPosition, deltaTimeInSeconds](auto &strategy) {
+            return strategy.move(currentPosition, anchorPosition, deltaTimeInSeconds);
+        }, underlyingStrategy);
+  }
+private:
+  void incrementStrategyIndex() {
+    m_strategyIndex++;
+    if (m_strategyIndex >= m_underlyingStrategies.size())
+      m_strategyIndex = 0;
+  }
+  void incrementIntervalIndex() {
+    m_intervalIndex++;
+    if (m_intervalIndex >= m_intervalsInSeconds.size())
+      m_intervalIndex = 0;
   }
 };
 

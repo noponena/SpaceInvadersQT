@@ -11,7 +11,7 @@ class PrimaryWeapon : public Weapon {
 public:
     PrimaryWeapon(float cooldownMs,
               Game::Movement::MovementStrategy movementStrategy, bool hostile = false, int damage = 1)
-        : Weapon(cooldownMs, 200, movementStrategy, hostile, damage) {};
+        : Weapon(cooldownMs, 100, movementStrategy, hostile, damage) {};
 
   // Weapon interface
 public:

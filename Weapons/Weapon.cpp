@@ -67,12 +67,13 @@ void Weapons::Weapon::removeProperty(WeaponProperty property)
 
 bool Weapons::Weapon::canShoot()
 {
-    int elapsed = m_lastShotTimer.elapsed();
-    if (elapsed < m_cooldownMs) {
-      return false;
+    if (!m_owner->isDead()) {
+      int elapsed = m_lastShotTimer.elapsed();
+      if (elapsed >= m_cooldownMs) {
+          return true;
+      }
     }
-
-    return true;
+    return false;
 }
 
 void Weapons::Weapon::clampCooldownMs()

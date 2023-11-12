@@ -33,12 +33,35 @@ void LevelManager::update() {
     GameObjects::Ships::EnemyShip *enemyShip =
         new GameObjects::Ships::EnemyShip(3, 100, pos);
     enemyShip->initialize();
+    Game::Movement::MovementStrategy movStrat = Game::Movement::VerticalMovementStrategy(500, 1);
     std::unique_ptr<Weapons::PrimaryWeapon<GameObjects::Projectiles::BasicEnemyLaser>>
-        weapon = std::make_unique<Weapons::PrimaryWeapon<GameObjects::Projectiles::BasicEnemyLaser>>(2000, Game::Movement::VerticalMovementStrategy(500, 1), true, 1);
+        weapon = std::make_unique<Weapons::PrimaryWeapon<GameObjects::Projectiles::BasicEnemyLaser>>(2000, movStrat, true, 1);
+
     weapon->enableSound();
     enemyShip->setWeapon(std::move(weapon));
+
+    Game::Movement::MovementStrategy horizontalStrategyLeft = Game::Movement::HorizontalMovementStrategy(100, -1);
+    Game::Movement::MovementStrategy horizontalStrategyRight = Game::Movement::HorizontalMovementStrategy(100, 1);
+    Game::Movement::MovementStrategy horizontalCombined = horizontalStrategyLeft + horizontalStrategyRight;
+
+    Game::Movement::MovementStrategy verticalStrategy = Game::Movement::VerticalMovementStrategy(200, 1);
+    Game::Movement::MovementStrategy stationaryStrategy = Game::Movement::StationaryMovementStrategy();
+    std::vector<std::pair<Game::Movement::MovementStrategy, float>> verticalCombined = {
+        std::make_pair(verticalStrategy, 0.25f),
+        std::make_pair(stationaryStrategy, 3.0f)
+    };
+
+    Game::Movement::IntervalMovementStrategy horizontalIntervalStrategy = Game::Movement::IntervalMovementStrategy(horizontalCombined, 0.5f);
+    Game::Movement::IntervalMovementStrategy verticalIntervalStrategy = Game::Movement::IntervalMovementStrategy(verticalCombined);
+
+    Game::Movement::MovementStrategy combined = horizontalIntervalStrategy + verticalIntervalStrategy;
+
+//    enemyShip->setMovementStrategy(
+//        Game::Movement::VerticalMovementStrategy(100, 1));
+
+
     enemyShip->setMovementStrategy(
-        Game::Movement::VerticalMovementStrategy(100, 1));
+        combined);
 
     // 3. Add the enemy ship to the game state
     m_gameState.addGameObject(enemyShip);

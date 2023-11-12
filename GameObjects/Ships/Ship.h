@@ -23,6 +23,7 @@ public:
   virtual ~Ship();
   void shoot();
   bool shouldBeDeleted() override;
+  bool isDead() override;
   void takeDamage(int amount);
   void heal(int amount);
   void updateFireRate(int amount = 1);
@@ -53,7 +54,6 @@ public:
   qreal m_halfWidth;
   qreal m_halfHeight;
 
-  virtual bool isDead() override;
   virtual void initializeDestructionAnimation() override;
   void playDestructionAnimation() override;
   void playDestructionEffects() override;

@@ -24,7 +24,7 @@ protected:
 
   // GameObject interface
 public:
-  void update(UpdateContext context) override;
+  void update(const UpdateContext &context) override;
 };
 } // namespace Ships
 

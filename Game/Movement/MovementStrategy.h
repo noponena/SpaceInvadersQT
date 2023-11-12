@@ -10,10 +10,6 @@
 namespace Game {
 namespace Movement {
 
-using AxisMovementStrategy =
-    std::variant<Movement::LinearMovement, Movement::SinusoidMovement,
-                 Movement::IntervalMovement>;
-
 class MovementStrategy {
 
 public:
@@ -46,6 +42,16 @@ public:
     this->m_yAxisMovementStrategies.clear();
   }
 
+  std::vector<AxisMovementStrategy> xAxisMovementStrategies() const
+  {
+    return m_xAxisMovementStrategies;
+  }
+
+  std::vector<AxisMovementStrategy> yAxisMovementStrategies() const
+  {
+    return m_yAxisMovementStrategies;
+  }
+
   MovementStrategy operator+(const MovementStrategy &other) const {
     std::vector<AxisMovementStrategy> combinedXStrategies;
     combinedXStrategies.reserve(this->m_xAxisMovementStrategies.size() +
@@ -74,12 +80,20 @@ public:
     return combined;
   }
 
-protected:
+  protected:
   std::vector<AxisMovementStrategy> m_xAxisMovementStrategies;
   std::vector<AxisMovementStrategy> m_yAxisMovementStrategies;
 
 private:
   int m_maxStrategies = 10;
+};
+
+class StationaryMovementStrategy : public MovementStrategy {
+  public:
+  StationaryMovementStrategy() {
+    m_xAxisMovementStrategies.push_back(Movement::StationaryMovement());
+    m_yAxisMovementStrategies.push_back(Movement::StationaryMovement());
+  }
 };
 
 class VerticalMovementStrategy : public MovementStrategy {
@@ -104,11 +118,60 @@ class CircularMovementStrategy : public MovementStrategy {
 
 public:
   CircularMovementStrategy(float amplitude, float frequency,
-                           int direction = 1) {
+                           int direction = 1, bool updateAnchor = false) {
     m_xAxisMovementStrategies.push_back(
-        Movement::SinusoidMovement(amplitude, frequency, 0, direction, false));
+        Movement::SinusoidMovement(amplitude, frequency, 0, direction, updateAnchor));
     m_yAxisMovementStrategies.push_back(Movement::SinusoidMovement(
         amplitude, frequency, 0.5, direction, false));
+  }
+};
+
+class IntervalMovementStrategy : public MovementStrategy {
+
+  public:
+  IntervalMovementStrategy(MovementStrategy strategy, float intervalInSeconds) {
+    std::vector<AxisMovementStrategy> xStrategies = strategy.xAxisMovementStrategies();
+    std::vector<AxisMovementStrategy> yStrategies = strategy.yAxisMovementStrategies();
+
+    if (!xStrategies.empty())
+      m_xAxisMovementStrategies.push_back(
+          Movement::IntervalMovement(xStrategies, intervalInSeconds));
+    if (!yStrategies.empty())
+      m_yAxisMovementStrategies.push_back(
+          Movement::IntervalMovement(yStrategies, intervalInSeconds));
+  }
+
+  IntervalMovementStrategy(std::vector<std::pair<MovementStrategy, float>> strategies) {
+
+    size_t xReserve = 0, yReserve = 0;
+    for (const auto& pair : strategies) {
+      xReserve += pair.first.xAxisMovementStrategies().size();
+      yReserve += pair.first.yAxisMovementStrategies().size();
+    }
+
+    std::vector<AxisMovementStrategy> xMovementStrategies;
+    std::vector<AxisMovementStrategy> yMovementStrategies;
+    std::vector<float> xIntervals(xReserve, 0);
+    std::vector<float> yIntervals(yReserve, 0);
+
+    size_t xIndex = 0, yIndex = 0;
+    for (const auto& pair : strategies) {
+      std::vector<AxisMovementStrategy> xStrategies = pair.first.xAxisMovementStrategies();
+      std::vector<AxisMovementStrategy> yStrategies = pair.first.yAxisMovementStrategies();
+
+      xMovementStrategies.insert(xMovementStrategies.end(), xStrategies.begin(), xStrategies.end());
+      yMovementStrategies.insert(yMovementStrategies.end(), yStrategies.begin(), yStrategies.end());
+
+      std::fill_n(xIntervals.begin() + xIndex, xStrategies.size(), pair.second);
+      std::fill_n(yIntervals.begin() + yIndex, yStrategies.size(), pair.second);
+      xIndex += xStrategies.size();
+      yIndex += yStrategies.size();
+    }
+
+    if (!xMovementStrategies.empty())
+      m_xAxisMovementStrategies.push_back(Movement::IntervalMovement(xMovementStrategies, xIntervals));
+    if (!yMovementStrategies.empty())
+      m_yAxisMovementStrategies.push_back(Movement::IntervalMovement(yMovementStrategies, yIntervals));
   }
 };
 

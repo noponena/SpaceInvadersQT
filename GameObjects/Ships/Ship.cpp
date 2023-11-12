@@ -22,7 +22,11 @@ Ship::~Ship()
 
 }
 
-void Ship::shoot() { m_weapon->shoot(); }
+void Ship::shoot()
+{
+  if (m_weapon)
+    m_weapon->shoot();
+}
 
 void Ship::takeDamage(int amount) { m_currentHp -= amount; }
 
@@ -75,7 +79,7 @@ void Ship::initializeDestructionAnimation() {
   connect(this, &Ship::animationCompleted, this, &Ship::onAnimationCompleted);
 }
 
-void Ship::onAnimationCompleted() { m_destroyed = true;}
+void Ship::onAnimationCompleted() { m_destructionComplete = true;}
 
 const magnetism &Ship::magnetism() const
 {
@@ -115,7 +119,7 @@ void Ship::playDestructionEffects()
   m_graphicsItem->scene()->addItem(m_particleSystem.get());
 }
 
-bool Ship::shouldBeDeleted() { return m_destroyed; }
+bool Ship::shouldBeDeleted() { return m_destructionComplete; }
 
 void Ship::playOnHitAnimation() {
   if (m_onHitAnimationInProgress)

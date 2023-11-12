@@ -68,7 +68,7 @@ void GameState::initPlayerShip() {
   std::unique_ptr<Weapons::PrimaryWeapon<GameObjects::Projectiles::LaserBeam>>
       weapon = std::make_unique<Weapons::PrimaryWeapon<GameObjects::Projectiles::LaserBeam>>(
       0, Game::Movement::VerticalMovementStrategy(1000, -1));
-  //weapon->addProperty(Weapons::WeaponProperty::PIERCING);
+  weapon->addProperty(Weapons::WeaponProperty::PIERCING);
   playerShip->setWeapon(std::move(weapon));
   m_playerShip = playerShip;
   connect(m_playerShip, &GameObjects::Ships::PlayerShip::stellarTokenCollected,

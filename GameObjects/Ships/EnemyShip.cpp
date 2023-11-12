@@ -37,7 +37,7 @@ void EnemyShip::spawnCollectables(int amount)
     }
 }
 
-void EnemyShip::update(UpdateContext context)
+void EnemyShip::update(const UpdateContext &context)
 {
     GameObject::update(context);
     this->shoot();
@@ -62,7 +62,7 @@ void EnemyShip::collideWithEnemyShip(EnemyShip &enemyShip) {
 }
 
 bool EnemyShip::shouldBeDeleted() {
-  return m_destroyed || m_position.isBeyondScreenBottomLimit(35);
+  return m_destructionComplete || m_position.isBeyondScreenBottomLimit(35);
 }
 
 QPixmap EnemyShip::getPixmap() const {
