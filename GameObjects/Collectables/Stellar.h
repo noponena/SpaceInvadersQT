@@ -8,21 +8,20 @@
 namespace GameObjects {
 namespace Collectables {
 
-class Stellar : public Collectable, public std::enable_shared_from_this<Stellar>
-{
+class Stellar : public Collectable,
+                public std::enable_shared_from_this<Stellar> {
 public:
-    Stellar(const Position &position);
+  Stellar(const Position &position);
 
 protected:
-    QPixmap getPixmap() const override;
+  QPixmap getPixmap() const override;
 
-    // GameObject interface
+  // GameObject interface
 public:
-    void collideWith(GameObject &other) override;
+  void collideWith(GameObject &other) override;
 };
-}
+} // namespace Collectables
 
-}
-
+} // namespace GameObjects
 
 #endif // STELLAR_H

@@ -1,17 +1,17 @@
 #ifndef GAMERUNNER_H
 #define GAMERUNNER_H
 
+#include "CollisionDetection/CollisionDetector.h"
 #include "GameState.h"
 #include "LevelManager.h"
-#include "CollisionDetection/CollisionDetector.h"
 #include "UI/FPSCounter.h"
 #include "UI/GameObjectCounter.h"
 #include "qtimer.h"
 #include <QElapsedTimer>
 #include <QGraphicsView>
 #include <QKeyEvent>
-#include <QWheelEvent>
 #include <QLabel>
+#include <QWheelEvent>
 
 namespace Game {
 class GameRunner : public QGraphicsView {
@@ -36,10 +36,10 @@ private:
   QSet<int> m_pressedKeys;
   QGraphicsScene m_scene;
   int m_frameCount = 0;
-  QGraphicsTextItem* m_stellarTokens;
-  QGraphicsTextItem* m_playerHp;
-  QGraphicsTextItem* m_gameOverInfo;
-  QGraphicsTextItem* m_sceneItemCounter;
+  QGraphicsTextItem *m_stellarTokens;
+  QGraphicsTextItem *m_playerHp;
+  QGraphicsTextItem *m_gameOverInfo;
+  QGraphicsTextItem *m_sceneItemCounter;
   bool m_continuousShoot;
   bool m_continuousEnemySpawn;
   bool m_gameOver;
@@ -65,8 +65,12 @@ private:
   using MenuAction = std::function<void()>;
   using GameAction = std::function<void(float)>;
 
-  const std::unordered_map<int, MenuAction> m_menuActions {
-      {Qt::Key_Escape, [&]() { m_gameTimer->stop(); emit windowClosed(); }},
+  const std::unordered_map<int, MenuAction> m_menuActions{
+      {Qt::Key_Escape,
+       [&]() {
+         m_gameTimer->stop();
+         emit windowClosed();
+       }},
   };
   const std::unordered_map<int, GameAction> m_gameActions{
       {Qt::Key_Left, [&](float dt) { m_playerShip->accelerateLeft(dt); }},
@@ -95,15 +99,15 @@ private:
        }},
       {Qt::Key_C,
        [&](float dt) {
-           Q_UNUSED(dt);
-           m_continuousShoot = !m_continuousShoot;
-           m_pressedKeys.remove(Qt::Key_C);
+         Q_UNUSED(dt);
+         m_continuousShoot = !m_continuousShoot;
+         m_pressedKeys.remove(Qt::Key_C);
        }},
       {Qt::Key_S,
        [&](float dt) {
-           Q_UNUSED(dt);
-           m_continuousEnemySpawn = !m_continuousEnemySpawn;
-           m_pressedKeys.remove(Qt::Key_S);
+         Q_UNUSED(dt);
+         m_continuousEnemySpawn = !m_continuousEnemySpawn;
+         m_pressedKeys.remove(Qt::Key_S);
        }},
   };
 

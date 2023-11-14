@@ -17,11 +17,6 @@ void ParticleSystem::update() {
     particle.update();
   }
 
-  m_particles.erase(
-      std::remove_if(m_particles.begin(), m_particles.end(),
-                     [](const Particle &p) { return p.isDead(); }),
-      m_particles.end());
-
   if (m_particles.empty()) {
     emit animationFinished();
   }
@@ -38,25 +33,6 @@ void ParticleSystem::spawnParticles(int count, QColor color,
   }
 }
 
-QRectF ParticleSystem::boundingRect() const {
-  if (m_particles.empty()) {
-    return QRectF();
-  }
-  qreal left = m_particles.front().position().x();
-  qreal right = m_particles.front().position().x();
-  qreal top = m_particles.front().position().y();
-  qreal bottom = m_particles.front().position().y();
-
-  for (const Particle &p : m_particles) {
-    left = std::min(left, p.position().x());
-    right = std::max(right, p.position().x());
-    top = std::min(top, p.position().y());
-    bottom = std::max(bottom, p.position().y());
-  }
-
-  return QRectF(left, top, right - left, bottom - top);
-}
-
 void ParticleSystem::paint(QPainter *painter,
                            const QStyleOptionGraphicsItem *option,
                            QWidget *widget) {
@@ -64,19 +40,21 @@ void ParticleSystem::paint(QPainter *painter,
   Q_UNUSED(widget)
 
   this->update();
-
+  painter->setRenderHint(QPainter::Antialiasing, false);
+  painter->save();
+  painter->setPen(Qt::NoPen);
   for (Particle &particle : m_particles) {
     particle.draw(*painter);
   }
+  painter->restore();
 }
 
-void ParticleSystem::setPosition(QPointF newPosition)
-{
-    for (Particle &p : m_particles) {
-        p.setPosition(newPosition);
-    }
+void ParticleSystem::setPosition(QPointF newPosition) {
+  for (Particle &p : m_particles) {
+    p.setPosition(newPosition);
+  }
 
-    m_position = newPosition;
+  m_position = newPosition;
 }
 
 } // namespace Effects

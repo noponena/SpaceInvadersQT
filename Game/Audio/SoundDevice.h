@@ -3,21 +3,16 @@
 
 namespace Game {
 namespace Audio {
-class SoundDevice
-{
+class SoundDevice {
 public:
-    static SoundDevice* get();
+  static SoundDevice *get();
 
 private:
-    SoundDevice();
-    ~SoundDevice();
+  SoundDevice();
+  ~SoundDevice();
 
-    ALCdevice* p_ALCDevice;
-    ALCcontext* p_ALCContext;
-
+  ALCdevice *p_ALCDevice;
+  ALCcontext *p_ALCContext;
 };
-}
-}
-
-
-
+} // namespace Audio
+} // namespace Game

@@ -1,24 +1,24 @@
 #ifndef GAMEOBJECT_H
 #define GAMEOBJECT_H
 
-#include "Position.h"
-#include "Game/Movement/MovementStrategy.h"
 #include "Game/Audio/SoundInfo.h"
-#include <QUrl>
+#include "Game/Movement/MovementStrategy.h"
+#include "Position.h"
 #include <QGraphicsItem>
 #include <QObject>
+#include <QUrl>
 #include <stdexcept>
 #include <unordered_set>
-
 
 namespace GameObjects {
 
 enum class ObjectType {
-    UNDEFINED,
-    PLAYER_SHIP,
-    ENEMY_SHIP,
-    PROJECTILE,
-    COLLECTABLE
+  UNDEFINED,
+  PLAYER_SHIP,
+  ENEMY_SHIP,
+  PLAYER_PROJECTILE,
+  ENEMY_PROJECTILE,
+  COLLECTABLE
 };
 
 namespace Projectiles {
@@ -33,8 +33,8 @@ class Stellar;
 }
 
 struct UpdateContext {
-    float deltaTimeInSeconds;
-    const Ships::PlayerShip* playerShip;
+  float deltaTimeInSeconds;
+  const Ships::PlayerShip *playerShip;
 };
 
 class GameObject : public QObject {
@@ -42,7 +42,7 @@ class GameObject : public QObject {
 
 public:
   // Constructors & Destructor
-    GameObject(const Position &position);
+  GameObject(const Position &position);
   virtual ~GameObject() = default;
 
   // Initialization & Lifecycle
@@ -75,16 +75,17 @@ public:
   bool isCollidable() const;
   long long unsigned id();
   QRectF getBoundingBox() const {
-      QRectF localRect = m_graphicsItem->boundingRect();
-      QRectF sceneRect = m_graphicsItem->mapToScene(localRect).boundingRect();
-      return sceneRect;
+    QRectF localRect = m_graphicsItem->boundingRect();
+    QRectF sceneRect = m_graphicsItem->mapToScene(localRect).boundingRect();
+    return sceneRect;
   }
 
   // Actions & Modifiers
   void moveTo(const QPointF &newPosition);
   void setMovementStrategy(
       const Game::Movement::MovementStrategy &newMovementStrategy);
-  void addMovementStrategy(Game::Movement::MovementStrategy &newMovementStrategy);
+  void
+  addMovementStrategy(Game::Movement::MovementStrategy &newMovementStrategy);
   void collide(GameObject &other);
   bool isAtLimit() const;
   bool isCollidingWith(const GameObject &other) const;
@@ -149,7 +150,7 @@ private:
   // Member Variables
   long long unsigned m_id;
   bool m_destructionInitiated;
-  //Game::Audio::SoundManager m_soundManager;
+  // Game::Audio::SoundManager m_soundManager;
   Game::Movement::MovementStrategy m_movementStrategy;
   static long long unsigned counter;
 

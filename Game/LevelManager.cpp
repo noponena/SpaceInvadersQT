@@ -1,20 +1,19 @@
 #include "LevelManager.h"
+#include "GameObjects/Projectiles/EnemyLaserBeam.h"
 #include "GameObjects/Ships/EnemyShip.h"
-#include "GameObjects/Projectiles/BasicEnemyLaserBeam.h"
 #include "Weapons/PrimaryWeapon.h"
 #include <random>
 
 namespace Game {
 
 LevelManager::LevelManager(GameState &gameState)
-    : m_gameState(gameState), m_lastSpawnTime(0)
-{
-    m_elapsedTimer.start();
+    : m_gameState(gameState), m_lastSpawnTime(0) {
+  m_elapsedTimer.start();
 }
 
 void LevelManager::update() {
   float currentTime = m_elapsedTimer.elapsed();
-    if (currentTime - m_lastSpawnTime >= m_spawnIntervalMs) {
+  if (currentTime - m_lastSpawnTime >= m_spawnIntervalMs) {
     // 1. Generate a random x position between minX and maxX
     std::random_device rd;  // obtain a random number from hardware
     std::mt19937 eng(rd()); // seed the generator
@@ -31,42 +30,48 @@ void LevelManager::update() {
     // 2. Create a new enemy ship
     GameObjects::Position pos(randomX, y, minX, maxX, minY, maxY);
     std::unique_ptr<GameObjects::Ships::EnemyShip> enemyShip =
-        std::make_unique<GameObjects::Ships::EnemyShip>(3, pos);
+        std::make_unique<GameObjects::Ships::EnemyShip>(5, pos);
     enemyShip->initialize();
 
-    std::unique_ptr<Weapons::Weapon> weapon = m_weaponBuilder
-                                                  .createWeapon(std::make_unique<Weapons::PrimaryWeapon>())
-                                                  .withProjectileDamage(1)
-                                                  .withProjectile(new GameObjects::Projectiles::LesserEnemyLaserBeam)
-                                                  .withProjectileMovementStrategy(Game::Movement::VerticalMovementStrategy(500, 1))
-                                                  .withWeaponCooldownMs(2000)
-                                                  .withProjectileHostility(true)
-                                                  .build();
+    std::unique_ptr<Weapons::Weapon> weapon =
+        m_weaponBuilder.createWeapon(std::make_unique<Weapons::PrimaryWeapon>())
+            .withProjectileDamage(1)
+            .withProjectile(
+                std::make_unique<GameObjects::Projectiles::EnemyLaserBeam>())
+            .withProjectileMovementStrategy(
+                Game::Movement::VerticalMovementStrategy(500, 1))
+            .withWeaponCooldownMs(2000)
+            .build();
 
     enemyShip->addWeapon(std::move(weapon));
 
-    Game::Movement::MovementStrategy horizontalStrategyLeft = Game::Movement::HorizontalMovementStrategy(100, -1);
-    Game::Movement::MovementStrategy horizontalStrategyRight = Game::Movement::HorizontalMovementStrategy(100, 1);
-    Game::Movement::MovementStrategy horizontalCombined = horizontalStrategyLeft + horizontalStrategyRight;
+    Game::Movement::MovementStrategy horizontalStrategyLeft =
+        Game::Movement::HorizontalMovementStrategy(200, -1);
+    Game::Movement::MovementStrategy horizontalStrategyRight =
+        Game::Movement::HorizontalMovementStrategy(200, 1);
+    Game::Movement::MovementStrategy horizontalCombined =
+        horizontalStrategyLeft + horizontalStrategyRight;
 
-    Game::Movement::MovementStrategy verticalStrategy = Game::Movement::VerticalMovementStrategy(200, 1);
-    Game::Movement::MovementStrategy stationaryStrategy = Game::Movement::StationaryMovementStrategy();
-    std::vector<std::pair<Game::Movement::MovementStrategy, float>> verticalCombined = {
-        std::make_pair(verticalStrategy, 0.25f),
-        std::make_pair(stationaryStrategy, 3.0f)
-    };
+    Game::Movement::MovementStrategy verticalStrategy =
+        Game::Movement::VerticalMovementStrategy(200, 1);
+    Game::Movement::MovementStrategy stationaryStrategy =
+        Game::Movement::StationaryMovementStrategy();
+    std::vector<std::pair<Game::Movement::MovementStrategy, float>>
+        verticalCombined = {std::make_pair(verticalStrategy, 0.25f),
+                            std::make_pair(stationaryStrategy, 2.0f)};
 
-    Game::Movement::IntervalMovementStrategy horizontalIntervalStrategy = Game::Movement::IntervalMovementStrategy(horizontalCombined, 0.5f);
-    Game::Movement::IntervalMovementStrategy verticalIntervalStrategy = Game::Movement::IntervalMovementStrategy(verticalCombined);
+    Game::Movement::IntervalMovementStrategy horizontalIntervalStrategy =
+        Game::Movement::IntervalMovementStrategy(horizontalCombined, 1.0f);
+    Game::Movement::IntervalMovementStrategy verticalIntervalStrategy =
+        Game::Movement::IntervalMovementStrategy(verticalCombined);
 
-    Game::Movement::MovementStrategy combined = horizontalIntervalStrategy + verticalIntervalStrategy;
+    Game::Movement::MovementStrategy combined =
+        horizontalIntervalStrategy + verticalIntervalStrategy;
 
-//    enemyShip->setMovementStrategy(
-//        Game::Movement::VerticalMovementStrategy(100, 1));
+    //    enemyShip->setMovementStrategy(
+    //        Game::Movement::VerticalMovementStrategy(100, 1));
 
-
-    enemyShip->setMovementStrategy(
-        combined);
+    enemyShip->setMovementStrategy(combined);
 
     // 3. Add the enemy ship to the game state
     m_gameState.addGameObject(std::move(enemyShip));

@@ -1,27 +1,25 @@
 #pragma once
 #include <AL/al.h>
-#include <vector>
 #include <QString>
-
+#include <vector>
 
 namespace Game {
 namespace Audio {
 
-class SoundBuffer
-{
+class SoundBuffer {
 public:
-	static SoundBuffer* get();
+  static SoundBuffer *get();
 
-    ALuint addSoundEffectFromResource(const QString &resourcePath);
-	ALuint addSoundEffect(const char* filename);
-	bool removeSoundEffect(const ALuint& buffer);
+  ALuint addSoundEffectFromResource(const QString &resourcePath);
+  ALuint addSoundEffect(const char *filename);
+  bool removeSoundEffect(const ALuint &buffer);
 
 private:
-	SoundBuffer();
-	~SoundBuffer();
+  SoundBuffer();
+  ~SoundBuffer();
 
-	std::vector<ALuint> p_SoundEffectBuffers;
+  std::vector<ALuint> p_SoundEffectBuffers;
 };
 
-}
-}
+} // namespace Audio
+} // namespace Game

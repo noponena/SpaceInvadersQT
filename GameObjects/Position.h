@@ -33,7 +33,8 @@ public:
   }
 
   bool isBeyondAnyLimit(float offset = 0) const {
-    return isBeyondScreenTopLimit(offset) || isBeyondScreenBottomLimit(offset) ||
+    return isBeyondScreenTopLimit(offset) ||
+           isBeyondScreenBottomLimit(offset) ||
            isBeyondScreenLeftLimit(offset) || isBeyondScreenRightLimit(offset);
   }
 
@@ -43,15 +44,9 @@ public:
   void setX(float x) { pos.setX(x); }
   void setY(float y) { pos.setY(y); }
 
-  const QRectF &getBounds() const
-  {
-      return bounds;
-  }
+  const QRectF &getBounds() const { return bounds; }
 
-  void setBounds(const QRectF &newBounds)
-  {
-      bounds = newBounds;
-  }
+  void setBounds(const QRectF &newBounds) { bounds = newBounds; }
 
   void goToTopLimit() { pos.setY(bounds.top()); }
   void goToBottomLimit() { pos.setY(bounds.bottom()); }

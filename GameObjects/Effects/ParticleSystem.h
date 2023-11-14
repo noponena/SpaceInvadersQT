@@ -15,11 +15,11 @@ public:
                       int lifespanFrames = 20);
 
 private:
-  std::list<Particle> m_particles;
+  std::vector<Particle> m_particles;
   QColor randomColor();
 
 public:
-  QRectF boundingRect() const override;
+  QRectF boundingRect() const override { return QRectF(); };
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
              QWidget *widget) override;
 signals:

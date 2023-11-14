@@ -17,9 +17,8 @@ protected:
   QPointF m_position;
 };
 
-inline void Effect::setPosition(QPointF newPosition)
-{
-    m_position = newPosition;
+inline void Effect::setPosition(QPointF newPosition) {
+  m_position = newPosition;
 }
 
 } // namespace Effects

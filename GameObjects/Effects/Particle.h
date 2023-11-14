@@ -27,19 +27,15 @@ public:
   bool isDead() const { return m_lifespan <= 0; };
 
   void draw(QPainter &painter) {
-    painter.save();
 
     QColor currentColor = m_color;
     int alpha = static_cast<int>(255.0 * static_cast<double>(m_lifespan) /
                                  static_cast<double>(m_maxLifespan));
     currentColor.setAlpha(alpha);
-
     painter.setBrush(currentColor);
-    painter.setPen(Qt::NoPen);
 
     QRectF rect(m_position, m_position + QPointF(1, 1));
     painter.drawRect(rect);
-    painter.restore();
   }
 
   void update() {
@@ -62,9 +58,8 @@ private:
 
 inline QPointF Particle::position() const { return m_position; }
 
-inline void Particle::setPosition(QPointF newPosition)
-{
-    m_position = newPosition;
+inline void Particle::setPosition(QPointF newPosition) {
+  m_position = newPosition;
 }
 
 } // namespace Effects

@@ -8,9 +8,9 @@ MainWindow::MainWindow(QWidget *parent)
   ui->setupUi(this);
   QTimer::singleShot(0, ui->gameRunner, &Game::GameRunner::startGame);
   QTimer::singleShot(0, this, SLOT(bringToForeground()));
-  connect(ui->gameRunner, &Game::GameRunner::windowClosed, this, &MainWindow::onWindowClosed);
+  connect(ui->gameRunner, &Game::GameRunner::windowClosed, this,
+          &MainWindow::onWindowClosed);
   this->setStyleSheet("background-color: black;");
-
 }
 
 MainWindow::~MainWindow() { delete ui; }
@@ -28,21 +28,16 @@ void MainWindow::resizeEvent(QResizeEvent *event) {
 
     this->setContentsMargins(0, 0, 0, 0);
     this->setStyleSheet("border:0px");
-    //this->ui->gameRunner->setStyleSheet("border:0px");
     this->ui->gameRunner->setContentsMargins(0, 0, 0, 0);
     this->ui->gameRunner->setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
     this->ui->gameRunner->showFullScreen();
   }
 }
 
-void MainWindow::bringToForeground()
-{
+void MainWindow::bringToForeground() {
   this->ui->gameRunner->activateWindow();
   this->ui->gameRunner->raise();
   this->ui->gameRunner->setFocus();
 }
 
-void MainWindow::onWindowClosed()
-{
-  QCoreApplication::quit();
-}
+void MainWindow::onWindowClosed() { QCoreApplication::quit(); }

@@ -3,10 +3,7 @@
 namespace GameObjects {
 namespace Projectiles {
 
-BasicEnemyLaser::BasicEnemyLaser()
-{
-
-}
+BasicEnemyLaser::BasicEnemyLaser() {}
 
 } // namespace Projectiles
 } // namespace GameObjects

@@ -2,7 +2,7 @@
 #define GAMESTATE_H
 
 #include "GameObjects/GameObject.h"
-#include "GameObjects/Projectiles/LaserBeam.h"
+#include "GameObjects/Projectiles/PlayerLaserBeam.h"
 #include "GameObjects/Ships/PlayerShip.h"
 #include "Weapons/WeaponBuilder.h"
 
@@ -35,8 +35,8 @@ private:
   float m_playersShipStartSpeed;
   void initPlayerShip();
   void initMovementConstrains();
-  void
-  addLaser(const std::shared_ptr<GameObjects::Projectiles::LaserBeam> &laser);
+  void addLaser(
+      const std::shared_ptr<GameObjects::Projectiles::PlayerLaserBeam> &laser);
   GameObjects::Ships::PlayerShip *m_playerShip;
   Weapons::WeaponBuilder m_weaponBuilder;
 
@@ -47,11 +47,9 @@ signals:
 
 private slots:
   void onObjectCreated(std::shared_ptr<GameObjects::GameObject> object) {
-      this->addGameObject(std::move(object));
+    this->addGameObject(std::move(object));
   }
-  void onStellarTokenCollected() {
-    m_stellarTokens++;
-  }
+  void onStellarTokenCollected() { m_stellarTokens++; }
   void onPlayerShipDestroyed() {
     m_playerShip = nullptr;
     emit playerShipDestroyed();

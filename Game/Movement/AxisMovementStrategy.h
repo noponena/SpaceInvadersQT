@@ -13,12 +13,12 @@ class LinearMovement;
 class SinusoidMovement;
 class StationaryMovement;
 class IntervalMovement;
-}
-}
+} // namespace Movement
+} // namespace Game
 
-using AxisMovementStrategy =
-    std::variant<Game::Movement::LinearMovement, Game::Movement::SinusoidMovement,
-                 Game::Movement::StationaryMovement, Game::Movement::IntervalMovement>;
+using AxisMovementStrategy = std::variant<
+    Game::Movement::LinearMovement, Game::Movement::SinusoidMovement,
+    Game::Movement::StationaryMovement, Game::Movement::IntervalMovement>;
 
 namespace Game {
 
@@ -83,19 +83,23 @@ class IntervalMovement {
   unsigned long long m_intervalIndex;
 
 public:
-  IntervalMovement(std::vector<AxisMovementStrategy> strategies, std::vector<float> intervalsInSeconds)
-        : m_underlyingStrategies(strategies), m_intervalsInSeconds(intervalsInSeconds),
+  IntervalMovement(std::vector<AxisMovementStrategy> strategies,
+                   std::vector<float> intervalsInSeconds)
+      : m_underlyingStrategies(strategies),
+        m_intervalsInSeconds(intervalsInSeconds), m_timeSinceLastChange(0),
+        m_strategyIndex(0), m_intervalIndex(0) {}
+
+  IntervalMovement(std::vector<AxisMovementStrategy> strategies,
+                   float intervalInSeconds)
+      : m_underlyingStrategies(strategies),
+        m_intervalsInSeconds(std::vector({intervalInSeconds})),
         m_timeSinceLastChange(0), m_strategyIndex(0), m_intervalIndex(0) {}
-
-
-  IntervalMovement(std::vector<AxisMovementStrategy> strategies, float intervalInSeconds)
-      : m_underlyingStrategies(strategies), m_intervalsInSeconds(std::vector({intervalInSeconds})),
-      m_timeSinceLastChange(0), m_strategyIndex(0), m_intervalIndex(0) {}
 
   std::pair<float, float> move(float currentPosition, float anchorPosition,
                                float deltaTimeInSeconds) {
     m_timeSinceLastChange += deltaTimeInSeconds;
-    AxisMovementStrategy underlyingStrategy = m_underlyingStrategies[m_strategyIndex];
+    AxisMovementStrategy underlyingStrategy =
+        m_underlyingStrategies[m_strategyIndex];
     float intervalInSeconds = m_intervalsInSeconds[m_intervalIndex];
 
     if (m_timeSinceLastChange > intervalInSeconds) {
@@ -106,9 +110,12 @@ public:
 
     return std::visit(
         [currentPosition, anchorPosition, deltaTimeInSeconds](auto &strategy) {
-            return strategy.move(currentPosition, anchorPosition, deltaTimeInSeconds);
-        }, underlyingStrategy);
+          return strategy.move(currentPosition, anchorPosition,
+                               deltaTimeInSeconds);
+        },
+        underlyingStrategy);
   }
+
 private:
   void incrementStrategyIndex() {
     m_strategyIndex++;

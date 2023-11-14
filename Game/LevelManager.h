@@ -5,7 +5,7 @@
 
 namespace Game {
 class LevelManager : public QObject {
-    Q_OBJECT
+  Q_OBJECT
 public:
   LevelManager(GameState &gameState);
   void update();
@@ -15,7 +15,7 @@ private:
   QElapsedTimer m_elapsedTimer;
   GameState &m_gameState;
   float m_lastSpawnTime = 0.0f;
-  const int m_spawnIntervalMs = 1000;
+  const int m_spawnIntervalMs = 500;
 };
 } // namespace Game
 

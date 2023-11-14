@@ -42,13 +42,11 @@ public:
     this->m_yAxisMovementStrategies.clear();
   }
 
-  std::vector<AxisMovementStrategy> xAxisMovementStrategies() const
-  {
+  std::vector<AxisMovementStrategy> xAxisMovementStrategies() const {
     return m_xAxisMovementStrategies;
   }
 
-  std::vector<AxisMovementStrategy> yAxisMovementStrategies() const
-  {
+  std::vector<AxisMovementStrategy> yAxisMovementStrategies() const {
     return m_yAxisMovementStrategies;
   }
 
@@ -80,7 +78,7 @@ public:
     return combined;
   }
 
-  protected:
+protected:
   std::vector<AxisMovementStrategy> m_xAxisMovementStrategies;
   std::vector<AxisMovementStrategy> m_yAxisMovementStrategies;
 
@@ -89,7 +87,7 @@ private:
 };
 
 class StationaryMovementStrategy : public MovementStrategy {
-  public:
+public:
   StationaryMovementStrategy() {
     m_xAxisMovementStrategies.push_back(Movement::StationaryMovement());
     m_yAxisMovementStrategies.push_back(Movement::StationaryMovement());
@@ -101,7 +99,7 @@ class VerticalMovementStrategy : public MovementStrategy {
 public:
   VerticalMovementStrategy(float speed = 1, int direction = 1) {
     m_yAxisMovementStrategies.push_back(
-        Movement::LinearMovement(speed, direction, false));
+        Movement::LinearMovement(speed, direction));
   }
 };
 
@@ -110,17 +108,33 @@ class HorizontalMovementStrategy : public MovementStrategy {
 public:
   HorizontalMovementStrategy(float speed = 1, int direction = 1) {
     m_xAxisMovementStrategies.push_back(
-        Movement::LinearMovement(speed, direction, false));
+        Movement::LinearMovement(speed, direction));
+  }
+};
+
+class AngledMovementStrategy : public MovementStrategy {
+
+public:
+  AngledMovementStrategy(float speed = 1, int direction = 1, int angleDeg = 0) {
+
+    float angleRad = angleDeg * M_PI / 180.0;
+    float speedX = cos(angleRad) * speed;
+    float speedY = sin(angleRad) * speed;
+
+    m_xAxisMovementStrategies.push_back(
+        Movement::LinearMovement(speedX, direction));
+    m_yAxisMovementStrategies.push_back(
+        Movement::LinearMovement(speedY, direction));
   }
 };
 
 class CircularMovementStrategy : public MovementStrategy {
 
 public:
-  CircularMovementStrategy(float amplitude, float frequency,
-                           int direction = 1, bool updateAnchor = false) {
-    m_xAxisMovementStrategies.push_back(
-        Movement::SinusoidMovement(amplitude, frequency, 0, direction, updateAnchor));
+  CircularMovementStrategy(float amplitude, float frequency, int direction = 1,
+                           bool updateAnchor = false) {
+    m_xAxisMovementStrategies.push_back(Movement::SinusoidMovement(
+        amplitude, frequency, 0, direction, updateAnchor));
     m_yAxisMovementStrategies.push_back(Movement::SinusoidMovement(
         amplitude, frequency, 0.5, direction, false));
   }
@@ -128,10 +142,12 @@ public:
 
 class IntervalMovementStrategy : public MovementStrategy {
 
-  public:
+public:
   IntervalMovementStrategy(MovementStrategy strategy, float intervalInSeconds) {
-    std::vector<AxisMovementStrategy> xStrategies = strategy.xAxisMovementStrategies();
-    std::vector<AxisMovementStrategy> yStrategies = strategy.yAxisMovementStrategies();
+    std::vector<AxisMovementStrategy> xStrategies =
+        strategy.xAxisMovementStrategies();
+    std::vector<AxisMovementStrategy> yStrategies =
+        strategy.yAxisMovementStrategies();
 
     if (!xStrategies.empty())
       m_xAxisMovementStrategies.push_back(
@@ -141,10 +157,11 @@ class IntervalMovementStrategy : public MovementStrategy {
           Movement::IntervalMovement(yStrategies, intervalInSeconds));
   }
 
-  IntervalMovementStrategy(std::vector<std::pair<MovementStrategy, float>> strategies) {
+  IntervalMovementStrategy(
+      std::vector<std::pair<MovementStrategy, float>> strategies) {
 
     size_t xReserve = 0, yReserve = 0;
-    for (const auto& pair : strategies) {
+    for (const auto &pair : strategies) {
       xReserve += pair.first.xAxisMovementStrategies().size();
       yReserve += pair.first.yAxisMovementStrategies().size();
     }
@@ -155,12 +172,16 @@ class IntervalMovementStrategy : public MovementStrategy {
     std::vector<float> yIntervals(yReserve, 0);
 
     size_t xIndex = 0, yIndex = 0;
-    for (const auto& pair : strategies) {
-      std::vector<AxisMovementStrategy> xStrategies = pair.first.xAxisMovementStrategies();
-      std::vector<AxisMovementStrategy> yStrategies = pair.first.yAxisMovementStrategies();
+    for (const auto &pair : strategies) {
+      std::vector<AxisMovementStrategy> xStrategies =
+          pair.first.xAxisMovementStrategies();
+      std::vector<AxisMovementStrategy> yStrategies =
+          pair.first.yAxisMovementStrategies();
 
-      xMovementStrategies.insert(xMovementStrategies.end(), xStrategies.begin(), xStrategies.end());
-      yMovementStrategies.insert(yMovementStrategies.end(), yStrategies.begin(), yStrategies.end());
+      xMovementStrategies.insert(xMovementStrategies.end(), xStrategies.begin(),
+                                 xStrategies.end());
+      yMovementStrategies.insert(yMovementStrategies.end(), yStrategies.begin(),
+                                 yStrategies.end());
 
       std::fill_n(xIntervals.begin() + xIndex, xStrategies.size(), pair.second);
       std::fill_n(yIntervals.begin() + yIndex, yStrategies.size(), pair.second);
@@ -169,9 +190,11 @@ class IntervalMovementStrategy : public MovementStrategy {
     }
 
     if (!xMovementStrategies.empty())
-      m_xAxisMovementStrategies.push_back(Movement::IntervalMovement(xMovementStrategies, xIntervals));
+      m_xAxisMovementStrategies.push_back(
+          Movement::IntervalMovement(xMovementStrategies, xIntervals));
     if (!yMovementStrategies.empty())
-      m_yAxisMovementStrategies.push_back(Movement::IntervalMovement(yMovementStrategies, yIntervals));
+      m_yAxisMovementStrategies.push_back(
+          Movement::IntervalMovement(yMovementStrategies, yIntervals));
   }
 };
 

@@ -1,17 +1,17 @@
 #include <al.h>
 
 // X-RAM Function pointer definitions
-typedef ALboolean (__cdecl *EAXSetBufferMode)(ALsizei n, ALuint *buffers, ALint value);
-typedef ALenum    (__cdecl *EAXGetBufferMode)(ALuint buffer, ALint *value);
+typedef ALboolean(__cdecl *EAXSetBufferMode)(ALsizei n, ALuint *buffers,
+                                             ALint value);
+typedef ALenum(__cdecl *EAXGetBufferMode)(ALuint buffer, ALint *value);
 
 //////////////////////////////////////////////////////////////////////////////
 // Query for X-RAM extension
 //
 // if (alIsExtensionPresent("EAX-RAM") == AL_TRUE)
 //		X-RAM Extension found
-//  
+//
 //////////////////////////////////////////////////////////////////////////////
-
 
 //////////////////////////////////////////////////////////////////////////////
 // X-RAM enum names
@@ -23,11 +23,10 @@ typedef ALenum    (__cdecl *EAXGetBufferMode)(ALuint buffer, ALint *value);
 // "AL_STORAGE_ACCESSIBLE"
 //
 // Query enum values using alGetEnumValue, for example
-// 
+//
 // long lRamSizeEnum = alGetEnumValue("AL_EAX_RAM_SIZE")
 //
 //////////////////////////////////////////////////////////////////////////////
-
 
 //////////////////////////////////////////////////////////////////////////////
 // Query total amount of X-RAM
@@ -36,7 +35,6 @@ typedef ALenum    (__cdecl *EAXGetBufferMode)(ALuint buffer, ALint *value);
 //
 //////////////////////////////////////////////////////////////////////////////
 
-
 //////////////////////////////////////////////////////////////////////////////
 // Query free X-RAM available
 //
@@ -44,10 +42,9 @@ typedef ALenum    (__cdecl *EAXGetBufferMode)(ALuint buffer, ALint *value);
 //
 //////////////////////////////////////////////////////////////////////////////
 
-
 //////////////////////////////////////////////////////////////////////////////
 // Query X-RAM Function pointers
-// 
+//
 // Use typedefs defined above to get the X-RAM function pointers using
 // alGetProcAddress
 //
@@ -59,7 +56,6 @@ typedef ALenum    (__cdecl *EAXGetBufferMode)(ALuint buffer, ALint *value);
 //
 //////////////////////////////////////////////////////////////////////////////
 
-
 //////////////////////////////////////////////////////////////////////////////
 // Force an Open AL Buffer into X-RAM (good for non-streaming buffers)
 //
@@ -70,9 +66,9 @@ typedef ALenum    (__cdecl *EAXGetBufferMode)(ALuint buffer, ALint *value);
 //
 //////////////////////////////////////////////////////////////////////////////
 
-
 //////////////////////////////////////////////////////////////////////////////
-// Force an Open AL Buffer into 'accessible' (currently host) RAM (good for streaming buffers)
+// Force an Open AL Buffer into 'accessible' (currently host) RAM (good for
+// streaming buffers)
 //
 // ALuint uiBuffer;
 // alGenBuffers(1, &uiBuffer);
@@ -80,7 +76,6 @@ typedef ALenum    (__cdecl *EAXGetBufferMode)(ALuint buffer, ALint *value);
 // alBufferData(...);
 //
 //////////////////////////////////////////////////////////////////////////////
-
 
 //////////////////////////////////////////////////////////////////////////////
 // Put an Open AL Buffer into X-RAM if memory is available, otherwise use

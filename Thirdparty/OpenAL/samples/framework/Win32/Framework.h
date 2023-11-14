@@ -2,16 +2,16 @@
 #define _FRAMEWORK_H_
 
 // Get some classic includes
-#include<Windows.h>
-#include<stdio.h>
-#include<io.h>
-#include<fcntl.h>
-#include<conio.h>
-#include"al.h"
-#include"alc.h"
-#include"efx.h"
-#include"efx-creative.h"
-#include"xram.h"
+#include "al.h"
+#include "alc.h"
+#include "efx-creative.h"
+#include "efx.h"
+#include "xram.h"
+#include <Windows.h>
+#include <conio.h>
+#include <fcntl.h>
+#include <io.h>
+#include <stdio.h>
 
 // Initialization and shutdown
 void ALFWInit();
@@ -22,15 +22,15 @@ ALboolean ALFWInitOpenAL();
 ALboolean ALFWShutdownOpenAL();
 
 // File loading functions
-ALboolean ALFWLoadWaveToBuffer(const char *szWaveFile, ALuint uiBufferID, ALenum eXRAMBufferMode = 0);
+ALboolean ALFWLoadWaveToBuffer(const char *szWaveFile, ALuint uiBufferID,
+                               ALenum eXRAMBufferMode = 0);
 
-// Extension Queries 
+// Extension Queries
 ALboolean ALFWIsXRAMSupported();
 ALboolean ALFWIsEFXSupported();
 
-
 // Utilities
-ALvoid ALFWprintf( const ALchar * x, ... );
+ALvoid ALFWprintf(const ALchar *x, ...);
 ALchar *ALFWaddMediaPath(const ALchar *filename);
 ALint ALFWKeyPress(void);
 
@@ -77,8 +77,9 @@ extern LPALGETAUXILIARYEFFECTSLOTFV alGetAuxiliaryEffectSlotfv;
 
 // XRAM Extension function pointer variables and enum values
 
-typedef ALboolean (__cdecl *LPEAXSETBUFFERMODE)(ALsizei n, ALuint *buffers, ALint value);
-typedef ALenum    (__cdecl *LPEAXGETBUFFERMODE)(ALuint buffer, ALint *value);
+typedef ALboolean(__cdecl *LPEAXSETBUFFERMODE)(ALsizei n, ALuint *buffers,
+                                               ALint value);
+typedef ALenum(__cdecl *LPEAXGETBUFFERMODE)(ALuint buffer, ALint *value);
 
 extern LPEAXSETBUFFERMODE eaxSetBufferMode;
 extern LPEAXGETBUFFERMODE eaxGetBufferMode;

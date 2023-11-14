@@ -3,17 +3,14 @@
 
 #include "GameObjects/Projectiles/Projectile.h"
 #include "GameObjects/Ships/Ship.h"
-#include <set>
 #include <QElapsedTimer>
+#include <set>
 
 namespace GameObjects {} // namespace GameObjects
 
 namespace Weapons {
 
-enum class ProjectileProperty {
-    PIERCING,
-    HOMING
-};
+enum class ProjectileProperty { PIERCING, HOMING };
 
 class Weapon : public QObject {
   Q_OBJECT
@@ -25,7 +22,8 @@ public:
   createProjectile() = 0;
   virtual std::unique_ptr<Weapon> clone() const = 0;
 
-  void setProjectilePrototype(std::unique_ptr<GameObjects::Projectiles::Projectile> prototype);
+  void setProjectilePrototype(
+      std::unique_ptr<GameObjects::Projectiles::Projectile> prototype);
   void shoot();
   void setOwner(GameObjects::Ships::Ship *newOwner);
   void updateWeaponCooldown(float amount);
@@ -50,7 +48,8 @@ private:
   void clampCooldownMs();
 
 signals:
-  void projectileShot(std::shared_ptr<GameObjects::Projectiles::Projectile> projectile);
+  void projectileShot(
+      std::shared_ptr<GameObjects::Projectiles::Projectile> projectile);
 };
 
 } // namespace Weapons

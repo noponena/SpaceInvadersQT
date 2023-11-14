@@ -7,11 +7,11 @@ namespace GameObjects {
 long long unsigned GameObject::counter = 0;
 
 GameObject::GameObject(const Position &position)
-    : m_position(position), m_hasCollided(false),
-    m_collidable(true), m_destructionCompleted(false), m_soundEnabled(true),
-    m_onHitPixmapResourcePath(""), m_id(counter++), m_destructionInitiated(false)
-{
-    m_objectType = ObjectType::UNDEFINED;
+    : m_position(position), m_hasCollided(false), m_collidable(true),
+      m_destructionCompleted(false), m_soundEnabled(true),
+      m_onHitPixmapResourcePath(""), m_id(counter++),
+      m_destructionInitiated(false) {
+  m_objectType = ObjectType::UNDEFINED;
 }
 
 void GameObject::initialize() {
@@ -36,14 +36,13 @@ void GameObject::applyMovementStrategy(float deltaTimeInSeconds) {
   m_position.anchorPos = newPos.second;
 }
 
-void GameObject::playSpawnSound()
-{
+void GameObject::playSpawnSound() {
   Game::Audio::SoundManager::getInstance().playSoundEffect(m_spawnSoundInfo);
 }
 
-void GameObject::playDestructionSound()
-{
-  Game::Audio::SoundManager::getInstance().playSoundEffect(m_destructionSoundInfo);
+void GameObject::playDestructionSound() {
+  Game::Audio::SoundManager::getInstance().playSoundEffect(
+      m_destructionSoundInfo);
 }
 
 void GameObject::initiateDestructionProcedure() {
@@ -55,18 +54,13 @@ void GameObject::initiateDestructionProcedure() {
   this->playDestructionAnimation();
 }
 
-QPointF GameObject::getPixmapScaledSize() const
-{
-  return m_pixmapScale;
-}
+QPointF GameObject::getPixmapScaledSize() const { return m_pixmapScale; }
 
-QString GameObject::getPixmapResourcePath() const
-{
+QString GameObject::getPixmapResourcePath() const {
   return m_pixmapResourcePath;
 }
 
-QString GameObject::getOnHitPixmapResourcePath() const
-{
+QString GameObject::getOnHitPixmapResourcePath() const {
   if (m_onHitPixmapResourcePath.isEmpty())
     return this->getPixmapResourcePath();
   return m_onHitPixmapResourcePath;
@@ -98,8 +92,7 @@ QPixmap GameObject::scalePixmap(QPixmap &pixmap) const {
   return pixmap;
 }
 
-Game::Movement::MovementStrategy GameObject::movementStrategy() const
-{
+Game::Movement::MovementStrategy GameObject::movementStrategy() const {
   return m_movementStrategy;
 }
 
@@ -108,8 +101,8 @@ void GameObject::setMovementStrategy(
   m_movementStrategy = newMovementStrategy;
 }
 
-void GameObject::addMovementStrategy(Game::Movement::MovementStrategy &newMovementStrategy)
-{
+void GameObject::addMovementStrategy(
+    Game::Movement::MovementStrategy &newMovementStrategy) {
   m_movementStrategy = m_movementStrategy + newMovementStrategy;
 }
 
@@ -168,35 +161,25 @@ bool GameObject::isAtLimit() const { return m_position.isBeyondAnyLimit(); }
 
 Position GameObject::getPosition() const { return m_position; }
 
-QPointF GameObject::getCenterPosition() const
-{
-    QRectF sceneRect = this->getBoundingBox();
-    return sceneRect.center();
+QPointF GameObject::getCenterPosition() const {
+  QRectF sceneRect = this->getBoundingBox();
+  return sceneRect.center();
 }
 
-void GameObject::setPosition(const Position &newPosition)
-{
-    m_position = newPosition;
+void GameObject::setPosition(const Position &newPosition) {
+  m_position = newPosition;
 }
 
-void GameObject::setPosition(const QPointF &newPosition)
-{
-    m_position.setPos(newPosition);
+void GameObject::setPosition(const QPointF &newPosition) {
+  m_position.setPos(newPosition);
 }
 
-void GameObject::setSoundEnabled(const bool newSoundEnabled)
-{
-    m_spawnSoundInfo.enabled = newSoundEnabled;
+void GameObject::setSoundEnabled(const bool newSoundEnabled) {
+  m_spawnSoundInfo.enabled = newSoundEnabled;
 }
 
-ObjectType GameObject::objectType() const
-{
-    return m_objectType;
-}
+ObjectType GameObject::objectType() const { return m_objectType; }
 
-bool GameObject::isDestroyed() const
-{
-    return m_destructionCompleted;
-}
+bool GameObject::isDestroyed() const { return m_destructionCompleted; }
 
 } // namespace GameObjects
