@@ -19,8 +19,8 @@ enum class MovementState {
 
 class Collectable : public GameObject {
 public:
-    Collectable(const Position &position, float speed)
-        : GameObject(position, speed)
+    Collectable(const Position &position)
+        : GameObject(position)
     {
         m_magneticVelocity = QPointF(0, 0);
     }
@@ -36,14 +36,17 @@ public:
   float m_blinkAccumulator = 0.0f;
 
   void update(const UpdateContext &context) override {
-        updateLifetime(context.deltaTimeInSeconds);
-        handleBlinking(context.deltaTimeInSeconds);
-        GameObject::update(context);
-        updateMovement(context);
+        if (context.playerShip) {
+            updateLifetime(context.deltaTimeInSeconds);
+            handleBlinking(context.deltaTimeInSeconds);
+            GameObject::update(context);
+            updateMovement(context);
+        }
   }
 
-  // GameObject interface
-public:
+  bool shouldBeDeleted() override {
+       return m_collected || m_lifeSpanExceeded || m_position.isBeyondAnyLimit();
+  }
   void collideWithPlayerShip(Ships::PlayerShip &playerShip) override {
       Q_UNUSED(playerShip);
       m_collected = true;
@@ -79,10 +82,10 @@ private:
   }
 
   inline void updateMovement(const UpdateContext &context) {
-      QPointF currentPlayerPosition = context.playerShip.getCenterPosition();
+      QPointF currentPlayerPosition = context.playerShip->getCenterPosition();
       Position currentPosition = this->getPosition();
       QPointF direction = currentPlayerPosition - currentPosition.pos;
-      Ships::magnetism magnetism = context.playerShip.magnetism();
+      Ships::magnetism magnetism = context.playerShip->magnetism();
       bool isWithinMagneticRange = QVector2D(direction).length() < magnetism.magneticRadius;
 
       switch (m_movementState) {

@@ -5,12 +5,89 @@
 namespace GameObjects {
 namespace Ships {
 PlayerShip::PlayerShip(const int maxHp, float speed, const Position &position)
-    : Ship(maxHp, speed, position)
+    : Ship(maxHp, position), m_speed(speed)
 {
     m_objectType = ObjectType::PLAYER_SHIP;
     m_pixmapResourcePath = ":/Images/player_ship.png";
     m_pixmapScale = QPointF(50.0, 75.0);
     m_destructionSoundInfo = Game::Audio::SoundInfo({m_soundEnabled, Game::Audio::SoundEffect::PLAYER_DESTROYED});
+    connect(this, &Ship::destructionCompleted, this, &PlayerShip::playerShipDestroyed);
+}
+
+void PlayerShip::moveHorizontal(float deltaTimeInSeconds) {
+    this->moveX(m_currentSpeedX * deltaTimeInSeconds);
+}
+
+void PlayerShip::moveVertical(float deltaTimeInSeconds) {
+    this->moveY(m_currentSpeedY * deltaTimeInSeconds);
+}
+
+void PlayerShip::accelerateLeft(float deltaTimeInSeconds) {
+    m_currentSpeedX -= m_acceleration * deltaTimeInSeconds;
+    if (m_currentSpeedX < -m_speed) {
+        m_currentSpeedX = -m_speed;
+    }
+}
+
+void PlayerShip::accelerateRight(float deltaTimeInSeconds) {
+    m_currentSpeedX += m_acceleration * deltaTimeInSeconds;
+    if (m_currentSpeedX > m_speed) {
+        m_currentSpeedX = m_speed;
+    }
+}
+
+void PlayerShip::decelerateX(float deltaTimeInSeconds) {
+    if (m_currentSpeedX > 0) {
+        m_currentSpeedX -= m_acceleration * deltaTimeInSeconds;
+        if (m_currentSpeedX < 0) {
+            m_currentSpeedX = 0;
+        }
+    } else if (m_currentSpeedX < 0) {
+        m_currentSpeedX += m_acceleration * deltaTimeInSeconds;
+        if (m_currentSpeedX > 0) {
+            m_currentSpeedX = 0;
+        }
+    }
+}
+
+void PlayerShip::accelerateUp(float deltaTimeInSeconds) {
+    m_currentSpeedY -= m_acceleration * deltaTimeInSeconds;
+    if (m_currentSpeedY < -m_speed) {
+        m_currentSpeedY = -m_speed;
+    }
+}
+
+void PlayerShip::accelerateDown(float deltaTimeInSeconds) {
+    m_currentSpeedY += m_acceleration * deltaTimeInSeconds;
+    if (m_currentSpeedY > m_speed) {
+        m_currentSpeedY = m_speed;
+    }
+}
+
+void PlayerShip::decelerateY(float deltaTimeInSeconds) {
+    if (m_currentSpeedY > 0) {
+        m_currentSpeedY -= m_acceleration * deltaTimeInSeconds;
+        if (m_currentSpeedY < 0) {
+            m_currentSpeedY = 0;
+        }
+    } else if (m_currentSpeedY < 0) {
+        m_currentSpeedY += m_acceleration * deltaTimeInSeconds;
+        if (m_currentSpeedY > 0) {
+            m_currentSpeedY = 0;
+        }
+    }
+}
+
+void PlayerShip::moveX(float amount) {
+    float current = m_position.x();
+    m_position.setX(current + amount);
+    this->clampToXBounds();
+}
+
+void PlayerShip::moveY(float amount) {
+    float current = m_position.y();
+    m_position.setY(current + amount);
+    this->clampToYBounds();
 }
 
 void PlayerShip::collideWith(GameObject &other) {
@@ -37,9 +114,11 @@ QPixmap PlayerShip::getPixmap() const {
     return pixmap;
 }
 
-bool PlayerShip::shouldBeDeleted()
+void PlayerShip::disableMovement()
 {
-    return false;
+    m_currentSpeedX = 0;
+    m_currentSpeedY = 0;
+    m_acceleration = 0;
 }
 
 } // namespace Ships

@@ -11,6 +11,7 @@ public:
   void update();
 
 private:
+  Weapons::WeaponBuilder m_weaponBuilder;
   QElapsedTimer m_elapsedTimer;
   GameState &m_gameState;
   float m_lastSpawnTime = 0.0f;

@@ -4,6 +4,7 @@
 #include "GameObjects/GameObject.h"
 #include "GameObjects/Projectiles/LaserBeam.h"
 #include "GameObjects/Ships/PlayerShip.h"
+#include "Weapons/WeaponBuilder.h"
 
 namespace Game {
 
@@ -13,13 +14,13 @@ public:
   GameState(QObject *parent = nullptr);
 
   void initialize();
-  void addGameObject(GameObjects::GameObject *object);
-  void removeGameObject(std::unique_ptr<GameObjects::GameObject> object);
+  void addGameObject(std::shared_ptr<GameObjects::GameObject> object);
+  void removeGameObject(std::shared_ptr<GameObjects::GameObject> object);
   void setSize(int width, int height);
   void update(float deltaTimeInSeconds);
   void initEnemyShips();
 
-  const std::list<std::unique_ptr<GameObjects::GameObject>> &
+  const std::list<std::shared_ptr<GameObjects::GameObject>> &
   gameObjects() const;
   GameObjects::Ships::PlayerShip *playerShip() const;
 
@@ -28,7 +29,7 @@ public:
   const unsigned &stellarTokens() const;
 
 private:
-  std::list<std::unique_ptr<GameObjects::GameObject>> m_gameObjects;
+  std::list<std::shared_ptr<GameObjects::GameObject>> m_gameObjects;
   bool m_playerShipDeletedFromScene;
   unsigned m_stellarTokens;
   float m_playersShipStartSpeed;
@@ -37,17 +38,23 @@ private:
   void
   addLaser(const std::shared_ptr<GameObjects::Projectiles::LaserBeam> &laser);
   GameObjects::Ships::PlayerShip *m_playerShip;
+  Weapons::WeaponBuilder m_weaponBuilder;
 
 signals:
-  void objectDeleted(const GameObjects::GameObject *object);
-  void objectAdded(const GameObjects::GameObject *object);
+  void objectDeleted(QGraphicsItem *object);
+  void objectAdded(QGraphicsItem *object);
+  void playerShipDestroyed();
 
-public slots:
-  void onObjectCreated(GameObjects::GameObject *object) {
-      this->addGameObject(object);
+private slots:
+  void onObjectCreated(std::shared_ptr<GameObjects::GameObject> object) {
+      this->addGameObject(std::move(object));
   }
   void onStellarTokenCollected() {
     m_stellarTokens++;
+  }
+  void onPlayerShipDestroyed() {
+    m_playerShip = nullptr;
+    emit playerShipDestroyed();
   }
 };
 } // namespace Game

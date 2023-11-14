@@ -1,83 +1,95 @@
 #include "Weapon.h"
 
-Weapons::Weapon::Weapon(float cooldownMs,
-                        float minCooldownMs,
-                        Game::Movement::MovementStrategy movementStrategy, bool hostile, int damage)
-    : m_owner(nullptr), m_hostile(hostile), m_damage(damage), m_soundEnabled(true),
-    m_cooldownMs(cooldownMs), m_minCooldownMs(minCooldownMs), m_movementStrategy(movementStrategy)
+namespace Weapons {
+
+Weapon::Weapon()
+    : m_owner(nullptr),
+    m_soundEnabled(true),
+    m_minCooldownMs(100)
 {
     {
-      this->clampCooldownMs();
-      m_lastShotTimer.start();
+        this->clampCooldownMs();
+        m_lastShotTimer.start();
     }
 }
 
-void Weapons::Weapon::shoot()
+void Weapon::shoot()
 {
     if (this->canShoot()) {
-      m_lastShotTimer.restart();
-      GameObjects::Projectiles::Projectile *projectile =
-          this->createProjectile();
-      projectile->initialize();
+        m_lastShotTimer.restart();
+        std::unique_ptr<GameObjects::Projectiles::Projectile> projectile =
+            this->createProjectile();
+        projectile->initialize();
 
-      QPointF ownerCenter = m_owner->getGraphicsItem()->boundingRect().center();
-      QPointF projectileCenter =
-          projectile->getGraphicsItem()->boundingRect().center();
-      QPointF delta = projectileCenter - ownerCenter;
-      float newX = projectile->getPosition().x() - delta.x();
-      float newY = projectile->getPosition().y() - delta.y();
-      GameObjects::Position projectilePosition = projectile->getPosition();
-      projectilePosition.setPos(QPointF(newX, newY));
-      projectile->setPosition(projectilePosition);
-      projectile->setMovementStrategy(m_movementStrategy);
-      emit projectileShot(projectile);
+        QPointF ownerCenter = m_owner->getGraphicsItem()->boundingRect().center();
+        QPointF projectileCenter =
+            projectile->getGraphicsItem()->boundingRect().center();
+        QPointF delta = projectileCenter - ownerCenter;
+        float newX = projectile->getPosition().x() - delta.x();
+        float newY = projectile->getPosition().y() - delta.y();
+        GameObjects::Position projectilePosition = projectile->getPosition();
+        projectilePosition.setPos(QPointF(newX, newY));
+        projectile->setPosition(projectilePosition);
+        emit projectileShot(std::move(projectile));
     }
 }
 
-void Weapons::Weapon::setOwner(GameObjects::Ships::Ship *newOwner)
+void Weapon::setOwner(GameObjects::Ships::Ship *newOwner)
 {
     m_owner = newOwner;
 }
 
-void Weapons::Weapon::updateWeaponCooldown(float amount)
+void Weapon::setProjectilePrototype(std::unique_ptr<GameObjects::Projectiles::Projectile> prototype)
+{
+    m_projectilePrototype = std::move(prototype);
+}
+
+void Weapon::setCooldownMs(float newCooldownMs)
+{
+    m_cooldownMs = newCooldownMs;
+}
+
+void Weapon::updateWeaponCooldown(float amount)
 {
     m_cooldownMs += amount;
     clampCooldownMs();
 }
 
-void Weapons::Weapon::enableSound()
+void Weapon::enableSound()
 {
     m_soundEnabled = true;
 }
 
-void Weapons::Weapon::disableSound()
+void Weapon::disableSound()
 {
     m_soundEnabled = false;
 }
 
-void Weapons::Weapon::addProperty(WeaponProperty property)
+void Weapon::addProjectileProperty(ProjectileProperty property)
 {
-    m_properties.insert(property);
+    m_projectilePrototype->addProperty(property);
 }
 
-void Weapons::Weapon::removeProperty(WeaponProperty property)
+void Weapon::removeProjectileProperty(ProjectileProperty property)
 {
-    m_properties.erase(property);
+    m_projectilePrototype->removeProperty(property);
 }
 
-bool Weapons::Weapon::canShoot()
+bool Weapon::canShoot()
 {
     if (!m_owner->isDead()) {
-      int elapsed = m_lastShotTimer.elapsed();
-      if (elapsed >= m_cooldownMs) {
-          return true;
-      }
+        int elapsed = m_lastShotTimer.elapsed();
+        if (elapsed >= m_cooldownMs) {
+            return true;
+        }
     }
     return false;
 }
 
-void Weapons::Weapon::clampCooldownMs()
+void Weapon::clampCooldownMs()
 {
     if (m_cooldownMs < m_minCooldownMs)
-      m_cooldownMs = m_minCooldownMs;
+        m_cooldownMs = m_minCooldownMs;
+}
+
 }

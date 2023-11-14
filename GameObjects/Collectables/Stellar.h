@@ -13,9 +13,6 @@ class Stellar : public Collectable, public std::enable_shared_from_this<Stellar>
 public:
     Stellar(const Position &position);
 
-    // GameObject interface
-public:
-    bool shouldBeDeleted() override;
 protected:
     QPixmap getPixmap() const override;
 

@@ -19,7 +19,7 @@ struct magnetism {
 class Ship : public GameObject {
   Q_OBJECT
 public:
-  Ship(const int maxHp, int speed, const Position &position);
+  Ship(const int maxHp, const Position &position);
   virtual ~Ship();
   void shoot();
   bool shouldBeDeleted() override;
@@ -27,8 +27,7 @@ public:
   void takeDamage(int amount);
   void heal(int amount);
   void updateFireRate(int amount = 1);
-
-  void setWeapon(std::unique_ptr<Weapons::Weapon> newWeapon);
+  void addWeapon(std::unique_ptr<Weapons::Weapon> newWeapon);
 
   static QPixmap& loadSharedSpriteSheet(const QString &path) {
       static QPixmap m_sharedSpriteSheet;
@@ -42,25 +41,27 @@ public:
 
   int currentHp() const;
 
-  protected:
-  int m_currentHp, m_maxHp, m_speed, m_fireRate, m_shotCooldownMs;
+protected:
+  int m_currentHp, m_maxHp, m_fireRate, m_shotCooldownMs;
   int m_onHitTimerId = -1;
-  std::unique_ptr<Weapons::Weapon> m_weapon;
+  std::vector<std::unique_ptr<Weapons::Weapon>> m_primaryWeapons;
   bool m_onHitAnimationInProgress = false;
   QList<QPixmap> m_animationFrames;
   QColor m_originalColor;
   std::unique_ptr<QTimer> m_animationTimer;
-  std::unique_ptr<Effects::ParticleSystem> m_particleSystem;
+  Effects::ParticleSystem m_particleSystem;
   qreal m_halfWidth;
   qreal m_halfHeight;
 
   virtual void initializeDestructionAnimation() override;
   void playDestructionAnimation() override;
   void playDestructionEffects() override;
+  void initializeDestructionEffects() override;
 
   virtual void playOnHitAnimation();
 protected slots:
-  void onAnimationCompleted();
+  void onDestructionCompleted();
+  void onProjectileShot(std::shared_ptr<Projectiles::Projectile> projectile);
 
 private:
   int m_frameIndex;
@@ -68,11 +69,8 @@ private:
 
   void timerEvent(QTimerEvent *event) override;
 signals:
-  void animationCompleted();
+  void destructionCompleted();
 
-  // GameObject interface
-protected:
-  void initializeDestructionEffects() override;
 };
 } // namespace Ships
 

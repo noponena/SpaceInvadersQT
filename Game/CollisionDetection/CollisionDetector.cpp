@@ -1,10 +1,10 @@
 #include "CollisionDetector.h"
 #include <set>
 
-CollisionDetector::CollisionDetector(const std::list<std::unique_ptr<GameObjects::GameObject> > &gameObjects):
+CollisionDetector::CollisionDetector(const std::list<std::shared_ptr<GameObjects::GameObject> > &gameObjects, QRectF screenRect):
     m_gameObjects(gameObjects)
 {
-    m_quadtree = std::make_unique<Quadtree>(0, QRectF{0, 0, 1920, 1080});
+    m_quadtree = std::make_unique<Quadtree>(0, screenRect);
 }
 
 void CollisionDetector::detectQuadTree() {

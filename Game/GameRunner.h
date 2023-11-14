@@ -6,6 +6,7 @@
 #include "CollisionDetection/CollisionDetector.h"
 #include "UI/FPSCounter.h"
 #include "UI/GameObjectCounter.h"
+#include "qtimer.h"
 #include <QElapsedTimer>
 #include <QGraphicsView>
 #include <QKeyEvent>
@@ -38,9 +39,11 @@ private:
   QGraphicsTextItem* m_stellarTokens;
   QGraphicsTextItem* m_playerHp;
   QGraphicsTextItem* m_gameOverInfo;
+  QGraphicsTextItem* m_sceneItemCounter;
   bool m_continuousShoot;
   bool m_continuousEnemySpawn;
   bool m_gameOver;
+  bool m_gameOverInfoDisplayed;
 
   UI::FPSCounter *m_fpsCounter;
   UI::GameObjectCounter *m_gameObjectCounter;
@@ -50,14 +53,22 @@ private:
   void setupConnections();
   void gameLoop();
 
-  inline void processInput(float deltaTime);
+  inline void processInput(float deltaTimeInSeconds);
+  inline void processGameAction(float deltaTimeInSeconds);
+  inline void processMenuAction();
   inline void updateGameState(float deltaTime);
   inline void updateFps();
+  inline void displayGameOverInfo();
 
-  const std::list<std::unique_ptr<GameObjects::GameObject>> *m_gameObjects;
+  const std::list<std::shared_ptr<GameObjects::GameObject>> *m_gameObjects;
 
-  using Action = std::function<void(float)>;
-  const std::unordered_map<int, Action> m_keyActions{
+  using MenuAction = std::function<void()>;
+  using GameAction = std::function<void(float)>;
+
+  const std::unordered_map<int, MenuAction> m_menuActions {
+      {Qt::Key_Escape, [&]() { m_gameTimer->stop(); emit windowClosed(); }},
+  };
+  const std::unordered_map<int, GameAction> m_gameActions{
       {Qt::Key_Left, [&](float dt) { m_playerShip->accelerateLeft(dt); }},
       {Qt::Key_Right, [&](float dt) { m_playerShip->accelerateRight(dt); }},
       {Qt::Key_Down, [&](float dt) { m_playerShip->accelerateDown(dt); }},
@@ -98,15 +109,20 @@ private:
 
 signals:
   void fpsUpdated(int fps);
+  void windowClosed();
 
-public slots:
-  void onObjectAdded(const GameObjects::GameObject *object) {
-    m_scene.addItem(object->getGraphicsItem());
+private slots:
+  void onObjectAdded(QGraphicsItem *object) {
+    m_scene.addItem(object);
     m_gameObjectCounter->updateObjectCount(1);
   }
-  void onObjectDeleted(const GameObjects::GameObject *object) {
-    m_scene.removeItem(object->getGraphicsItem());
+  void onObjectDeleted(QGraphicsItem *object) {
+    m_scene.removeItem(object);
     m_gameObjectCounter->updateObjectCount(-1);
+  }
+  void onPlayerShipDestroyed() {
+    m_gameOver = true;
+    m_playerShip = nullptr;
   }
 };
 } // namespace Game

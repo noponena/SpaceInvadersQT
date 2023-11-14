@@ -6,7 +6,8 @@
 namespace Game {
 GameRunner::GameRunner(QWidget *parent)
     : QGraphicsView(parent), m_scene(new QGraphicsScene(this)),
-    m_continuousShoot(false), m_continuousEnemySpawn(true), m_gameOver(false) {
+    m_continuousShoot(false), m_continuousEnemySpawn(true), m_gameOver(false),
+    m_gameOverInfoDisplayed(false) {
   setupView();
   setupCounters();
   setupConnections();
@@ -34,6 +35,10 @@ void GameRunner::setupCounters() {
   m_fpsCounter = new UI::FPSCounter();
   m_gameObjectCounter = new UI::GameObjectCounter();
 
+  m_sceneItemCounter = new QGraphicsTextItem();
+  m_sceneItemCounter->setDefaultTextColor(Qt::white);
+  m_sceneItemCounter->setFont(QFont("times", 12));
+
   m_stellarTokens = new QGraphicsTextItem();
   m_stellarTokens->setPlainText("Stellar tokens: 0");
   m_stellarTokens->setDefaultTextColor(Qt::white);
@@ -49,11 +54,13 @@ void GameRunner::setupCounters() {
 
   m_fpsCounter->setPos(0, 0);
   m_gameObjectCounter->setPos(0, m_fpsCounter->boundingRect().height() - 10);
-  m_stellarTokens->setPos(0, m_gameObjectCounter->boundingRect().height() - 10 + 20);
-  m_playerHp->setPos(0, m_gameObjectCounter->boundingRect().height() - 10 + 40);
+  m_sceneItemCounter->setPos(0, m_fpsCounter->boundingRect().height() - 10 + 20);
+  m_stellarTokens->setPos(0, m_gameObjectCounter->boundingRect().height() - 10 + 40);
+  m_playerHp->setPos(0, m_gameObjectCounter->boundingRect().height() - 10 + 60);
 
   scene()->addItem(m_fpsCounter);
   scene()->addItem(m_gameObjectCounter);
+  scene()->addItem(m_sceneItemCounter);
   scene()->addItem(m_stellarTokens);
   scene()->addItem(m_playerHp);
   scene()->addItem(m_gameOverInfo);
@@ -66,6 +73,8 @@ void GameRunner::setupConnections() {
           &GameRunner::onObjectAdded);
   connect(&m_gameState, &GameState::objectDeleted, this,
           &GameRunner::onObjectDeleted);
+  connect(&m_gameState, &GameState::playerShipDestroyed, this,
+          &GameRunner::onPlayerShipDestroyed);
 }
 
 void GameRunner::startGame() {
@@ -77,7 +86,7 @@ void GameRunner::startGame() {
   m_playerShip = m_gameState.playerShip();
   m_gameObjects = &(m_gameState.gameObjects());
   m_levelManager = std::make_unique<LevelManager>(m_gameState);
-  m_collisionDetector = new CollisionDetector(m_gameState.gameObjects());
+  m_collisionDetector = new CollisionDetector(m_gameState.gameObjects(), this->rect());
 
   // Create and start game loop timer
 
@@ -101,46 +110,59 @@ void GameRunner::gameLoop() {
   m_collisionDetector->detectQuadTree();
   this->updateFps();
 
+  m_sceneItemCounter->setPlainText("Scene items: " + QString::number(scene()->items().size()));
+
   if (!m_gameOver) {
     int playerHp = m_playerShip->currentHp();
     m_stellarTokens->setPlainText("Stellar tokens: " + QString::number(m_gameState.stellarTokens()));
     m_playerHp->setPlainText("Player HP: " + QString::number(playerHp));
-    if (playerHp <= 0) {
-        m_gameOver = true;
-        m_gameOverInfo->setPlainText("GAME OVER");
-        QRectF textBoundingRect = m_gameOverInfo->boundingRect();
-        QRectF sceneRect = scene()->sceneRect();
-        QPointF centerPosition = QPointF((sceneRect.width() - textBoundingRect.width()) / 2.0,
-                                         (sceneRect.height() - textBoundingRect.height()) / 2.0);
-        m_gameOverInfo->setPos(centerPosition);
-    }
+  }
+
+  if (m_gameOver && !m_gameOverInfoDisplayed) {
+    this->displayGameOverInfo();
   }
 }
 
-void GameRunner::processInput(float deltaTime) {
-  if (m_gameOver)
-    return;
-  for (const auto &[key, action] : m_keyActions) {
+void GameRunner::processInput(float deltaTimeInSeconds) {
+
+  if (!m_gameOver) {
+    processGameAction(deltaTimeInSeconds);
+  }
+
+  processMenuAction();
+}
+
+void GameRunner::processGameAction(float deltaTimeInSeconds)
+{
+  for (const auto &[key, action] : m_gameActions) {
     if (m_pressedKeys.contains(key))
-      action(deltaTime);
+        action(deltaTimeInSeconds);
   }
 
   if ((!m_pressedKeys.contains(Qt::Key_Left) &&
        !m_pressedKeys.contains(Qt::Key_Right)) ||
       (m_pressedKeys.contains(Qt::Key_Left) &&
        m_pressedKeys.contains(Qt::Key_Right))) {
-    m_playerShip->decelerateX(deltaTime);
+    m_playerShip->decelerateX(deltaTimeInSeconds);
   }
 
   if ((!m_pressedKeys.contains(Qt::Key_Up) &&
        !m_pressedKeys.contains(Qt::Key_Down)) ||
       (m_pressedKeys.contains(Qt::Key_Up) &&
        m_pressedKeys.contains(Qt::Key_Down))) {
-    m_playerShip->decelerateY(deltaTime);
+    m_playerShip->decelerateY(deltaTimeInSeconds);
   }
 
-  m_playerShip->moveHorizontal(deltaTime);
-  m_playerShip->moveVertical(deltaTime);
+  m_playerShip->moveHorizontal(deltaTimeInSeconds);
+  m_playerShip->moveVertical(deltaTimeInSeconds);
+}
+
+void GameRunner::processMenuAction()
+{
+  for (const auto &[key, action] : m_menuActions) {
+    if (m_pressedKeys.contains(key))
+        action();
+  }
 }
 
 void GameRunner::updateGameState(float deltaTime) {
@@ -154,6 +176,17 @@ void GameRunner::updateFps() {
     m_frameCount = 0;
     m_fpsTimer.restart();
   }
+}
+
+void GameRunner::displayGameOverInfo()
+{
+  m_gameOverInfo->setPlainText("GAME OVER");
+  QRectF textBoundingRect = m_gameOverInfo->boundingRect();
+  QRectF sceneRect = scene()->sceneRect();
+  QPointF centerPosition = QPointF((sceneRect.width() - textBoundingRect.width()) / 2.0,
+                                   (sceneRect.height() - textBoundingRect.height()) / 2.0);
+  m_gameOverInfo->setPos(centerPosition);
+  m_gameOverInfoDisplayed = true;
 }
 
 void GameRunner::keyPressEvent(QKeyEvent *event) {

@@ -30,15 +30,20 @@ void LevelManager::update() {
 
     // 2. Create a new enemy ship
     GameObjects::Position pos(randomX, y, minX, maxX, minY, maxY);
-    GameObjects::Ships::EnemyShip *enemyShip =
-        new GameObjects::Ships::EnemyShip(3, 100, pos);
+    std::unique_ptr<GameObjects::Ships::EnemyShip> enemyShip =
+        std::make_unique<GameObjects::Ships::EnemyShip>(3, pos);
     enemyShip->initialize();
-    Game::Movement::MovementStrategy movStrat = Game::Movement::VerticalMovementStrategy(500, 1);
-    std::unique_ptr<Weapons::PrimaryWeapon<GameObjects::Projectiles::BasicEnemyLaser>>
-        weapon = std::make_unique<Weapons::PrimaryWeapon<GameObjects::Projectiles::BasicEnemyLaser>>(2000, movStrat, true, 1);
 
-    weapon->enableSound();
-    enemyShip->setWeapon(std::move(weapon));
+    std::unique_ptr<Weapons::Weapon> weapon = m_weaponBuilder
+                                                  .createWeapon(std::make_unique<Weapons::PrimaryWeapon>())
+                                                  .withProjectileDamage(1)
+                                                  .withProjectile(new GameObjects::Projectiles::LesserEnemyLaserBeam)
+                                                  .withProjectileMovementStrategy(Game::Movement::VerticalMovementStrategy(500, 1))
+                                                  .withWeaponCooldownMs(2000)
+                                                  .withProjectileHostility(true)
+                                                  .build();
+
+    enemyShip->addWeapon(std::move(weapon));
 
     Game::Movement::MovementStrategy horizontalStrategyLeft = Game::Movement::HorizontalMovementStrategy(100, -1);
     Game::Movement::MovementStrategy horizontalStrategyRight = Game::Movement::HorizontalMovementStrategy(100, 1);
@@ -64,7 +69,7 @@ void LevelManager::update() {
         combined);
 
     // 3. Add the enemy ship to the game state
-    m_gameState.addGameObject(enemyShip);
+    m_gameState.addGameObject(std::move(enemyShip));
 
     // 4. Restart the timer and update the last spawn time
     m_elapsedTimer.restart();

@@ -9,8 +9,8 @@
 
 namespace GameObjects {
 namespace Ships {
-EnemyShip::EnemyShip(const int maxHp, int speed, const Position &position)
-    : Ship(maxHp, speed, position)
+EnemyShip::EnemyShip(const int maxHp, const Position &position)
+    : Ship(maxHp, position)
 {
     m_objectType = ObjectType::ENEMY_SHIP;
     m_pixmapResourcePath = ":/Images/alien.png";
@@ -31,9 +31,9 @@ void EnemyShip::spawnCollectables(int amount)
     GameObjects::Position position(center.x(), center.y());
     position.setBounds(this->getPosition().getBounds());
     for (int i = 0; i < amount; i++) {
-        GameObjects::Collectables::Stellar *stellar = new GameObjects::Collectables::Stellar(position);
+        std::unique_ptr<GameObjects::Collectables::Stellar> stellar = std::make_unique<GameObjects::Collectables::Stellar>(position);
         stellar->initialize();
-        emit objectCreated(stellar);
+        emit objectCreated(std::move(stellar));
     }
 }
 
@@ -62,7 +62,7 @@ void EnemyShip::collideWithEnemyShip(EnemyShip &enemyShip) {
 }
 
 bool EnemyShip::shouldBeDeleted() {
-  return m_destructionComplete || m_position.isBeyondScreenBottomLimit(35);
+  return m_destructionCompleted || m_position.isBeyondScreenBottomLimit(35);
 }
 
 QPixmap EnemyShip::getPixmap() const {

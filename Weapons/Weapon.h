@@ -10,7 +10,7 @@ namespace GameObjects {} // namespace GameObjects
 
 namespace Weapons {
 
-enum class WeaponProperty {
+enum class ProjectileProperty {
     PIERCING,
     HOMING
 };
@@ -18,38 +18,39 @@ enum class WeaponProperty {
 class Weapon : public QObject {
   Q_OBJECT
 public:
-  Weapon(float cooldownMs, float minCooldownMs, Game::Movement::MovementStrategy movementStrategy, bool hostile = false, int damage = 1);
-  virtual ~Weapon() = default;
-  virtual GameObjects::Projectiles::Projectile*
-  createProjectile() = 0;
+  Weapon();
 
+  virtual ~Weapon() = default;
+  virtual std::unique_ptr<GameObjects::Projectiles::Projectile>
+  createProjectile() = 0;
+  virtual std::unique_ptr<Weapon> clone() const = 0;
+
+  void setProjectilePrototype(std::unique_ptr<GameObjects::Projectiles::Projectile> prototype);
   void shoot();
   void setOwner(GameObjects::Ships::Ship *newOwner);
   void updateWeaponCooldown(float amount);
   void enableSound();
   void disableSound();
-  void addProperty(WeaponProperty property);
-  void removeProperty(WeaponProperty property);
+  void addProjectileProperty(ProjectileProperty property);
+  void removeProjectileProperty(ProjectileProperty property);
+
+  void setCooldownMs(float newCooldownMs);
 
 protected:
   GameObjects::Ships::Ship *m_owner;
-    bool m_hostile;
-    int m_damage;
-    bool m_soundEnabled;
-    std::set<WeaponProperty> m_properties;
+  bool m_soundEnabled;
+  float m_cooldownMs;
+  std::unique_ptr<GameObjects::Projectiles::Projectile> m_projectilePrototype;
 
 private:
-  float m_cooldownMs;
   float m_minCooldownMs;
   QElapsedTimer m_lastShotTimer;
-  Game::Movement::MovementStrategy m_movementStrategy;
 
   bool canShoot();
   void clampCooldownMs();
 
 signals:
-  void projectileShot(
-      GameObjects::Projectiles::Projectile *projectile);
+  void projectileShot(std::shared_ptr<GameObjects::Projectiles::Projectile> projectile);
 };
 
 } // namespace Weapons

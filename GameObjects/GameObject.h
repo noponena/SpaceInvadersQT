@@ -34,7 +34,7 @@ class Stellar;
 
 struct UpdateContext {
     float deltaTimeInSeconds;
-    const Ships::PlayerShip& playerShip;
+    const Ships::PlayerShip* playerShip;
 };
 
 class GameObject : public QObject {
@@ -42,7 +42,7 @@ class GameObject : public QObject {
 
 public:
   // Constructors & Destructor
-    GameObject(const Position &position, float speed);
+    GameObject(const Position &position);
   virtual ~GameObject() = default;
 
   // Initialization & Lifecycle
@@ -66,21 +66,11 @@ public:
 
   // Update & Movement
   virtual void update(const UpdateContext &context);
-  void moveX(float amount);
-  void moveY(float amount);
-  void accelerateLeft(float deltaTimeInSeconds);
-  void accelerateRight(float deltaTimeInSeconds);
-  void decelerateX(float deltaTimeInSeconds);
-  void moveHorizontal(float deltaTimeInSeconds);
-  void moveVertical(float deltaTimeInSeconds);
-  void accelerateUp(float deltaTimeInSeconds);
-  void accelerateDown(float deltaTimeInSeconds);
-  void decelerateY(float deltaTimeInSeconds);
 
   // Getters & Setters
   Position getPosition() const;
   QPointF getCenterPosition() const;
-  void setPosition(Position newPosition);
+  void setPosition(const Position &newPosition);
   QGraphicsItem *getGraphicsItem() const;
   bool isCollidable() const;
   long long unsigned id();
@@ -99,23 +89,24 @@ public:
   bool isAtLimit() const;
   bool isCollidingWith(const GameObject &other) const;
 
-  void setPosition(QPointF newPosition);
-  void setSoundEnabled(bool newSoundEnabled);
+  void setPosition(const QPointF &newPosition);
+  void setSoundEnabled(const bool newSoundEnabled);
 
   ObjectType objectType() const;
 
   bool isDestroyed() const;
   virtual bool isDead() { return false; };
 
-  protected:
+  Game::Movement::MovementStrategy movementStrategy() const;
+
+protected:
   ObjectType m_objectType;
   // Member Variables
   Position m_position;
-  float m_speed;
   QGraphicsItem *m_graphicsItem;
   bool m_hasCollided;
   bool m_collidable;
-  bool m_destructionComplete;
+  bool m_destructionCompleted;
   bool m_soundEnabled;
   std::unordered_set<int> m_collisions;
   QPointF m_pixmapScale;
@@ -126,7 +117,7 @@ public:
   struct Game::Audio::SoundInfo m_destructionSoundInfo;
 
   // Protected Helpers & Methods
-  void clearMovementStrategy();
+  virtual void disableMovement();
   virtual void initializeDestructionAnimation(){};
   virtual void initializeDestructionEffects(){};
   virtual void playDestructionAnimation(){};
@@ -149,23 +140,19 @@ public:
   QPixmap loadPixmap(const QString &path) const;
   QPixmap scalePixmap(QPixmap &pixmap) const;
 
+  // Protected Helpers & Methods
+  void clampToXBounds();
+  void clampToYBounds();
+  void clampToXYBounds();
+
 private:
   // Member Variables
   long long unsigned m_id;
-  float m_currentSpeedX = 0;
-  float m_currentSpeedY = 0;
-  float m_acceleration = 1250;
   bool m_destructionInitiated;
   //Game::Audio::SoundManager m_soundManager;
   Game::Movement::MovementStrategy m_movementStrategy;
   static long long unsigned counter;
 
-  // Private Helpers & Methods
-  inline void clampToXBounds();
-  inline void clampToYBounds();
-  inline void clampToXYBounds();
-  inline void doMoveX(float amount);
-  inline void doMoveY(float amount);
   void initializeGraphicsItem();
   void applyMovementStrategy(float deltaTimeInSeconds);
 
@@ -173,7 +160,7 @@ private:
   void playDestructionSound();
 
 signals:
-  void objectCreated(GameObjects::GameObject *object);
+  void objectCreated(std::shared_ptr<GameObjects::GameObject> object);
 };
 
 } // namespace GameObjects

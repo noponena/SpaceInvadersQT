@@ -6,10 +6,10 @@
 namespace GameObjects {
 namespace Projectiles {
 
-class BasicEnemyLaser : public GameObjects::Projectiles::LaserBeam
+class LesserEnemyLaserBeam : public GameObjects::Projectiles::LaserBeam
 {
 public:
-    BasicEnemyLaser(Position position, float speed, bool hostile = false, int damage = 1, std::set<Weapons::WeaponProperty> properties = {});
+    LesserEnemyLaserBeam(bool hostile = false, int damage = 1, std::set<Weapons::ProjectileProperty> properties = {});
 };
 
 } // namespace Projectiles

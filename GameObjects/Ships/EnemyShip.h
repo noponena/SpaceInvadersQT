@@ -9,7 +9,7 @@ namespace Ships {
 class EnemyShip : public Ship {
   Q_OBJECT
 public:
-  EnemyShip(const int maxHp, int speed, const Position &position);
+  EnemyShip(const int maxHp, const Position &position);
   void collideWith(GameObject &other) override;
   void collideWithProjectile(Projectiles::Projectile &projectile) override;
   void collideWithEnemyShip(EnemyShip &enemyShip) override;

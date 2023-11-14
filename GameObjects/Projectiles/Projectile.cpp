@@ -5,14 +5,21 @@
 namespace GameObjects {
 namespace Projectiles {
 
-Projectile::Projectile(Position pos, float speed, bool hostile, int damage, std::set<Weapons::WeaponProperty> properties)
-    : GameObject(pos, speed), m_hostile(hostile), m_damage(damage), m_properties(properties)
+Projectile::Projectile()
+    : GameObject(Position(0, 0)), m_hostile(false),
+    m_damage(1), m_properties({})
+{
+    m_objectType = ObjectType::PROJECTILE;
+}
+
+Projectile::Projectile(bool hostile, int damage, std::set<Weapons::ProjectileProperty> properties)
+    : GameObject(Position(0, 0)), m_hostile(hostile), m_damage(damage), m_properties(properties)
 {
     m_objectType = ObjectType::PROJECTILE;
 }
 
 bool Projectile::shouldBeDeleted() {
-    bool isPiercing = m_properties.find(Weapons::WeaponProperty::PIERCING) != m_properties.end();
+    bool isPiercing = m_properties.find(Weapons::ProjectileProperty::PIERCING) != m_properties.end();
     return m_position.isBeyondAnyLimit(50) || (!isPiercing && m_hasCollided);
 }
 
@@ -35,6 +42,31 @@ void Projectile::collideWithPlayerShip(Ships::PlayerShip &playerShip)
 
 int Projectile::getDamage() const { return m_damage; }
 bool Projectile::hostile() const { return m_hostile; }
+
+void Projectile::setHostile(bool newHostile)
+{
+  m_hostile = newHostile;
+}
+
+void Projectile::setDamage(int newDamage)
+{
+  m_damage = newDamage;
+}
+
+void Projectile::setProperties(const std::set<Weapons::ProjectileProperty> &newProperties)
+{
+  m_properties = newProperties;
+}
+
+void Projectile::addProperty(const Weapons::ProjectileProperty property)
+{
+  m_properties.insert(property);
+}
+
+void Projectile::removeProperty(const Weapons::ProjectileProperty property)
+{
+  m_properties.erase(property);
+}
 
 } // namespace Projectiles
 

@@ -21,5 +21,9 @@ protected:
 
 private:
   Ui::MainWindow *ui;
+
+private slots:
+  void onWindowClosed();
+  void bringToForeground();
 };
 #endif // MAINWINDOW_H

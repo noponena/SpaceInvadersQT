@@ -6,9 +6,9 @@ namespace GameObjects {
 
 long long unsigned GameObject::counter = 0;
 
-GameObject::GameObject(const Position &position, float speed)
-    : m_position(position), m_speed(speed), m_hasCollided(false),
-    m_collidable(true), m_destructionComplete(false), m_soundEnabled(true),
+GameObject::GameObject(const Position &position)
+    : m_position(position), m_hasCollided(false),
+    m_collidable(true), m_destructionCompleted(false), m_soundEnabled(true),
     m_onHitPixmapResourcePath(""), m_id(counter++), m_destructionInitiated(false)
 {
     m_objectType = ObjectType::UNDEFINED;
@@ -27,86 +27,6 @@ void GameObject::update(const UpdateContext &context) {
     this->initiateDestructionProcedure();
   this->applyMovementStrategy(context.deltaTimeInSeconds);
   this->updateGraphicsItemPosition();
-}
-
-void GameObject::moveHorizontal(float deltaTimeInSeconds) {
-  this->doMoveX(m_currentSpeedX * deltaTimeInSeconds);
-}
-
-void GameObject::moveVertical(float deltaTimeInSeconds) {
-  this->doMoveY(m_currentSpeedY * deltaTimeInSeconds);
-}
-
-void GameObject::accelerateLeft(float deltaTimeInSeconds) {
-  m_currentSpeedX -= m_acceleration * deltaTimeInSeconds;
-  if (m_currentSpeedX < -m_speed) {
-    m_currentSpeedX = -m_speed;
-  }
-}
-
-void GameObject::accelerateRight(float deltaTimeInSeconds) {
-  m_currentSpeedX += m_acceleration * deltaTimeInSeconds;
-  if (m_currentSpeedX > m_speed) {
-    m_currentSpeedX = m_speed;
-  }
-}
-
-void GameObject::decelerateX(float deltaTimeInSeconds) {
-  if (m_currentSpeedX > 0) {
-    m_currentSpeedX -= m_acceleration * deltaTimeInSeconds;
-    if (m_currentSpeedX < 0) {
-      m_currentSpeedX = 0;
-    }
-  } else if (m_currentSpeedX < 0) {
-    m_currentSpeedX += m_acceleration * deltaTimeInSeconds;
-    if (m_currentSpeedX > 0) {
-      m_currentSpeedX = 0;
-    }
-  }
-}
-
-void GameObject::accelerateUp(float deltaTimeInSeconds) {
-  m_currentSpeedY -= m_acceleration * deltaTimeInSeconds;
-  if (m_currentSpeedY < -m_speed) {
-    m_currentSpeedY = -m_speed;
-  }
-}
-
-void GameObject::accelerateDown(float deltaTimeInSeconds) {
-  m_currentSpeedY += m_acceleration * deltaTimeInSeconds;
-  if (m_currentSpeedY > m_speed) {
-    m_currentSpeedY = m_speed;
-  }
-}
-
-void GameObject::decelerateY(float deltaTimeInSeconds) {
-  if (m_currentSpeedY > 0) {
-    m_currentSpeedY -= m_acceleration * deltaTimeInSeconds;
-    if (m_currentSpeedY < 0) {
-      m_currentSpeedY = 0;
-    }
-  } else if (m_currentSpeedY < 0) {
-    m_currentSpeedY += m_acceleration * deltaTimeInSeconds;
-    if (m_currentSpeedY > 0) {
-      m_currentSpeedY = 0;
-    }
-  }
-}
-
-void GameObject::moveX(float amount) { this->doMoveX(amount); }
-
-void GameObject::moveY(float amount) { this->doMoveY(amount); }
-
-void GameObject::doMoveX(float amount) {
-  float current = m_position.x();
-  m_position.setX(current + amount);
-  this->clampToXBounds();
-}
-
-void GameObject::doMoveY(float amount) {
-  float current = m_position.y();
-  m_position.setY(current + amount);
-  this->clampToYBounds();
 }
 
 void GameObject::applyMovementStrategy(float deltaTimeInSeconds) {
@@ -130,7 +50,7 @@ void GameObject::initiateDestructionProcedure() {
   m_collidable = false;
   m_destructionInitiated = true;
   this->playDestructionSound();
-  this->clearMovementStrategy();
+  this->disableMovement();
   this->playDestructionEffects();
   this->playDestructionAnimation();
 }
@@ -154,7 +74,7 @@ QString GameObject::getOnHitPixmapResourcePath() const
 
 QGraphicsItem *GameObject::getGraphicsItem() const { return m_graphicsItem; }
 
-void GameObject::clearMovementStrategy() { m_movementStrategy.clear(); }
+void GameObject::disableMovement() { m_movementStrategy.clear(); }
 
 QPixmap GameObject::loadPixmap(const QString &path) const {
   QPixmap pixmap = QPixmap(path);
@@ -176,6 +96,11 @@ QPixmap GameObject::scalePixmap(QPixmap &pixmap) const {
   pixmap = pixmap.scaled(size.x(), size.y(), Qt::KeepAspectRatio,
                          Qt::SmoothTransformation);
   return pixmap;
+}
+
+Game::Movement::MovementStrategy GameObject::movementStrategy() const
+{
+  return m_movementStrategy;
 }
 
 void GameObject::setMovementStrategy(
@@ -249,17 +174,17 @@ QPointF GameObject::getCenterPosition() const
     return sceneRect.center();
 }
 
-void GameObject::setPosition(Position newPosition)
+void GameObject::setPosition(const Position &newPosition)
 {
     m_position = newPosition;
 }
 
-void GameObject::setPosition(QPointF newPosition)
+void GameObject::setPosition(const QPointF &newPosition)
 {
     m_position.setPos(newPosition);
 }
 
-void GameObject::setSoundEnabled(bool newSoundEnabled)
+void GameObject::setSoundEnabled(const bool newSoundEnabled)
 {
     m_spawnSoundInfo.enabled = newSoundEnabled;
 }
@@ -271,7 +196,7 @@ ObjectType GameObject::objectType() const
 
 bool GameObject::isDestroyed() const
 {
-    return m_destructionComplete;
+    return m_destructionCompleted;
 }
 
 } // namespace GameObjects

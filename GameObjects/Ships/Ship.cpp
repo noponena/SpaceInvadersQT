@@ -9,29 +9,29 @@
 namespace GameObjects {
 namespace Ships {
 
-Ship::Ship(const int maxHp, int speed, const Position &position)
-    : GameObject(position, speed), m_maxHp(maxHp), m_speed(speed),
+Ship::Ship(const int maxHp, const Position &position)
+    : GameObject(position), m_maxHp(maxHp),
       m_magnetism({true, 100.0f, 100.0f})
 {
   m_currentHp = maxHp;
-  m_animationTimer = std::make_unique<QTimer>();
+    m_animationTimer = std::make_unique<QTimer>();
 }
 
 Ship::~Ship()
 {
-
 }
 
 void Ship::shoot()
 {
-  if (m_weapon)
-    m_weapon->shoot();
+    for (const auto &primaryWeapon : m_primaryWeapons) {
+        primaryWeapon->shoot();
+    }
 }
 
 void Ship::takeDamage(int amount) { m_currentHp -= amount; }
 
 void Ship::heal(int amount) {
-  if (this->isDead()) {
+  if (!this->isDead()) {
     m_currentHp += amount;
     if (m_currentHp > m_maxHp) {
       m_currentHp = m_maxHp;
@@ -42,17 +42,16 @@ void Ship::heal(int amount) {
 bool Ship::isDead() { return m_currentHp <= 0; }
 
 void Ship::updateFireRate(int amount) {
-  m_weapon->updateWeaponCooldown(amount);
+  for (const auto &primaryWeapon : m_primaryWeapons) {
+    primaryWeapon->updateWeaponCooldown(amount);
+  }
 }
 
-void Ship::setWeapon(std::unique_ptr<Weapons::Weapon> newWeapon) {
-  m_weapon = std::move(newWeapon);
-  m_weapon->setOwner(this);
-
-  QObject::connect(
-      m_weapon.get(), &Weapons::Weapon::projectileShot, this,
-      [this](GameObjects::Projectiles::Projectile *projectile)
-      { emit this->objectCreated(projectile); });
+void Ship::addWeapon(std::unique_ptr<Weapons::Weapon> newWeapon)
+{
+  newWeapon->setOwner(this);
+  connect(newWeapon.get(), &Weapons::Weapon::projectileShot, this, &Ship::onProjectileShot);
+  m_primaryWeapons.push_back(std::move(newWeapon));
 }
 
 void Ship::initializeDestructionAnimation() {
@@ -76,10 +75,15 @@ void Ship::initializeDestructionAnimation() {
       m_animationFrames.append(scaledFrame);
     }
   }
-  connect(this, &Ship::animationCompleted, this, &Ship::onAnimationCompleted);
+  connect(this, &Ship::destructionCompleted, this, &Ship::onDestructionCompleted);
 }
 
-void Ship::onAnimationCompleted() { m_destructionComplete = true;}
+void Ship::onDestructionCompleted() { m_destructionCompleted = true;}
+
+void Ship::onProjectileShot(std::shared_ptr<Projectiles::Projectile> projectile)
+{
+  emit this->objectCreated(std::move(projectile));
+}
 
 const magnetism &Ship::magnetism() const
 {
@@ -106,7 +110,7 @@ void Ship::playDestructionAnimation() {
       m_frameIndex++;
     } else {
       m_animationTimer->stop();
-      emit animationCompleted();
+      emit destructionCompleted();
     }
   });
   m_animationTimer->start(50);
@@ -115,11 +119,11 @@ void Ship::playDestructionAnimation() {
 void Ship::playDestructionEffects()
 {
   QPointF p(m_position.x() + m_halfWidth, m_position.y() + m_halfHeight);
-  m_particleSystem->setPosition(p);
-  m_graphicsItem->scene()->addItem(m_particleSystem.get());
+  m_particleSystem.setPosition(p);
+  m_graphicsItem->scene()->addItem(&m_particleSystem);
 }
 
-bool Ship::shouldBeDeleted() { return m_destructionComplete; }
+bool Ship::shouldBeDeleted() { return m_destructionCompleted; }
 
 void Ship::playOnHitAnimation() {
   if (m_onHitAnimationInProgress)
@@ -148,8 +152,7 @@ void Ship::initializeDestructionEffects()
     QRectF rect = m_graphicsItem->boundingRect();
     m_halfWidth = rect.width() / 2;
     m_halfHeight = rect.height() / 2;
-    m_particleSystem = std::make_unique<Effects::ParticleSystem>();
-    m_particleSystem->spawnParticles(200);
+    m_particleSystem.spawnParticles(200);
 }
 } // namespace Ships
 } // namespace GameObjects

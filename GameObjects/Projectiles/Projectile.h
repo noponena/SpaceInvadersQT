@@ -5,15 +5,17 @@
 #include <set>
 #include <QUrl>
 
-namespace Weapons { enum class WeaponProperty; }
+namespace Weapons { enum class ProjectileProperty; }
 
 namespace GameObjects {
 namespace Projectiles {
 
 class Projectile : public GameObject {
 public:
-    Projectile(Position pos, float speed, bool hostile = false, int damage = 1, std::set<Weapons::WeaponProperty> properties = {});
+  Projectile();
+    Projectile(bool hostile = false, int damage = 1, std::set<Weapons::ProjectileProperty> properties = {});
   virtual ~Projectile() = default;
+  virtual std::unique_ptr<Projectile> clone() const = 0;
 
   bool shouldBeDeleted() override;
   void collideWith(GameObject &other) override;
@@ -22,13 +24,18 @@ public:
   int getDamage() const;
 
   bool hostile() const;
+  void setHostile(bool newHostile);
 
-  protected:
+  void setDamage(int newDamage);
+
+  void setProperties(const std::set<Weapons::ProjectileProperty> &newProperties);
+  void addProperty(const Weapons::ProjectileProperty property);
+  void removeProperty(const Weapons::ProjectileProperty property);
+
+protected:
   bool m_hostile;
-
-private:
   int m_damage;
-    std::set<Weapons::WeaponProperty> m_properties;
+  std::set<Weapons::ProjectileProperty> m_properties;
 };
 } // namespace Projectiles
 } // namespace GameObjects

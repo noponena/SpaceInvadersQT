@@ -2,26 +2,30 @@
 #define WEAPONS_LASERCANNON_H
 
 #include "Weapon.h"
-#include "GameObjects/Ships/Ship.h"
 
 namespace Weapons {
 
-template <typename ProjectileType>
 class PrimaryWeapon : public Weapon {
-public:
-    PrimaryWeapon(float cooldownMs,
-              Game::Movement::MovementStrategy movementStrategy, bool hostile = false, int damage = 1)
-        : Weapon(cooldownMs, 100, movementStrategy, hostile, damage) {};
 
   // Weapon interface
 public:
-  GameObjects::Projectiles::Projectile *createProjectile() override
+  std::unique_ptr<GameObjects::Projectiles::Projectile> createProjectile() override
     {
-        GameObjects::Position position = m_owner->getPosition();
-        auto projectile = new ProjectileType(
-            position, 1, m_hostile, m_damage, m_properties);
+        auto projectile = m_projectilePrototype->clone();
+        projectile->setPosition(m_owner->getPosition());
         projectile->setSoundEnabled(m_soundEnabled);
         return projectile;
+    }
+
+    // Weapon interface
+public:
+    std::unique_ptr<Weapon> clone() const override {
+        std::unique_ptr<PrimaryWeapon> weapon = std::make_unique<PrimaryWeapon>();
+        weapon->m_owner = this->m_owner;
+        weapon->m_projectilePrototype = std::unique_ptr<GameObjects::Projectiles::Projectile>(this->m_projectilePrototype->clone());
+        weapon->m_soundEnabled = this->m_soundEnabled;
+        weapon->m_cooldownMs = this->m_cooldownMs;
+        return weapon;
     }
 };
 
