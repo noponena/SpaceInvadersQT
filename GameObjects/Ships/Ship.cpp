@@ -108,15 +108,14 @@ void Ship::playOnHitAnimation() {
   // Load the "on hit" pixmap and set it to the graphics item
   QPixmap onHitPixmap = this->getOnHitPixmap();
   m_onHitAnimationInProgress = true;
-  static_cast<QGraphicsPixmapItem *>(m_graphicsItem)->setPixmap(onHitPixmap);
+  m_graphicsItem->setPixmap(onHitPixmap);
   m_onHitTimerId = startTimer(100);
 }
 
 void Ship::timerEvent(QTimerEvent *event) {
   if (event->timerId() == m_onHitTimerId) {
     killTimer(m_onHitTimerId);
-    static_cast<QGraphicsPixmapItem *>(m_graphicsItem)
-        ->setPixmap(this->getPixmap());
+    m_graphicsItem->setPixmap(this->getPixmap());
     m_onHitAnimationInProgress = false;
     m_onHitTimerId = -1;
   }

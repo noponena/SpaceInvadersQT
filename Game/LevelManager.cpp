@@ -6,7 +6,7 @@
 
 namespace Game {
 
-LevelManager::LevelManager(GameState &gameState)
+LevelManager::LevelManager(GameState *gameState)
     : m_gameState(gameState), m_lastSpawnTime(0) {
   m_elapsedTimer.start();
 }
@@ -18,14 +18,14 @@ void LevelManager::update() {
     std::random_device rd;  // obtain a random number from hardware
     std::mt19937 eng(rd()); // seed the generator
     std::uniform_int_distribution<> distr(
-        m_gameState.m_minX, m_gameState.m_maxX); // define the range
+        m_gameState->m_minX, m_gameState->m_maxX); // define the range
 
     int randomX = distr(eng);
-    int y = m_gameState.m_minY - 50;
-    int minX = m_gameState.m_minX;
-    int maxX = m_gameState.m_maxX;
-    int minY = m_gameState.m_minY;
-    int maxY = m_gameState.m_maxY;
+    int y = m_gameState->m_minY - 50;
+    int minX = m_gameState->m_minX;
+    int maxX = m_gameState->m_maxX;
+    int minY = m_gameState->m_minY;
+    int maxY = m_gameState->m_maxY;
 
     // 2. Create a new enemy ship
     GameObjects::Position pos(randomX, y, minX, maxX, minY, maxY);
@@ -74,7 +74,7 @@ void LevelManager::update() {
     enemyShip->setMovementStrategy(combined);
 
     // 3. Add the enemy ship to the game state
-    m_gameState.addGameObject(std::move(enemyShip));
+    m_gameState->addGameObject(std::move(enemyShip));
 
     // 4. Restart the timer and update the last spawn time
     m_elapsedTimer.restart();

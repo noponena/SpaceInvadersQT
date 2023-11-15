@@ -1,5 +1,6 @@
 #include "GameObject.h"
 #include "Game/Audio/SoundManager.h"
+#include <QGraphicsScene>
 #include <cmath>
 
 namespace GameObjects {
@@ -10,7 +11,14 @@ GameObject::GameObject(const Position &position)
     : m_position(position), m_hasCollided(false), m_collidable(true),
     m_soundEnabled(true), m_onHitPixmapResourcePath(""), m_id(counter++),
     m_destructionInitiated(false) {
-  m_objectType = ObjectType::UNDEFINED;
+    m_objectType = ObjectType::UNDEFINED;
+}
+
+GameObject::~GameObject()
+{
+    if (m_graphicsItem && m_graphicsItem->scene()) {
+        m_graphicsItem->scene()->removeItem(m_graphicsItem.get());
+    }
 }
 
 void GameObject::initialize() {
@@ -70,7 +78,7 @@ QString GameObject::getOnHitPixmapResourcePath() const {
   return m_onHitPixmapResourcePath;
 }
 
-QGraphicsItem *GameObject::getGraphicsItem() const { return m_graphicsItem; }
+QGraphicsPixmapItem *GameObject::getGraphicsItem() const { return m_graphicsItem.get(); }
 
 void GameObject::disableMovement() { m_movementStrategy.clear(); }
 
@@ -157,8 +165,7 @@ bool GameObject::isCollidingWith(const GameObject &other) const {
 
 void GameObject::initializeGraphicsItem() {
   QPixmap pixmap = getPixmap();
-  QGraphicsPixmapItem *pixmapItem = new QGraphicsPixmapItem(pixmap);
-  m_graphicsItem = pixmapItem;
+  m_graphicsItem = std::make_unique<QGraphicsPixmapItem>(pixmap);
 }
 
 bool GameObject::isAtLimit() const { return m_position.isBeyondAnyLimit(); }

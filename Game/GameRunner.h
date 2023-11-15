@@ -18,6 +18,7 @@ class GameRunner : public QGraphicsView {
   Q_OBJECT
 public:
   explicit GameRunner(QWidget *parent = nullptr);
+  ~GameRunner();
   void startGame();
 
 protected:
@@ -26,13 +27,13 @@ protected:
   void wheelEvent(QWheelEvent *event) override { event->ignore(); }
 
 private:
-  QTimer *m_gameTimer;
+  GameState *m_gameState;
   std::unique_ptr<LevelManager> m_levelManager;
+  QTimer m_gameTimer;
   GameObjects::Ships::PlayerShip *m_playerShip;
-  CollisionDetector *m_collisionDetector;
+  std::unique_ptr<CollisionDetector> m_collisionDetector;
   QElapsedTimer m_elapsedTimer;
   QElapsedTimer m_fpsTimer;
-  Game::GameState m_gameState;
   QSet<int> m_pressedKeys;
   QGraphicsScene m_scene;
   int m_frameCount = 0;
@@ -68,7 +69,7 @@ private:
   const std::unordered_map<int, MenuAction> m_menuActions{
       {Qt::Key_Escape,
        [&]() {
-         m_gameTimer->stop();
+           m_gameTimer.stop();
          emit windowClosed();
        }},
   };
@@ -82,10 +83,15 @@ private:
          Q_UNUSED(dt);
          m_playerShip->shoot();
        }},
+      {Qt::Key_P,
+       [&](float dt) {
+           Q_UNUSED(dt);
+           m_playerShip->takeDamage(1);
+       }},
       {Qt::Key_Q,
        [&](float dt) {
          Q_UNUSED(dt);
-         m_gameState.initEnemyShips();
+         m_gameState->initEnemyShips();
          m_pressedKeys.remove(Qt::Key_Q);
        }},
       {Qt::Key_U,

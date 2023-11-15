@@ -121,7 +121,7 @@ void PlayerShip::disableMovement() {
 void PlayerShip::initialize()
 {
   GameObject::initialize();
-  m_healthBar = std::make_unique<HealthBar>(m_currentHp, 50, 5, this->m_graphicsItem);
+  m_healthBar = std::make_unique<HealthBar>(m_currentHp, 50, 5, this->m_graphicsItem.get());
   m_healthBar->setPos(0, 45); // Position it below the ship
 }
 

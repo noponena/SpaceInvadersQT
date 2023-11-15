@@ -40,7 +40,6 @@ void GameState::update(float deltaTimeInSeconds) {
   while (it != m_gameObjects.end()) {
     (*it)->update({deltaTimeInSeconds, m_playerShip});
     if ((*it)->shouldBeDeleted()) {
-      emit objectDeleted(it->get()->getGraphicsItem());
       it = m_gameObjects.erase(it);
     } else {
       ++it;

@@ -43,7 +43,7 @@ class GameObject : public QObject {
 public:
   // Constructors & Destructor
   GameObject(const Position &position);
-  virtual ~GameObject() = default;
+  virtual ~GameObject();
 
   // Initialization & Lifecycle
   virtual void initialize();
@@ -71,7 +71,7 @@ public:
   Position getPosition() const;
   QPointF getCenterPosition() const;
   void setPosition(const Position &newPosition);
-  QGraphicsItem *getGraphicsItem() const;
+  QGraphicsPixmapItem *getGraphicsItem() const;
   bool isCollidable() const;
   long long unsigned id();
   QRectF getBoundingBox() const {
@@ -102,7 +102,7 @@ protected:
   ObjectType m_objectType;
   // Member Variables
   Position m_position;
-  QGraphicsItem *m_graphicsItem;
+  std::unique_ptr<QGraphicsPixmapItem> m_graphicsItem;
   bool m_hasCollided;
   bool m_collidable;
   bool m_soundEnabled;

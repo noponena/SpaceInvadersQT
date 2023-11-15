@@ -8,12 +8,20 @@ GameRunner::GameRunner(QWidget *parent)
     : QGraphicsView(parent), m_scene(new QGraphicsScene(this)),
       m_continuousShoot(false), m_continuousEnemySpawn(true), m_gameOver(false),
       m_gameOverInfoDisplayed(false) {
+  m_gameState = new GameState();
   setupView();
   setupCounters();
   setupConnections();
   m_elapsedTimer.start();
   m_fpsTimer.start();
-  m_gameTimer = new QTimer(this);
+}
+
+GameRunner::~GameRunner()
+{
+  // We have to make sure that the game objects
+  // are destroyed before the scene (QGraphicsScene)
+  // destroys the graphics items in the scene.
+  delete m_gameState;
 }
 
 void GameRunner::setupView() {
@@ -71,30 +79,29 @@ void GameRunner::setupCounters() {
 }
 
 void GameRunner::setupConnections() {
-  connect(&m_gameState, &GameState::objectAdded, this,
+  connect(m_gameState, &GameState::objectAdded, this,
           &GameRunner::onObjectAdded);
-  connect(&m_gameState, &GameState::objectDeleted, this,
+  connect(m_gameState, &GameState::objectDeleted, this,
           &GameRunner::onObjectDeleted);
-  connect(&m_gameState, &GameState::playerShipDestroyed, this,
+  connect(m_gameState, &GameState::playerShipDestroyed, this,
           &GameRunner::onPlayerShipDestroyed);
 }
 
 void GameRunner::startGame() {
   // Initialize game state
   qDebug() << "starting game..";
-  m_gameState.setSize(this->scene()->sceneRect().width(),
+  m_gameState->setSize(this->scene()->sceneRect().width(),
                       this->scene()->sceneRect().height());
-  m_gameState.initialize();
-  m_playerShip = m_gameState.playerShip();
-  m_gameObjects = &(m_gameState.gameObjects());
+  m_gameState->initialize();
+  m_playerShip = m_gameState->playerShip();
+  m_gameObjects = &(m_gameState->gameObjects());
   m_levelManager = std::make_unique<LevelManager>(m_gameState);
-  m_collisionDetector =
-      new CollisionDetector(m_gameState.gameObjects(), this->rect());
+  m_collisionDetector = std::make_unique<CollisionDetector>(m_gameState->gameObjects(), this->rect());
 
   // Create and start game loop timer
 
-  connect(m_gameTimer, &QTimer::timeout, this, &GameRunner::gameLoop);
-  m_gameTimer->start(8); // Approx. 120 frames per second
+  connect(&m_gameTimer, &QTimer::timeout, this, &GameRunner::gameLoop);
+  m_gameTimer.start(8); // Approx. 120 frames per second
 
   // Hide menu and show game window
   // ...
@@ -119,7 +126,7 @@ void GameRunner::gameLoop() {
   if (!m_gameOver) {
     int playerHp = m_playerShip->currentHp();
     m_stellarTokens->setPlainText("Stellar tokens: " +
-                                  QString::number(m_gameState.stellarTokens()));
+                                  QString::number(m_gameState->stellarTokens()));
     m_playerHp->setPlainText("Player HP: " + QString::number(playerHp));
   }
 
@@ -169,7 +176,7 @@ void GameRunner::processMenuAction() {
 }
 
 void GameRunner::updateGameState(float deltaTime) {
-  m_gameState.update(deltaTime);
+  m_gameState->update(deltaTime);
 }
 
 void GameRunner::updateFps() {
