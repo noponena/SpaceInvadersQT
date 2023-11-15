@@ -12,25 +12,34 @@ QColor ParticleSystem::randomColor() {
   return QColor(r, g, b);
 }
 
-void ParticleSystem::update() {
+ParticleSystem::ParticleSystem()
+    : m_effectFinished(false) {}
+
+void ParticleSystem::update(float deltaTimeInSeconds) {
+  bool effectFinished = true;
   for (Particle &particle : m_particles) {
-    particle.update();
+    particle.update(deltaTimeInSeconds);
+    if (!particle.isDead())
+        effectFinished = false;
   }
 
-  if (m_particles.empty()) {
-    emit animationFinished();
-  }
+  m_effectFinished = effectFinished;
 }
 
 void ParticleSystem::spawnParticles(int count, QColor color,
-                                    int lifespanFrames) {
+                                    float lifespanInSeconds) {
   bool randomColor = color == nullptr;
   for (int i = 0; i < count; i++) {
     if (randomColor)
       color = this->randomColor();
-    Particle particle(m_position, lifespanFrames, color);
+    Particle particle(m_position, lifespanInSeconds, color);
     m_particles.push_back(particle);
   }
+}
+
+bool ParticleSystem::effectFinished() const
+{
+  return m_effectFinished;
 }
 
 void ParticleSystem::paint(QPainter *painter,
@@ -38,8 +47,12 @@ void ParticleSystem::paint(QPainter *painter,
                            QWidget *widget) {
   Q_UNUSED(option)
   Q_UNUSED(widget)
-
-  this->update();
+  if (!m_elapsedTimer.isValid()) {
+    m_elapsedTimer.start();
+  } else {
+    this->update(static_cast<float>
+                 (m_elapsedTimer.restart()) / 1000.0f);
+  }
   painter->setRenderHint(QPainter::Antialiasing, false);
   painter->save();
   painter->setPen(Qt::NoPen);

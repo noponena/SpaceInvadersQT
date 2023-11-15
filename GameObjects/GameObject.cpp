@@ -8,9 +8,8 @@ long long unsigned GameObject::counter = 0;
 
 GameObject::GameObject(const Position &position)
     : m_position(position), m_hasCollided(false), m_collidable(true),
-      m_destructionCompleted(false), m_soundEnabled(true),
-      m_onHitPixmapResourcePath(""), m_id(counter++),
-      m_destructionInitiated(false) {
+    m_soundEnabled(true), m_onHitPixmapResourcePath(""), m_id(counter++),
+    m_destructionInitiated(false) {
   m_objectType = ObjectType::UNDEFINED;
 }
 
@@ -20,6 +19,11 @@ void GameObject::initialize() {
   this->updateGraphicsItemPosition();
   this->initializeDestructionAnimation();
   this->initializeDestructionEffects();
+}
+
+bool GameObject::shouldBeDeleted()
+{
+  return m_position.isBeyondAnyLimit(50);
 }
 
 void GameObject::update(const UpdateContext &context) {
@@ -179,7 +183,5 @@ void GameObject::setSoundEnabled(const bool newSoundEnabled) {
 }
 
 ObjectType GameObject::objectType() const { return m_objectType; }
-
-bool GameObject::isDestroyed() const { return m_destructionCompleted; }
 
 } // namespace GameObjects

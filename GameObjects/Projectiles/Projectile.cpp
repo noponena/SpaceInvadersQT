@@ -15,7 +15,7 @@ Projectile::Projectile(
 bool Projectile::shouldBeDeleted() {
   bool isPiercing = m_properties.find(Weapons::ProjectileProperty::PIERCING) !=
                     m_properties.end();
-  return m_position.isBeyondAnyLimit(50) || (!isPiercing && m_hasCollided);
+  return GameObject::shouldBeDeleted() || (!isPiercing && m_hasCollided);
 }
 
 void Projectile::collideWith(GameObject &other) {

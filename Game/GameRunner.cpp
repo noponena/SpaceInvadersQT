@@ -94,7 +94,7 @@ void GameRunner::startGame() {
   // Create and start game loop timer
 
   connect(m_gameTimer, &QTimer::timeout, this, &GameRunner::gameLoop);
-  m_gameTimer->start(16); // Approx. 60 frames per second
+  m_gameTimer->start(8); // Approx. 120 frames per second
 
   // Hide menu and show game window
   // ...

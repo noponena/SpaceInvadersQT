@@ -10,10 +10,10 @@ namespace GameObjects {
 namespace Effects {
 class Particle {
 public:
-  Particle(QPointF position, int lifespan, QColor color)
-      : m_position(position), m_lifespan(lifespan), m_maxLifespan(lifespan),
+  Particle(QPointF position, float lifespanInSeconds, QColor color)
+        : m_position(position), m_lifeSpanInSeconds(lifespanInSeconds), m_lifeSpanLeft(lifespanInSeconds),
         m_color(color) {
-    m_velocity = randomVelocity(50);
+    m_velocity = randomVelocity(5000);
   };
 
   QPointF randomVelocity(float maxSpeed) {
@@ -23,26 +23,23 @@ public:
     return QPointF(cos(angle) * speed, sin(angle) * speed);
   }
 
-  void move() { m_position += m_velocity; };
-  bool isDead() const { return m_lifespan <= 0; };
+  void move(float deltaTimeInSeconds) { m_position += m_velocity * deltaTimeInSeconds; };
+  bool isDead() const { return m_lifeSpanLeft <= 0; };
 
   void draw(QPainter &painter) {
 
     QColor currentColor = m_color;
-    int alpha = static_cast<int>(255.0 * static_cast<double>(m_lifespan) /
-                                 static_cast<double>(m_maxLifespan));
-    currentColor.setAlpha(alpha);
+    currentColor.setAlphaF(m_lifeSpanLeft / m_lifeSpanInSeconds);
     painter.setBrush(currentColor);
-
     QRectF rect(m_position, m_position + QPointF(1, 1));
     painter.drawRect(rect);
   }
 
-  void update() {
-    this->move();
-    m_lifespan -= 1;
-    if (m_lifespan < 0)
-      m_lifespan = 0;
+  void update(float deltaTimeInSeconds) {
+    this->move(deltaTimeInSeconds);
+    m_lifeSpanLeft -= deltaTimeInSeconds;
+    if (m_lifeSpanLeft < 0)
+        m_lifeSpanLeft = 0;
   }
 
   QPointF position() const;
@@ -51,8 +48,8 @@ public:
 private:
   QPointF m_position;
   QPointF m_velocity;
-  int m_lifespan;
-  int m_maxLifespan;
+  float m_lifeSpanInSeconds;
+  float m_lifeSpanLeft;
   QColor m_color;
 };
 

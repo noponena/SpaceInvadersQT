@@ -26,9 +26,7 @@ void MainWindow::resizeEvent(QResizeEvent *event) {
     QRectF newRect(0, 0, this->width(), this->height());
     ui->gameRunner->scene()->setSceneRect(newRect);
 
-    this->setContentsMargins(0, 0, 0, 0);
     this->setStyleSheet("border:0px");
-    this->ui->gameRunner->setContentsMargins(0, 0, 0, 0);
     this->ui->gameRunner->setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
     this->ui->gameRunner->showFullScreen();
   }

@@ -13,7 +13,6 @@ public:
   void collideWith(GameObject &other) override;
   void collideWithProjectile(Projectiles::Projectile &projectile) override;
   void collideWithEnemyShip(EnemyShip &enemyShip) override;
-  bool shouldBeDeleted() override;
 
   // GameObject interface
 protected:

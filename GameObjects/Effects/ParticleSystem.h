@@ -3,6 +3,7 @@
 
 #include "Effect.h"
 #include "Particle.h"
+#include <QElapsedTimer>
 
 namespace GameObjects {
 namespace Effects {
@@ -10,24 +11,26 @@ namespace Effects {
 class ParticleSystem : public Effect {
   Q_OBJECT
 public:
-  void update();
+  ParticleSystem();
+  void update(float deltaTimeInSeconds);
   void spawnParticles(int count, QColor color = nullptr,
-                      int lifespanFrames = 20);
+                      float lifespanInSeconds = 1.0f);
 
 private:
+  bool m_effectFinished;
   std::vector<Particle> m_particles;
+  QElapsedTimer m_elapsedTimer;
   QColor randomColor();
 
 public:
   QRectF boundingRect() const override { return QRectF(); };
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
              QWidget *widget) override;
-signals:
-  void animationFinished();
 
   // Effect interface
 public:
   void setPosition(QPointF newPosition) override;
+  bool effectFinished() const;
 };
 
 } // namespace Effects

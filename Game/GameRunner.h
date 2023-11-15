@@ -86,6 +86,7 @@ private:
        [&](float dt) {
          Q_UNUSED(dt);
          m_gameState.initEnemyShips();
+         m_pressedKeys.remove(Qt::Key_Q);
        }},
       {Qt::Key_U,
        [&](float dt) {

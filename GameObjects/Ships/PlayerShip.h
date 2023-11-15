@@ -2,6 +2,7 @@
 #define PLAYERSHIP_H
 
 #include "Ship.h"
+#include "HealthBar.h"
 
 namespace GameObjects {
 namespace Ships {
@@ -38,9 +39,18 @@ private:
   float m_currentSpeedX = 0;
   float m_currentSpeedY = 0;
   float m_acceleration = 1250;
+  std::unique_ptr<HealthBar> m_healthBar;
 signals:
   void stellarTokenCollected();
   void playerShipDestroyed();
+
+  // GameObject interface
+  public:
+  void initialize() override;
+
+      // Ship interface
+  public:
+      void takeDamage(int amount) override;
 };
 } // namespace Ships
 

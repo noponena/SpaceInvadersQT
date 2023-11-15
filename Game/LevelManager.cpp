@@ -58,7 +58,7 @@ void LevelManager::update() {
         Game::Movement::StationaryMovementStrategy();
     std::vector<std::pair<Game::Movement::MovementStrategy, float>>
         verticalCombined = {std::make_pair(verticalStrategy, 0.25f),
-                            std::make_pair(stationaryStrategy, 2.0f)};
+                            std::make_pair(stationaryStrategy, 3.0f)};
 
     Game::Movement::IntervalMovementStrategy horizontalIntervalStrategy =
         Game::Movement::IntervalMovementStrategy(horizontalCombined, 1.0f);

@@ -104,6 +104,12 @@ void GameState::initEnemyShips() {
   int height = m_maxY - m_minY - 300;
   int xSpacing = width / (cols + 1);
   int ySpacing = height / (rows + 1);
+  std::random_device rd;  // obtain a random number from hardware
+  std::mt19937 eng(rd()); // seed the generator
+  std::uniform_int_distribution<> distr(
+      500, 700);//m_gameState.m_minX, m_gameState.m_maxX); // define the range
+
+  int randomX = distr(eng);
   std::unique_ptr<Weapons::Weapon> weapon =
       m_weaponBuilder.createWeapon(std::make_unique<Weapons::PrimaryWeapon>())
           .withProjectileDamage(1)
@@ -113,18 +119,18 @@ void GameState::initEnemyShips() {
               Game::Movement::VerticalMovementStrategy(500, 1))
           .withWeaponCooldownMs(0)
           .build();
-  qDebug() << "Initializing" << rows * cols << "enemy ships.";
+  //qDebug() << "Initializing" << rows * cols << "enemy ships.";
   for (int j = 1; j <= rows; j++) {
     for (int i = 1; i <= cols; i++) {
-      GameObjects::Position pos(m_minX + i * xSpacing - 500,
+      GameObjects::Position pos(randomX,
                                 m_minY + j * ySpacing + 500, m_minX, m_maxX,
                                 m_minY, m_maxY);
       std::unique_ptr<GameObjects::Ships::EnemyShip> enemyShip =
           std::make_unique<GameObjects::Ships::EnemyShip>(1, pos);
       enemyShip->initialize();
-      // enemyShip->addWeapon(weapon->clone());
-      //  enemyShip->setMovementStrategy(Game::Movement::CircularMovementStrategy(100,
-      //  1));
+      //enemyShip->addWeapon(weapon->clone());
+//        enemyShip->setMovementStrategy(Game::Movement::CircularMovementStrategy(100,
+//        1));
       this->addGameObject(std::move(enemyShip));
     }
   }

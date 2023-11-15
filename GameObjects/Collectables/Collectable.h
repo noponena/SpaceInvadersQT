@@ -39,7 +39,7 @@ public:
   }
 
   bool shouldBeDeleted() override {
-    return m_collected || m_lifeSpanExceeded || m_position.isBeyondAnyLimit();
+    return GameObject::shouldBeDeleted() || m_collected || m_lifeSpanExceeded;
   }
   void collideWithPlayerShip(Ships::PlayerShip &playerShip) override {
     Q_UNUSED(playerShip);

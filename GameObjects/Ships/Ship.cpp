@@ -71,12 +71,7 @@ void Ship::initializeDestructionAnimation() {
   m_destructionAnimation.setSpritesheet(m_sharedPixmap);
   m_destructionAnimation.setFrameOffsets(frameOffsets);
   m_destructionAnimation.setFrameSize(QSize(50, 50));
-
-  connect(this, &Ship::destructionCompleted, this,
-          &Ship::onDestructionCompleted);
 }
-
-void Ship::onDestructionCompleted() { m_destructionCompleted = true; }
 
 void Ship::onProjectileShot(
     std::shared_ptr<Projectiles::Projectile> projectile) {
@@ -88,25 +83,10 @@ const magnetism &Ship::magnetism() const { return m_magnetism; }
 int Ship::currentHp() const { return m_currentHp; }
 
 void Ship::playDestructionAnimation() {
-  if (m_onHitTimerId != -1) {
-    killTimer(m_onHitTimerId);
-    m_onHitTimerId = -1;
-  }
-
   m_graphicsItem->hide();
-  m_destructionAnimation.hide();
-  m_graphicsItem->scene()->addItem(&m_destructionAnimation);
   m_destructionAnimation.setPos(m_graphicsItem->pos());
-  connect(&m_animationTimer, &QTimer::timeout, this, [this]() {
-    if (!m_destructionAnimation.animationFinished()) {
-      m_destructionAnimation.show();
-      m_destructionAnimation.showNextFrame();
-    } else {
-      m_animationTimer.stop();
-      emit destructionCompleted();
-    }
-  });
-  m_animationTimer.start(50);
+  m_graphicsItem->scene()->addItem(&m_destructionAnimation);
+  m_destructionAnimation.start();
 }
 
 void Ship::playDestructionEffects() {
@@ -115,7 +95,11 @@ void Ship::playDestructionEffects() {
   m_graphicsItem->scene()->addItem(&m_destructionEffect);
 }
 
-bool Ship::shouldBeDeleted() { return m_destructionCompleted; }
+bool Ship::shouldBeDeleted()
+{
+  return GameObject::shouldBeDeleted() || (m_destructionAnimation.animationFinished() &&
+                                           m_destructionEffect.effectFinished());
+}
 
 void Ship::playOnHitAnimation() {
   if (m_onHitAnimationInProgress)

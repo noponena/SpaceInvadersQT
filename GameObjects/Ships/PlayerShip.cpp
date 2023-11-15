@@ -118,6 +118,19 @@ void PlayerShip::disableMovement() {
   m_acceleration = 0;
 }
 
+void PlayerShip::initialize()
+{
+  GameObject::initialize();
+  m_healthBar = std::make_unique<HealthBar>(m_currentHp, 50, 5, this->m_graphicsItem);
+  m_healthBar->setPos(0, 45); // Position it below the ship
+}
+
+void PlayerShip::takeDamage(int amount)
+{
+  Ship::takeDamage(amount);
+  m_healthBar->updateHealth(-amount);
+}
+
 } // namespace Ships
 
 } // namespace GameObjects

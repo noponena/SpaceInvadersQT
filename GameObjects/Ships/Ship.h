@@ -26,7 +26,7 @@ public:
   void shoot();
   bool shouldBeDeleted() override;
   bool isDead() override;
-  void takeDamage(int amount);
+  virtual void takeDamage(int amount);
   void heal(int amount);
   void updateFireRate(int amount = 1);
   void addWeapon(std::unique_ptr<Weapons::Weapon> newWeapon);
@@ -48,9 +48,7 @@ protected:
   int m_onHitTimerId = -1;
   std::vector<std::unique_ptr<Weapons::Weapon>> m_primaryWeapons;
   bool m_onHitAnimationInProgress = false;
-  std::vector<QPixmap> m_animationFrames;
   QColor m_originalColor;
-  QTimer m_animationTimer;
   Effects::ParticleSystem m_destructionEffect;
   Animations::AnimatedItem m_destructionAnimation;
   qreal m_halfWidth;
@@ -64,7 +62,6 @@ protected:
 
   virtual void playOnHitAnimation();
 protected slots:
-  void onDestructionCompleted();
   void onProjectileShot(std::shared_ptr<Projectiles::Projectile> projectile);
 
 private:

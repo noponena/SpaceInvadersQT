@@ -46,8 +46,8 @@ public:
   virtual ~GameObject() = default;
 
   // Initialization & Lifecycle
-  void initialize();
-  virtual bool shouldBeDeleted() = 0;
+  virtual void initialize();
+  virtual bool shouldBeDeleted();
 
   // Collision Handlers
   virtual void collideWith(GameObject &other) { Q_UNUSED(other); }
@@ -94,8 +94,6 @@ public:
   void setSoundEnabled(const bool newSoundEnabled);
 
   ObjectType objectType() const;
-
-  bool isDestroyed() const;
   virtual bool isDead() { return false; };
 
   Game::Movement::MovementStrategy movementStrategy() const;
@@ -107,7 +105,6 @@ protected:
   QGraphicsItem *m_graphicsItem;
   bool m_hasCollided;
   bool m_collidable;
-  bool m_destructionCompleted;
   bool m_soundEnabled;
   std::unordered_set<int> m_collisions;
   QPointF m_pixmapScale;
