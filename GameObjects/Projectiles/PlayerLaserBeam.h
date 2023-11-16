@@ -12,8 +12,11 @@ public:
       std::unordered_set<Weapons::ProjectileProperty> properties = {});
   std::unique_ptr<Projectile> clone() const override;
 
-protected:
-  QPixmap getPixmap() const override;
+  // GameObject interface
+public:
+  void initializeObjectType() override;
+  void initializeGraphics() override;
+  void initializeSounds() override;
 };
 } // namespace Projectiles
 

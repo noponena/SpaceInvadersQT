@@ -16,14 +16,18 @@ public:
 
   // GameObject interface
 protected:
-  QPixmap getPixmap() const override;
-  QPixmap getOnHitPixmap() const override;
-  void initiateDestructionProcedure() override;
+  void executeDestructionProcedure() override;
   virtual void spawnCollectables(int amount);
 
   // GameObject interface
 public:
   void update(const UpdateContext &context) override;
+
+  // GameObject interface
+protected:
+  void initializeObjectType() override;
+  void initializeGraphics() override;
+  void initializeSounds() override;
 };
 } // namespace Ships
 

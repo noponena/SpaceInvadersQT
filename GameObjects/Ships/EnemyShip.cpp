@@ -10,25 +10,18 @@
 namespace GameObjects {
 namespace Ships {
 EnemyShip::EnemyShip(const int maxHp, const Position &position)
-    : ShipWithHealthBar(maxHp, 0, position) {
-  m_objectType = ObjectType::ENEMY_SHIP;
-  m_pixmapResourcePath = ":/Images/alien.png";
-  m_onHitPixmapResourcePath = ":/Images/alien_on_hit.png";
-  m_pixmapScale = QPointF(50.0, 75.0);
-  m_destructionSoundInfo = Game::Audio::SoundInfo(
-      {m_soundEnabled, Game::Audio::SoundEffect::LESSER_ENEMY_DESTROYED});
-}
+    : ShipWithHealthBar(maxHp, 0, position) {}
 
-void EnemyShip::initiateDestructionProcedure() {
-  GameObject::initiateDestructionProcedure();
+void EnemyShip::executeDestructionProcedure() {
+  GameObject::executeDestructionProcedure();
   int count = QRandomGenerator::global()->bounded(2, 5);
-  this->spawnCollectables(count);
+  spawnCollectables(count);
 }
 
 void EnemyShip::spawnCollectables(int amount) {
-  QPointF center = this->getBoundingBox().center();
+  QPointF center = getBoundingBox().center();
   GameObjects::Position position(center.x(), center.y());
-  position.setBounds(this->getPosition().getBounds());
+  position.setBounds(getPosition().getBounds());
   for (int i = 0; i < amount; i++) {
     std::unique_ptr<GameObjects::Collectables::Stellar> stellar =
         std::make_unique<GameObjects::Collectables::Stellar>(position);
@@ -40,7 +33,22 @@ void EnemyShip::spawnCollectables(int amount) {
 void EnemyShip::update(const UpdateContext &context) {
   GameObject::update(context);
   m_destructionAnimation.showNextFrame();
-  this->shoot();
+  shoot();
+}
+
+void EnemyShip::initializeObjectType() {
+  m_objectType = ObjectType::ENEMY_SHIP;
+}
+
+void EnemyShip::initializeGraphics() {
+  m_pixmapResourcePath = ":/Images/alien.png";
+  m_onHitPixmapResourcePath = ":/Images/alien_on_hit.png";
+  m_pixmapScale = QPointF(50.0, 75.0);
+}
+
+void EnemyShip::initializeSounds() {
+  m_destructionSoundInfo = Game::Audio::SoundInfo(
+      {m_soundEnabled, Game::Audio::SoundEffect::LESSER_ENEMY_DESTROYED});
 }
 
 void EnemyShip::collideWith(GameObject &other) {
@@ -48,24 +56,14 @@ void EnemyShip::collideWith(GameObject &other) {
 }
 
 void EnemyShip::collideWithProjectile(Projectiles::Projectile &projectile) {
-  this->takeDamage(projectile.getDamage());
-  if (!this->isDead())
-    this->playOnHitAnimation();
+  takeDamage(projectile.getDamage());
+  if (!isDead())
+    playOnHitAnimation();
 }
 
 void EnemyShip::collideWithEnemyShip(EnemyShip &enemyShip) {
   Q_UNUSED(enemyShip);
-  this->takeDamage(0);
-}
-
-QPixmap EnemyShip::getPixmap() const {
-  static QPixmap pixmap = GameObject::getPixmap();
-  return pixmap;
-}
-
-QPixmap EnemyShip::getOnHitPixmap() const {
-  static QPixmap pixmap = GameObject::getOnHitPixmap();
-  return pixmap;
+  takeDamage(0);
 }
 
 } // namespace Ships

@@ -38,8 +38,8 @@ public:
   }
 
   void clear() {
-    this->m_xAxisMovementStrategies.clear();
-    this->m_yAxisMovementStrategies.clear();
+    m_xAxisMovementStrategies.clear();
+    m_yAxisMovementStrategies.clear();
   }
 
   std::vector<AxisMovementStrategy> xAxisMovementStrategies() const {
@@ -52,21 +52,21 @@ public:
 
   MovementStrategy operator+(const MovementStrategy &other) const {
     std::vector<AxisMovementStrategy> combinedXStrategies;
-    combinedXStrategies.reserve(this->m_xAxisMovementStrategies.size() +
+    combinedXStrategies.reserve(m_xAxisMovementStrategies.size() +
                                 other.m_xAxisMovementStrategies.size());
     combinedXStrategies.insert(combinedXStrategies.end(),
-                               this->m_xAxisMovementStrategies.begin(),
-                               this->m_xAxisMovementStrategies.end());
+                               m_xAxisMovementStrategies.begin(),
+                               m_xAxisMovementStrategies.end());
     combinedXStrategies.insert(combinedXStrategies.end(),
                                other.m_xAxisMovementStrategies.begin(),
                                other.m_xAxisMovementStrategies.end());
 
     std::vector<AxisMovementStrategy> combinedYStrategies;
-    combinedYStrategies.reserve(this->m_yAxisMovementStrategies.size() +
+    combinedYStrategies.reserve(m_yAxisMovementStrategies.size() +
                                 other.m_yAxisMovementStrategies.size());
     combinedYStrategies.insert(combinedYStrategies.end(),
-                               this->m_yAxisMovementStrategies.begin(),
-                               this->m_yAxisMovementStrategies.end());
+                               m_yAxisMovementStrategies.begin(),
+                               m_yAxisMovementStrategies.end());
     combinedYStrategies.insert(combinedYStrategies.end(),
                                other.m_yAxisMovementStrategies.begin(),
                                other.m_yAxisMovementStrategies.end());

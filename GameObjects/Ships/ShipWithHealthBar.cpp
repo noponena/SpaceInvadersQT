@@ -9,8 +9,8 @@ ShipWithHealthBar::ShipWithHealthBar(const int maxHp, const float speed,
 
 void ShipWithHealthBar::initialize() {
   GameObject::initialize();
-  m_healthBar = std::make_unique<HealthBar>(m_currentHp, 50, 5,
-                                            this->m_graphicsItem.get());
+  m_healthBar =
+      std::make_unique<HealthBar>(m_currentHp, 50, 5, m_graphicsItem.get());
   m_healthBar->setPos(0, 45); // Position it below the ship
 }
 

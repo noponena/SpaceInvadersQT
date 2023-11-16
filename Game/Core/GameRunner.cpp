@@ -1,5 +1,6 @@
 #include "Game/Core/GameRunner.h"
 #include "GameObjects/Ships/PlayerShip.h"
+#include "Utils/PerformanceMonitor.h"
 #include <QOpenGLWidget>
 #include <QTimer>
 
@@ -35,8 +36,8 @@ void GameRunner::setupView() {
   setScene(&m_scene);
   m_scene.setItemIndexMethod(QGraphicsScene::BspTreeIndex);
   m_scene.setBackgroundBrush(QBrush(Qt::black));
-  this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-  this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+  setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+  setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 }
 
 void GameRunner::setupCounters() {
@@ -90,14 +91,14 @@ void GameRunner::setupConnections() {
 void GameRunner::startGame() {
   // Initialize game state
   qDebug() << "starting game..";
-  m_gameState->setSize(this->scene()->sceneRect().width(),
-                       this->scene()->sceneRect().height());
+  m_gameState->setSize(scene()->sceneRect().width(),
+                       scene()->sceneRect().height());
   m_gameState->initialize();
   m_playerShip = m_gameState->playerShip();
   m_gameObjects = &(m_gameState->gameObjects());
   m_levelManager = std::make_unique<LevelManager>(m_gameState);
-  m_collisionDetector = std::make_unique<CollisionDetector>(
-      m_gameState->gameObjects(), this->rect());
+  m_collisionDetector =
+      std::make_unique<CollisionDetector>(m_gameState->gameObjects(), rect());
 
   // Create and start game loop timer
 
@@ -109,21 +110,24 @@ void GameRunner::startGame() {
 }
 
 void GameRunner::gameLoop() {
-  float deltaTimeInSeconds =
-      static_cast<float>(m_elapsedTimer.restart()) / 1000.0f;
+  int frameTimeMs = m_elapsedTimer.restart();
+  float deltaTimeInSeconds = static_cast<float>(frameTimeMs) / 1000.0f;
   if (m_continuousEnemySpawn)
     m_levelManager->update();
   if (m_continuousShoot)
     m_playerShip->shoot();
 
-  this->processInput(deltaTimeInSeconds);
-  this->updateGameState(deltaTimeInSeconds);
+  processInput(deltaTimeInSeconds);
+  updateGameState(deltaTimeInSeconds);
   m_collisionDetector->detectQuadTree();
-  this->updateFps();
+  updateFps();
+
+  int gameObjectCount = m_gameObjects->size();
+  int sceneItemCount = scene()->items().size();
 
   m_sceneItemCounter->setPlainText("Scene items: " +
-                                   QString::number(scene()->items().size()));
-  m_gameObjectCounter->setObjectCount(m_gameObjects->size());
+                                   QString::number(sceneItemCount));
+  m_gameObjectCounter->setObjectCount(gameObjectCount);
 
   if (!m_gameOver) {
     int playerHp = m_playerShip->currentHp();
@@ -132,8 +136,13 @@ void GameRunner::gameLoop() {
     m_playerHp->setPlainText("Player HP: " + QString::number(playerHp));
   }
 
+#ifdef LOG_PERFORMANCE
+  Utils::PerformanceMonitor::getInstance().logPerformance(
+      frameTimeMs, gameObjectCount, sceneItemCount);
+#endif
+
   if (m_gameOver && !m_gameOverInfoDisplayed) {
-    this->displayGameOverInfo();
+    displayGameOverInfo();
   }
 }
 

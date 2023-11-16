@@ -7,21 +7,16 @@ namespace Ships {
 PlayerShip::PlayerShip(const int maxHp, const float speed,
                        const Position &position)
     : ShipWithHealthBar(maxHp, speed, position) {
-  m_objectType = ObjectType::PLAYER_SHIP;
-  m_pixmapResourcePath = ":/Images/player_ship.png";
-  m_pixmapScale = QPointF(50.0, 75.0);
-  m_destructionSoundInfo = Game::Audio::SoundInfo(
-      {m_soundEnabled, Game::Audio::SoundEffect::PLAYER_DESTROYED});
   connect(this, &Ship::destructionCompleted, this,
           &PlayerShip::playerShipDestroyed);
 }
 
 void PlayerShip::moveHorizontal(float deltaTimeInSeconds) {
-  this->moveX(m_currentSpeedX * deltaTimeInSeconds);
+  moveX(m_currentSpeedX * deltaTimeInSeconds);
 }
 
 void PlayerShip::moveVertical(float deltaTimeInSeconds) {
-  this->moveY(m_currentSpeedY * deltaTimeInSeconds);
+  moveY(m_currentSpeedY * deltaTimeInSeconds);
 }
 
 void PlayerShip::accelerateLeft(float deltaTimeInSeconds) {
@@ -83,13 +78,13 @@ void PlayerShip::decelerateY(float deltaTimeInSeconds) {
 void PlayerShip::moveX(float amount) {
   float current = m_position.x();
   m_position.setX(current + amount);
-  this->clampToXBounds();
+  clampToXBounds();
 }
 
 void PlayerShip::moveY(float amount) {
   float current = m_position.y();
   m_position.setY(current + amount);
-  this->clampToYBounds();
+  clampToYBounds();
 }
 
 void PlayerShip::collideWith(GameObject &other) {
@@ -98,9 +93,9 @@ void PlayerShip::collideWith(GameObject &other) {
 
 void PlayerShip::collideWithProjectile(Projectiles::Projectile &projectile) {
 
-  this->takeDamage(projectile.getDamage());
-  if (!this->isDead())
-    this->playOnHitAnimation();
+  takeDamage(projectile.getDamage());
+  if (!isDead())
+    playOnHitAnimation();
 }
 
 void PlayerShip::collideWithStellarToken(Collectables::Stellar &stellarToken) {
@@ -108,15 +103,24 @@ void PlayerShip::collideWithStellarToken(Collectables::Stellar &stellarToken) {
   emit stellarTokenCollected();
 }
 
-QPixmap PlayerShip::getPixmap() const {
-  static QPixmap pixmap = GameObject::getPixmap();
-  return pixmap;
-}
-
 void PlayerShip::disableMovement() {
   m_currentSpeedX = 0;
   m_currentSpeedY = 0;
   m_acceleration = 0;
+}
+
+void PlayerShip::initializeObjectType() {
+  m_objectType = ObjectType::PLAYER_SHIP;
+}
+
+void Ships::PlayerShip::initializeGraphics() {
+  m_pixmapResourcePath = ":/Images/player_ship.png";
+  m_pixmapScale = QPointF(50.0, 75.0);
+}
+
+void PlayerShip::initializeSounds() {
+  m_destructionSoundInfo = Game::Audio::SoundInfo(
+      {m_soundEnabled, Game::Audio::SoundEffect::PLAYER_DESTROYED});
 }
 } // namespace Ships
 

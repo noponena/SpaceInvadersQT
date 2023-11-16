@@ -5,7 +5,7 @@
 #include "Particle.h"
 #include <QElapsedTimer>
 
-namespace InteractiveGraphics {
+namespace Graphics {
 namespace Effects {
 
 class ParticleSystem : public Effect {
@@ -20,7 +20,7 @@ private:
   bool m_effectFinished;
   std::vector<Particle> m_particles;
   QElapsedTimer m_elapsedTimer;
-  QColor randomColor();
+  QColor getRandomColor();
 
 public:
   QRectF boundingRect() const override { return QRectF(); };
@@ -34,6 +34,6 @@ public:
 };
 
 } // namespace Effects
-} // namespace InteractiveGraphics
+} // namespace Graphics
 
 #endif // GAMEOBJECTS_EFFECTS_PARTICLESYSTEM_H

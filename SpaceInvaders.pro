@@ -18,7 +18,7 @@ include(Utils/Utils.pri)
 include(GameObjects/GameObjects.pri)
 include(Game/Game.pri)
 include(Weapons/Weapons.pri)
-include(InteractiveGraphics/InteractiveGraphics.pri)
+include(Graphics/Graphics.pri)
 
 INCLUDEPATH += "C:/Users/aaron/OneDrive/Tiedostot/Aaro/Personal/Projects/QT/SpaceInvadersQT/Thirdparty/OpenAL/include"
 LIBS += -L"C:/Users/aaron/OneDrive/Tiedostot/Aaro/Personal/Projects/QT/SpaceInvadersQT/Thirdparty/OpenAL/libs/Win64" -lOpenAL32

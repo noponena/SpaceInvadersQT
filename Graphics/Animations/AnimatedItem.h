@@ -5,7 +5,7 @@
 #include <QGraphicsItem>
 #include <QPainter>
 
-namespace InteractiveGraphics {
+namespace Graphics {
 namespace Animations {
 
 class AnimatedItem : public QGraphicsItem {
@@ -102,5 +102,5 @@ private:
 };
 
 } // namespace Animations
-} // namespace InteractiveGraphics
+} // namespace Graphics
 #endif // ANIMATEDITEM_H

@@ -15,7 +15,6 @@ enum class MovementState { Initial, Magnetic, Stopped };
 class Collectable : public GameObject {
 public:
   Collectable(const Position &position) : GameObject(position) {
-    m_objectType = ObjectType::COLLECTABLE;
     m_magneticVelocity = QPointF(0, 0);
   }
   ~Collectable(){};
@@ -81,7 +80,7 @@ private:
 
   inline void updateMovement(const UpdateContext &context) {
     QPointF currentPlayerPosition = context.playerShip->getCenterPosition();
-    Position currentPosition = this->getPosition();
+    Position currentPosition = getPosition();
     QPointF direction = currentPlayerPosition - currentPosition.pos;
     Ships::magnetism magnetism = context.playerShip->magnetism();
     bool isWithinMagneticRange =
@@ -124,12 +123,12 @@ private:
   }
 
   inline void applyMovement(float deltaTimeInSeconds, const QPointF &velocity) {
-    Position currentPosition = this->getPosition();
+    Position currentPosition = getPosition();
     currentPosition.setX(currentPosition.x() +
                          velocity.x() * deltaTimeInSeconds);
     currentPosition.setY(currentPosition.y() +
                          velocity.y() * deltaTimeInSeconds);
-    this->setPosition(currentPosition);
+    setPosition(currentPosition);
   }
 
   inline void handleMagneticMovement(const QPointF &direction,
@@ -157,6 +156,12 @@ private:
 
 protected:
   bool isDead() override { return m_collected; }
+
+  // GameObject interface
+protected:
+  void initializeObjectType() override {
+    m_objectType = ObjectType::COLLECTABLE;
+  }
 };
 
 } // namespace Collectables

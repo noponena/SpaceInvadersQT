@@ -2,8 +2,8 @@
 #define GAMEOBJECTS_SHIP_H
 
 #include "GameObjects/GameObject.h"
-#include "InteractiveGraphics/Animations/AnimatedItem.h"
-#include "InteractiveGraphics/Effects/ParticleSystem.h"
+#include "Graphics/Animations/AnimatedItem.h"
+#include "Graphics/Effects/ParticleSystem.h"
 #include <QElapsedTimer>
 #include <QTimer>
 
@@ -50,8 +50,8 @@ protected:
   std::vector<std::unique_ptr<Weapons::Weapon>> m_primaryWeapons;
   bool m_onHitAnimationInProgress = false;
   QColor m_originalColor;
-  InteractiveGraphics::Effects::ParticleSystem m_destructionEffect;
-  InteractiveGraphics::Animations::AnimatedItem m_destructionAnimation;
+  Graphics::Effects::ParticleSystem m_destructionEffect;
+  Graphics::Animations::AnimatedItem m_destructionAnimation;
   qreal m_halfWidth;
   qreal m_halfHeight;
   QPixmap m_sharedPixmap;

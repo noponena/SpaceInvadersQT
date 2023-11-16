@@ -47,7 +47,7 @@ signals:
 
 private slots:
   void onObjectCreated(std::shared_ptr<GameObjects::GameObject> object) {
-    this->addGameObject(std::move(object));
+    addGameObject(std::move(object));
   }
   void onStellarTokenCollected() { m_stellarTokens++; }
   void onPlayerShipDestroyed() {

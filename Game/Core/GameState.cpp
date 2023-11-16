@@ -13,8 +13,8 @@ GameState::GameState(QObject *parent)
 }
 
 void GameState::initialize() {
-  this->initMovementConstrains();
-  this->initPlayerShip();
+  initMovementConstrains();
+  initPlayerShip();
   m_stellarTokens = 0;
 }
 
@@ -58,7 +58,7 @@ void GameState::initPlayerShip() {
                             m_maxY);
   std::unique_ptr<GameObjects::Ships::PlayerShip> playerShip =
       std::make_unique<GameObjects::Ships::PlayerShip>(
-          2500, m_playersShipStartSpeed, pos);
+          25, m_playersShipStartSpeed, pos);
   playerShip->initialize();
   connect(playerShip.get(),
           &GameObjects::Ships::PlayerShip::playerShipDestroyed, this,
@@ -93,7 +93,7 @@ void GameState::initPlayerShip() {
   m_playerShip = playerShip.get();
   connect(m_playerShip, &GameObjects::Ships::PlayerShip::stellarTokenCollected,
           this, &GameState::onStellarTokenCollected);
-  this->addGameObject(std::move(playerShip));
+  addGameObject(std::move(playerShip));
 }
 
 void GameState::initEnemyShips() {
@@ -129,7 +129,7 @@ void GameState::initEnemyShips() {
       // enemyShip->addWeapon(weapon->clone());
       //        enemyShip->setMovementStrategy(Game::Movement::CircularMovementStrategy(100,
       //        1));
-      this->addGameObject(std::move(enemyShip));
+      addGameObject(std::move(enemyShip));
     }
   }
 }

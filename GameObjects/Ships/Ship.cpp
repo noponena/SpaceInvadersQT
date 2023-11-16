@@ -25,7 +25,7 @@ void Ship::shoot() {
 void Ship::takeDamage(int amount) { m_currentHp -= amount; }
 
 void Ship::heal(int amount) {
-  if (!this->isDead()) {
+  if (!isDead()) {
     m_currentHp += amount;
     if (m_currentHp > m_maxHp) {
       m_currentHp = m_maxHp;
@@ -75,7 +75,7 @@ void Ship::initializeDestructionAnimation() {
 
 void Ship::onProjectileShot(
     std::shared_ptr<Projectiles::Projectile> projectile) {
-  emit this->objectCreated(std::move(projectile));
+  emit objectCreated(std::move(projectile));
 }
 
 const magnetism &Ship::magnetism() const { return m_magnetism; }
@@ -106,7 +106,7 @@ void Ship::playOnHitAnimation() {
     return;
 
   // Load the "on hit" pixmap and set it to the graphics item
-  QPixmap onHitPixmap = this->getOnHitPixmap();
+  QPixmap onHitPixmap = getOnHitPixmap();
   m_onHitAnimationInProgress = true;
   m_graphicsItem->setPixmap(onHitPixmap);
   m_onHitTimerId = startTimer(100);
@@ -115,7 +115,7 @@ void Ship::playOnHitAnimation() {
 void Ship::timerEvent(QTimerEvent *event) {
   if (event->timerId() == m_onHitTimerId) {
     killTimer(m_onHitTimerId);
-    m_graphicsItem->setPixmap(this->getPixmap());
+    m_graphicsItem->setPixmap(getPixmap());
     m_onHitAnimationInProgress = false;
     m_onHitTimerId = -1;
   }

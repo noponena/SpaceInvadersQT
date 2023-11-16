@@ -13,6 +13,8 @@
 #include <QLabel>
 #include <QWheelEvent>
 
+#define LOG_PERFORMANCE
+
 namespace Game {
 namespace Core {
 

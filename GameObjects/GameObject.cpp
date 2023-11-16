@@ -1,5 +1,6 @@
 #include "GameObject.h"
 #include "Game/Audio/SoundManager.h"
+#include "Graphics/PixmapLibrary.h"
 #include <QGraphicsScene>
 #include <cmath>
 
@@ -14,27 +15,23 @@ GameObject::GameObject(const Position &position)
   m_objectType = ObjectType::UNDEFINED;
 }
 
-GameObject::~GameObject() {
-  if (m_graphicsItem && m_graphicsItem->scene()) {
-    m_graphicsItem->scene()->removeItem(m_graphicsItem.get());
-  }
-}
-
 void GameObject::initialize() {
-  this->playSpawnSound();
-  this->initializeGraphicsItem();
-  this->updateGraphicsItemPosition();
-  this->initializeDestructionAnimation();
-  this->initializeDestructionEffects();
+  initializeObjectType();
+  initializeSounds();
+  playSpawnSound();
+  initializeGraphics();
+  m_graphicsItem = std::make_unique<QGraphicsPixmapItem>(getPixmap());
+  initializeDestructionAnimation();
+  initializeDestructionEffects();
 }
 
 bool GameObject::shouldBeDeleted() { return m_position.isBeyondAnyLimit(50); }
 
 void GameObject::update(const UpdateContext &context) {
-  if (this->isDead() && !m_destructionInitiated)
-    this->initiateDestructionProcedure();
-  this->applyMovementStrategy(context.deltaTimeInSeconds);
-  this->updateGraphicsItemPosition();
+  if (isDead() && !m_destructionInitiated)
+    executeDestructionProcedure();
+  applyMovementStrategy(context.deltaTimeInSeconds);
+  updateGraphicsItemPosition();
 }
 
 void GameObject::applyMovementStrategy(float deltaTimeInSeconds) {
@@ -53,25 +50,19 @@ void GameObject::playDestructionSound() {
       m_destructionSoundInfo);
 }
 
-void GameObject::initiateDestructionProcedure() {
+void GameObject::updateGraphicsItemPosition() {
+  if (m_graphicsItem) {
+    m_graphicsItem->setPos(m_position.pos);
+  }
+}
+
+void GameObject::executeDestructionProcedure() {
   m_collidable = false;
   m_destructionInitiated = true;
-  this->playDestructionSound();
-  this->disableMovement();
-  this->playDestructionEffects();
-  this->playDestructionAnimation();
-}
-
-QPointF GameObject::getPixmapScaledSize() const { return m_pixmapScale; }
-
-QString GameObject::getPixmapResourcePath() const {
-  return m_pixmapResourcePath;
-}
-
-QString GameObject::getOnHitPixmapResourcePath() const {
-  if (m_onHitPixmapResourcePath.isEmpty())
-    return this->getPixmapResourcePath();
-  return m_onHitPixmapResourcePath;
+  playDestructionSound();
+  disableMovement();
+  playDestructionEffects();
+  playDestructionAnimation();
 }
 
 QGraphicsPixmapItem *GameObject::getGraphicsItem() const {
@@ -80,26 +71,17 @@ QGraphicsPixmapItem *GameObject::getGraphicsItem() const {
 
 void GameObject::disableMovement() { m_movementStrategy.clear(); }
 
-QPixmap GameObject::loadPixmap(const QString &path) const {
-  QPixmap pixmap = QPixmap(path);
-  return pixmap;
-}
-
 QPixmap GameObject::getPixmap() const {
-  QPixmap pixmap = this->loadPixmap(this->getPixmapResourcePath());
-  return this->scalePixmap(pixmap);
+  return Graphics::PixmapLibrary::getPixmap(
+      m_pixmapResourcePath, m_pixmapScale.x(), m_pixmapScale.y());
 }
 
 QPixmap GameObject::getOnHitPixmap() const {
-  QPixmap pixmap = this->loadPixmap(this->getOnHitPixmapResourcePath());
-  return this->scalePixmap(pixmap);
-}
-
-QPixmap GameObject::scalePixmap(QPixmap &pixmap) const {
-  QPointF size = this->getPixmapScaledSize();
-  pixmap = pixmap.scaled(size.x(), size.y(), Qt::KeepAspectRatio,
-                         Qt::SmoothTransformation);
-  return pixmap;
+  QString path = m_onHitPixmapResourcePath;
+  if (path.isEmpty())
+    path = m_pixmapResourcePath;
+  return Graphics::PixmapLibrary::getPixmap(path, m_pixmapScale.x(),
+                                            m_pixmapScale.y());
 }
 
 Game::Movement::MovementStrategy GameObject::movementStrategy() const {
@@ -132,18 +114,13 @@ void GameObject::clampToYBounds() {
     m_position.goToBottomLimit();
 }
 
-void GameObject::clampToXYBounds() {
-  this->clampToXBounds();
-  this->clampToYBounds();
-}
-
 bool GameObject::isCollidable() const { return m_collidable; }
 
 void GameObject::collide(GameObject &other) {
-  int local_id = this->id();
+  int local_id = id();
   int other_id = other.id();
-  if (this->m_collisions.find(other_id) == this->m_collisions.end()) {
-    this->collideWith(other);
+  if (m_collisions.find(other_id) == m_collisions.end()) {
+    collideWith(other);
     m_collisions.insert(other_id);
   }
 
@@ -154,24 +131,17 @@ void GameObject::collide(GameObject &other) {
 }
 
 bool GameObject::isCollidingWith(const GameObject &other) const {
-  if (!this->m_collidable || !other.m_collidable) {
+  if (!m_collidable || !other.m_collidable) {
     return false;
   }
 
-  return this->getGraphicsItem()->collidesWithItem(other.getGraphicsItem());
+  return getGraphicsItem()->collidesWithItem(other.getGraphicsItem());
 }
-
-void GameObject::initializeGraphicsItem() {
-  QPixmap pixmap = getPixmap();
-  m_graphicsItem = std::make_unique<QGraphicsPixmapItem>(pixmap);
-}
-
-bool GameObject::isAtLimit() const { return m_position.isBeyondAnyLimit(); }
 
 Position GameObject::getPosition() const { return m_position; }
 
 QPointF GameObject::getCenterPosition() const {
-  QRectF sceneRect = this->getBoundingBox();
+  QRectF sceneRect = getBoundingBox();
   return sceneRect.center();
 }
 

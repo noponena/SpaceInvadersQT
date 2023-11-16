@@ -9,7 +9,7 @@ namespace Game {
 namespace Audio {
 
 SoundManager::SoundManager() : m_soundCounter(0), m_maxSoundCount(50) {
-  this->loadSounds();
+  loadSounds();
 }
 
 SoundManager::~SoundManager() {}
@@ -24,7 +24,7 @@ void SoundManager::playSoundEffect(SoundInfo soundInfo) {
   //    };
   if (soundInfo.enabled) {
     if (m_soundCounter >= m_maxSoundCount)
-      this->cleanup();
+      cleanup();
     // qDebug() << "playing sound:" << m[soundInfo.soundEffect];
     std::pair<uint32_t, float> sound = m_sounds[soundInfo.soundEffect];
     float gain = Gain * sound.second * soundInfo.gain;

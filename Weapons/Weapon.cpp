@@ -5,16 +5,16 @@ namespace Weapons {
 Weapon::Weapon()
     : m_owner(nullptr), m_soundEnabled(true), m_minCooldownMs(100) {
   {
-    this->clampCooldownMs();
+    clampCooldownMs();
     m_lastShotTimer.start();
   }
 }
 
 void Weapon::shoot() {
-  if (this->canShoot()) {
+  if (canShoot()) {
     m_lastShotTimer.restart();
     std::unique_ptr<GameObjects::Projectiles::Projectile> projectile =
-        this->createProjectile();
+        createProjectile();
     projectile->initialize();
 
     QPointF ownerCenter = m_owner->getGraphicsItem()->boundingRect().center();

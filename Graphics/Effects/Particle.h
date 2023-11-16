@@ -6,7 +6,7 @@
 #include <QPointF>
 #include <QRandomGenerator>
 
-namespace InteractiveGraphics {
+namespace Graphics {
 namespace Effects {
 class Particle {
 public:
@@ -38,7 +38,7 @@ public:
   }
 
   void update(float deltaTimeInSeconds) {
-    this->move(deltaTimeInSeconds);
+    move(deltaTimeInSeconds);
     m_lifeSpanLeft -= deltaTimeInSeconds;
     if (m_lifeSpanLeft < 0)
       m_lifeSpanLeft = 0;
@@ -62,6 +62,6 @@ inline void Particle::setPosition(QPointF newPosition) {
 }
 
 } // namespace Effects
-} // namespace InteractiveGraphics
+} // namespace Graphics
 
 #endif // PARTICLE_H

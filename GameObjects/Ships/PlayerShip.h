@@ -30,7 +30,6 @@ public:
 
   // GameObject interface
 protected:
-  QPixmap getPixmap() const override;
   void disableMovement() override;
 
 private:
@@ -40,6 +39,12 @@ private:
 signals:
   void stellarTokenCollected();
   void playerShipDestroyed();
+
+  // GameObject interface
+protected:
+  void initializeObjectType() override;
+  void initializeGraphics() override;
+  void initializeSounds() override;
 };
 } // namespace Ships
 

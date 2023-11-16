@@ -12,11 +12,11 @@ MainWindow::MainWindow(QWidget *parent)
   connect(ui->gameRunner, &Game::Core::GameRunner::windowClosed, this,
           &MainWindow::onWindowClosed);
 
-  this->setStyleSheet("background-color: black;");
-  this->setStyleSheet("border:0px");
+  setStyleSheet("background-color: black;");
+  setStyleSheet("border:0px");
   QScreen *screen = QGuiApplication::primaryScreen();
   QRect screenGeometry = screen->geometry();
-  this->resize(screenGeometry.width(), screenGeometry.height());
+  resize(screenGeometry.width(), screenGeometry.height());
   // showFullScreen();
 }
 
@@ -40,9 +40,9 @@ void MainWindow::adjustGameRunnerSize() {
 }
 
 void MainWindow::bringToForeground() {
-  this->ui->gameRunner->activateWindow();
-  this->ui->gameRunner->raise();
-  this->ui->gameRunner->setFocus();
+  ui->gameRunner->activateWindow();
+  ui->gameRunner->raise();
+  ui->gameRunner->setFocus();
 }
 
 void MainWindow::onWindowClosed() { QCoreApplication::quit(); }

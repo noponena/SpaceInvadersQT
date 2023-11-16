@@ -43,7 +43,7 @@ class GameObject : public QObject {
 public:
   // Constructors & Destructor
   GameObject(const Position &position);
-  virtual ~GameObject();
+  virtual ~GameObject() = default;
 
   // Initialization & Lifecycle
   virtual void initialize();
@@ -87,7 +87,6 @@ public:
   void
   addMovementStrategy(Game::Movement::MovementStrategy &newMovementStrategy);
   void collide(GameObject &other);
-  bool isAtLimit() const;
   bool isCollidingWith(const GameObject &other) const;
 
   void setPosition(const QPointF &newPosition);
@@ -99,8 +98,8 @@ public:
   Game::Movement::MovementStrategy movementStrategy() const;
 
 protected:
-  ObjectType m_objectType;
   // Member Variables
+  ObjectType m_objectType;
   Position m_position;
   std::unique_ptr<QGraphicsPixmapItem> m_graphicsItem;
   bool m_hasCollided;
@@ -115,47 +114,34 @@ protected:
   struct Game::Audio::SoundInfo m_destructionSoundInfo;
 
   // Protected Helpers & Methods
-  virtual void disableMovement();
+  virtual void initializeObjectType() = 0;
+  virtual void initializeGraphics() = 0;
+  virtual void initializeSounds() = 0;
   virtual void initializeDestructionAnimation(){};
   virtual void initializeDestructionEffects(){};
   virtual void playDestructionAnimation(){};
   virtual void playDestructionEffects(){};
-  virtual void initiateDestructionProcedure();
+  virtual void executeDestructionProcedure();
+  virtual void disableMovement();
 
-  inline void updateGraphicsItemPosition() {
-    if (m_graphicsItem) {
-      m_graphicsItem->setPos(m_position.pos);
-    }
-  }
-
-  QPointF getPixmapScaledSize() const;
-  QString getPixmapResourcePath() const;
-  QString getOnHitPixmapResourcePath() const;
-
-  virtual QPixmap getPixmap() const;
-  virtual QPixmap getOnHitPixmap() const;
-
-  QPixmap loadPixmap(const QString &path) const;
-  QPixmap scalePixmap(QPixmap &pixmap) const;
+  QPixmap getPixmap() const;
+  QPixmap getOnHitPixmap() const;
 
   // Protected Helpers & Methods
   void clampToXBounds();
   void clampToYBounds();
-  void clampToXYBounds();
 
 private:
   // Member Variables
   long long unsigned m_id;
   bool m_destructionInitiated;
-  // Game::Audio::SoundManager m_soundManager;
   Game::Movement::MovementStrategy m_movementStrategy;
   static long long unsigned counter;
 
-  void initializeGraphicsItem();
-  void applyMovementStrategy(float deltaTimeInSeconds);
-
-  void playSpawnSound();
-  void playDestructionSound();
+  inline void applyMovementStrategy(float deltaTimeInSeconds);
+  inline void playSpawnSound();
+  inline void playDestructionSound();
+  inline void updateGraphicsItemPosition();
 
 signals:
   void objectCreated(std::shared_ptr<GameObjects::GameObject> object);

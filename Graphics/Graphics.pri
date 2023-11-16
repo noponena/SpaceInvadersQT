@@ -1,4 +1,5 @@
 HEADERS += \
+    $$PWD/PixmapLibrary.h
 
 SOURCES += \
 
