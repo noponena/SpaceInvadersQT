@@ -9,14 +9,14 @@
 class CollisionDetector {
 public:
   CollisionDetector(
-      const std::list<std::shared_ptr<GameObjects::GameObject>> &gameObjects,
+      const std::vector<std::shared_ptr<GameObjects::GameObject>> &gameObjects,
       QRectF screenRect);
   void detectQuadTree();
   void detect();
 
 private:
   using ObjectType = GameObjects::ObjectType;
-  const std::list<std::shared_ptr<GameObjects::GameObject>> &m_gameObjects;
+  const std::vector<std::shared_ptr<GameObjects::GameObject>> &m_gameObjects;
   std::unique_ptr<Quadtree> m_quadtree;
 };
 

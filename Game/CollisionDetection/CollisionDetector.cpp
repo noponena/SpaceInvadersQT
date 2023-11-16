@@ -2,7 +2,7 @@
 #include <set>
 
 CollisionDetector::CollisionDetector(
-    const std::list<std::shared_ptr<GameObjects::GameObject>> &gameObjects,
+    const std::vector<std::shared_ptr<GameObjects::GameObject>> &gameObjects,
     QRectF screenRect)
     : m_gameObjects(gameObjects) {
   m_quadtree = std::make_unique<Quadtree>(0, screenRect);

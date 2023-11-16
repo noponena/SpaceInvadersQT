@@ -1,9 +1,10 @@
-#include "GameRunner.h"
+#include "Game/Core/GameRunner.h"
 #include "GameObjects/Ships/PlayerShip.h"
 #include <QOpenGLWidget>
 #include <QTimer>
 
 namespace Game {
+namespace Core {
 GameRunner::GameRunner(QWidget *parent)
     : QGraphicsView(parent), m_scene(new QGraphicsScene(this)),
       m_continuousShoot(false), m_continuousEnemySpawn(true), m_gameOver(false),
@@ -16,8 +17,7 @@ GameRunner::GameRunner(QWidget *parent)
   m_fpsTimer.start();
 }
 
-GameRunner::~GameRunner()
-{
+GameRunner::~GameRunner() {
   // We have to make sure that the game objects
   // are destroyed before the scene (QGraphicsScene)
   // destroys the graphics items in the scene.
@@ -91,12 +91,13 @@ void GameRunner::startGame() {
   // Initialize game state
   qDebug() << "starting game..";
   m_gameState->setSize(this->scene()->sceneRect().width(),
-                      this->scene()->sceneRect().height());
+                       this->scene()->sceneRect().height());
   m_gameState->initialize();
   m_playerShip = m_gameState->playerShip();
   m_gameObjects = &(m_gameState->gameObjects());
   m_levelManager = std::make_unique<LevelManager>(m_gameState);
-  m_collisionDetector = std::make_unique<CollisionDetector>(m_gameState->gameObjects(), this->rect());
+  m_collisionDetector = std::make_unique<CollisionDetector>(
+      m_gameState->gameObjects(), this->rect());
 
   // Create and start game loop timer
 
@@ -122,11 +123,12 @@ void GameRunner::gameLoop() {
 
   m_sceneItemCounter->setPlainText("Scene items: " +
                                    QString::number(scene()->items().size()));
+  m_gameObjectCounter->setObjectCount(m_gameObjects->size());
 
   if (!m_gameOver) {
     int playerHp = m_playerShip->currentHp();
-    m_stellarTokens->setPlainText("Stellar tokens: " +
-                                  QString::number(m_gameState->stellarTokens()));
+    m_stellarTokens->setPlainText(
+        "Stellar tokens: " + QString::number(m_gameState->stellarTokens()));
     m_playerHp->setPlainText("Player HP: " + QString::number(playerHp));
   }
 
@@ -206,5 +208,5 @@ void GameRunner::keyPressEvent(QKeyEvent *event) {
 void GameRunner::keyReleaseEvent(QKeyEvent *event) {
   m_pressedKeys.remove(event->key());
 }
-
+} // namespace Core
 } // namespace Game

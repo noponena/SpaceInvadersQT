@@ -8,8 +8,8 @@
 namespace GameObjects {
 namespace Ships {
 
-Ship::Ship(const int maxHp, const Position &position)
-    : GameObject(position), m_maxHp(maxHp),
+Ship::Ship(const int maxHp, const float speed, const Position &position)
+    : GameObject(position), m_maxHp(maxHp), m_speed(speed),
       m_magnetism({true, 100.0f, 100.0f}) {
   m_currentHp = maxHp;
 }
@@ -95,10 +95,10 @@ void Ship::playDestructionEffects() {
   m_graphicsItem->scene()->addItem(&m_destructionEffect);
 }
 
-bool Ship::shouldBeDeleted()
-{
-  return GameObject::shouldBeDeleted() || (m_destructionAnimation.animationFinished() &&
-                                           m_destructionEffect.effectFinished());
+bool Ship::shouldBeDeleted() {
+  return GameObject::shouldBeDeleted() ||
+         (m_destructionAnimation.animationFinished() &&
+          m_destructionEffect.effectFinished());
 }
 
 void Ship::playOnHitAnimation() {
@@ -125,7 +125,7 @@ void Ship::initializeDestructionEffects() {
   QRectF rect = m_graphicsItem->boundingRect();
   m_halfWidth = rect.width() / 2;
   m_halfHeight = rect.height() / 2;
-  m_destructionEffect.spawnParticles(500);
+  m_destructionEffect.spawnParticles(250);
 }
 } // namespace Ships
 } // namespace GameObjects

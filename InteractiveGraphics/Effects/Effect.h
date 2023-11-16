@@ -3,7 +3,7 @@
 
 #include <QGraphicsItem>
 
-namespace GameObjects {
+namespace InteractiveGraphics {
 namespace Effects {
 
 class Effect : public QObject, public QGraphicsItem {
@@ -22,6 +22,6 @@ inline void Effect::setPosition(QPointF newPosition) {
 }
 
 } // namespace Effects
-} // namespace GameObjects
+} // namespace InteractiveGraphics
 
 #endif // EFFECT_H

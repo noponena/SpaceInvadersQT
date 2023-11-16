@@ -9,8 +9,13 @@ GameObjectCounter::GameObjectCounter(QGraphicsItem *parent)
   setFont(QFont("times", 12));
 }
 
-void GameObjectCounter::updateObjectCount(int amount) {
+void GameObjectCounter::updateObjectCount(const int amount) {
   m_objectCount += amount;
+  setPlainText(QString("Object count: %1").arg(m_objectCount));
+}
+
+void GameObjectCounter::setObjectCount(const int count) {
+  m_objectCount = count;
   setPlainText(QString("Object count: %1").arg(m_objectCount));
 }
 } // namespace UI

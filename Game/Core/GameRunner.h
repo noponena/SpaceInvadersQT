@@ -1,9 +1,9 @@
 #ifndef GAMERUNNER_H
 #define GAMERUNNER_H
 
-#include "CollisionDetection/CollisionDetector.h"
-#include "GameState.h"
-#include "LevelManager.h"
+#include "Game/CollisionDetection/CollisionDetector.h"
+#include "Game/Core/GameState.h"
+#include "Game/Core/LevelManager.h"
 #include "UI/FPSCounter.h"
 #include "UI/GameObjectCounter.h"
 #include "qtimer.h"
@@ -14,6 +14,8 @@
 #include <QWheelEvent>
 
 namespace Game {
+namespace Core {
+
 class GameRunner : public QGraphicsView {
   Q_OBJECT
 public:
@@ -61,7 +63,7 @@ private:
   inline void updateFps();
   inline void displayGameOverInfo();
 
-  const std::list<std::shared_ptr<GameObjects::GameObject>> *m_gameObjects;
+  const std::vector<std::shared_ptr<GameObjects::GameObject>> *m_gameObjects;
 
   using MenuAction = std::function<void()>;
   using GameAction = std::function<void(float)>;
@@ -69,7 +71,7 @@ private:
   const std::unordered_map<int, MenuAction> m_menuActions{
       {Qt::Key_Escape,
        [&]() {
-           m_gameTimer.stop();
+         m_gameTimer.stop();
          emit windowClosed();
        }},
   };
@@ -85,8 +87,8 @@ private:
        }},
       {Qt::Key_P,
        [&](float dt) {
-           Q_UNUSED(dt);
-           m_playerShip->takeDamage(1);
+         Q_UNUSED(dt);
+         m_playerShip->takeDamage(1);
        }},
       {Qt::Key_Q,
        [&](float dt) {
@@ -136,6 +138,7 @@ private slots:
     m_playerShip = nullptr;
   }
 };
+} // namespace Core
 } // namespace Game
 
 #endif // GAMERUNNER_H

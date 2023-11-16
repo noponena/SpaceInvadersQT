@@ -25,5 +25,6 @@ private:
 private slots:
   void onWindowClosed();
   void bringToForeground();
+  void adjustGameRunnerSize();
 };
 #endif // MAINWINDOW_H

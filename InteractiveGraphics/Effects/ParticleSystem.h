@@ -5,7 +5,7 @@
 #include "Particle.h"
 #include <QElapsedTimer>
 
-namespace GameObjects {
+namespace InteractiveGraphics {
 namespace Effects {
 
 class ParticleSystem : public Effect {
@@ -34,6 +34,6 @@ public:
 };
 
 } // namespace Effects
-} // namespace GameObjects
+} // namespace InteractiveGraphics
 
 #endif // GAMEOBJECTS_EFFECTS_PARTICLESYSTEM_H

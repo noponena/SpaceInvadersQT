@@ -8,5 +8,3 @@ SOURCES += \
 include(Projectiles/Projectiles.pri)
 include(Ships/Ships.pri)
 include(Collectables/Collectables.pri)
-include(Effects/Effects.pri)
-include(Animations/Animations.pri)

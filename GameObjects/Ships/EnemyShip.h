@@ -2,11 +2,11 @@
 #define GAMEOBJECTS_ENEMYSHIP_H
 
 #include "GameObjects/Projectiles/Projectile.h"
-#include "Ship.h"
+#include "ShipWithHealthBar.h"
 
 namespace GameObjects {
 namespace Ships {
-class EnemyShip : public Ship {
+class EnemyShip : public ShipWithHealthBar {
   Q_OBJECT
 public:
   EnemyShip(const int maxHp, const Position &position);

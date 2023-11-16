@@ -1,7 +1,7 @@
 #include "ParticleSystem.h"
 #include <QTimer>
 
-namespace GameObjects {
+namespace InteractiveGraphics {
 namespace Effects {
 
 QColor ParticleSystem::randomColor() {
@@ -12,15 +12,14 @@ QColor ParticleSystem::randomColor() {
   return QColor(r, g, b);
 }
 
-ParticleSystem::ParticleSystem()
-    : m_effectFinished(false) {}
+ParticleSystem::ParticleSystem() : m_effectFinished(false) {}
 
 void ParticleSystem::update(float deltaTimeInSeconds) {
   bool effectFinished = true;
   for (Particle &particle : m_particles) {
     particle.update(deltaTimeInSeconds);
     if (!particle.isDead())
-        effectFinished = false;
+      effectFinished = false;
   }
 
   m_effectFinished = effectFinished;
@@ -37,10 +36,7 @@ void ParticleSystem::spawnParticles(int count, QColor color,
   }
 }
 
-bool ParticleSystem::effectFinished() const
-{
-  return m_effectFinished;
-}
+bool ParticleSystem::effectFinished() const { return m_effectFinished; }
 
 void ParticleSystem::paint(QPainter *painter,
                            const QStyleOptionGraphicsItem *option,
@@ -50,8 +46,7 @@ void ParticleSystem::paint(QPainter *painter,
   if (!m_elapsedTimer.isValid()) {
     m_elapsedTimer.start();
   } else {
-    this->update(static_cast<float>
-                 (m_elapsedTimer.restart()) / 1000.0f);
+    this->update(static_cast<float>(m_elapsedTimer.restart()) / 1000.0f);
   }
   painter->setRenderHint(QPainter::Antialiasing, false);
   painter->save();
@@ -71,4 +66,4 @@ void ParticleSystem::setPosition(QPointF newPosition) {
 }
 
 } // namespace Effects
-} // namespace GameObjects
+} // namespace InteractiveGraphics

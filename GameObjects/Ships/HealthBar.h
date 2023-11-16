@@ -7,25 +7,28 @@
 namespace GameObjects {
 namespace Ships {
 
-class HealthBar : public QGraphicsItem
-{
+class HealthBar : public QGraphicsItem {
 public:
-    HealthBar(float health, float width, float height, QGraphicsItem *parent = nullptr);
-    QRectF boundingRect() const override;
-    void updateHealth(float amount);
+  HealthBar(float health, float width, float height,
+            QGraphicsItem *parent = nullptr);
+  QRectF boundingRect() const override;
+  void updateHealth(float amount);
+
 private:
-    float m_currentHealth;
-    float m_maxHealth;
-    float m_healthPercentage;
-    float m_width;
-    float m_height;
-    float m_currentWidth;
+  float m_currentHealth;
+  float m_maxHealth;
+  float m_healthPercentage;
+  float m_width;
+  float m_height;
+  float m_currentWidth;
 
-    QBrush selectBrush();
+  QBrush selectBrush();
+  void clampCurrentHealth();
 
-    // QGraphicsItem interface
+  // QGraphicsItem interface
 public:
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
+  void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
+             QWidget *widget) override;
 };
 
 } // namespace Ships

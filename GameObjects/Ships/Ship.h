@@ -1,9 +1,9 @@
 #ifndef GAMEOBJECTS_SHIP_H
 #define GAMEOBJECTS_SHIP_H
 
-#include "GameObjects/Animations/AnimatedItem.h"
-#include "GameObjects/Effects/ParticleSystem.h"
 #include "GameObjects/GameObject.h"
+#include "InteractiveGraphics/Animations/AnimatedItem.h"
+#include "InteractiveGraphics/Effects/ParticleSystem.h"
 #include <QElapsedTimer>
 #include <QTimer>
 
@@ -21,13 +21,13 @@ struct magnetism {
 class Ship : public GameObject {
   Q_OBJECT
 public:
-  Ship(const int maxHp, const Position &position);
+  Ship(const int maxHp, const float speed, const Position &position);
   virtual ~Ship();
+  virtual void takeDamage(int amount);
+  virtual void heal(int amount);
   void shoot();
   bool shouldBeDeleted() override;
   bool isDead() override;
-  virtual void takeDamage(int amount);
-  void heal(int amount);
   void updateFireRate(int amount = 1);
   void addWeapon(std::unique_ptr<Weapons::Weapon> newWeapon);
 
@@ -45,12 +45,13 @@ public:
 
 protected:
   int m_currentHp, m_maxHp, m_fireRate, m_shotCooldownMs;
+  float m_speed;
   int m_onHitTimerId = -1;
   std::vector<std::unique_ptr<Weapons::Weapon>> m_primaryWeapons;
   bool m_onHitAnimationInProgress = false;
   QColor m_originalColor;
-  Effects::ParticleSystem m_destructionEffect;
-  Animations::AnimatedItem m_destructionAnimation;
+  InteractiveGraphics::Effects::ParticleSystem m_destructionEffect;
+  InteractiveGraphics::Animations::AnimatedItem m_destructionAnimation;
   qreal m_halfWidth;
   qreal m_halfHeight;
   QPixmap m_sharedPixmap;

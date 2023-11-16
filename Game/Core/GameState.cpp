@@ -6,7 +6,7 @@
 #include <sstream>
 
 namespace Game {
-
+namespace Core {
 GameState::GameState(QObject *parent)
     : QObject(parent), m_playerShipDeletedFromScene(false) {
   m_playersShipStartSpeed = 500;
@@ -25,29 +25,29 @@ void GameState::addGameObject(std::shared_ptr<GameObjects::GameObject> object) {
   emit objectAdded(object->getGraphicsItem());
 }
 
-void GameState::removeGameObject(
-    std::shared_ptr<GameObjects::GameObject> object) {
-  m_gameObjects.remove(object);
-}
-
 void GameState::setSize(int width, int height) {
   m_windowWidth = width;
   m_windowHeight = height;
 }
 
 void GameState::update(float deltaTimeInSeconds) {
-  auto it = m_gameObjects.begin();
-  while (it != m_gameObjects.end()) {
-    (*it)->update({deltaTimeInSeconds, m_playerShip});
-    if ((*it)->shouldBeDeleted()) {
-      it = m_gameObjects.erase(it);
+  for (size_t i = 0; i < m_gameObjects.size(); /* no increment here */) {
+    m_gameObjects[i]->update({deltaTimeInSeconds, m_playerShip});
+
+    if (m_gameObjects[i]->shouldBeDeleted()) {
+      // Swap with the last element
+      std::swap(m_gameObjects[i], m_gameObjects.back());
+      // Pop the last element (which is now the one to be deleted)
+      m_gameObjects.pop_back();
+
+      // Don't increment i, as we now have a new element at index i
     } else {
-      ++it;
+      ++i; // Only increment if no deletion occurred
     }
   }
 }
 
-const std::list<std::shared_ptr<GameObjects::GameObject>> &
+const std::vector<std::shared_ptr<GameObjects::GameObject>> &
 GameState::gameObjects() const {
   return m_gameObjects;
 }
@@ -58,7 +58,7 @@ void GameState::initPlayerShip() {
                             m_maxY);
   std::unique_ptr<GameObjects::Ships::PlayerShip> playerShip =
       std::make_unique<GameObjects::Ships::PlayerShip>(
-          25, m_playersShipStartSpeed, pos);
+          2500, m_playersShipStartSpeed, pos);
   playerShip->initialize();
   connect(playerShip.get(),
           &GameObjects::Ships::PlayerShip::playerShipDestroyed, this,
@@ -106,7 +106,7 @@ void GameState::initEnemyShips() {
   std::random_device rd;  // obtain a random number from hardware
   std::mt19937 eng(rd()); // seed the generator
   std::uniform_int_distribution<> distr(
-      500, 700);//m_gameState.m_minX, m_gameState.m_maxX); // define the range
+      500, 700); // m_gameState.m_minX, m_gameState.m_maxX); // define the range
 
   int randomX = distr(eng);
   std::unique_ptr<Weapons::Weapon> weapon =
@@ -118,18 +118,17 @@ void GameState::initEnemyShips() {
               Game::Movement::VerticalMovementStrategy(500, 1))
           .withWeaponCooldownMs(0)
           .build();
-  //qDebug() << "Initializing" << rows * cols << "enemy ships.";
+  // qDebug() << "Initializing" << rows * cols << "enemy ships.";
   for (int j = 1; j <= rows; j++) {
     for (int i = 1; i <= cols; i++) {
-      GameObjects::Position pos(randomX,
-                                m_minY + j * ySpacing + 500, m_minX, m_maxX,
-                                m_minY, m_maxY);
+      GameObjects::Position pos(randomX, m_minY + j * ySpacing + 500, m_minX,
+                                m_maxX, m_minY, m_maxY);
       std::unique_ptr<GameObjects::Ships::EnemyShip> enemyShip =
           std::make_unique<GameObjects::Ships::EnemyShip>(1, pos);
       enemyShip->initialize();
-      //enemyShip->addWeapon(weapon->clone());
-//        enemyShip->setMovementStrategy(Game::Movement::CircularMovementStrategy(100,
-//        1));
+      // enemyShip->addWeapon(weapon->clone());
+      //        enemyShip->setMovementStrategy(Game::Movement::CircularMovementStrategy(100,
+      //        1));
       this->addGameObject(std::move(enemyShip));
     }
   }
@@ -147,4 +146,5 @@ GameObjects::Ships::PlayerShip *GameState::playerShip() const {
 }
 
 const unsigned &GameState::stellarTokens() const { return m_stellarTokens; }
+} // namespace Core
 } // namespace Game

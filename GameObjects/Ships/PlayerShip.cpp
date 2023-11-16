@@ -4,8 +4,9 @@
 
 namespace GameObjects {
 namespace Ships {
-PlayerShip::PlayerShip(const int maxHp, float speed, const Position &position)
-    : Ship(maxHp, position), m_speed(speed) {
+PlayerShip::PlayerShip(const int maxHp, const float speed,
+                       const Position &position)
+    : ShipWithHealthBar(maxHp, speed, position) {
   m_objectType = ObjectType::PLAYER_SHIP;
   m_pixmapResourcePath = ":/Images/player_ship.png";
   m_pixmapScale = QPointF(50.0, 75.0);
@@ -117,20 +118,6 @@ void PlayerShip::disableMovement() {
   m_currentSpeedY = 0;
   m_acceleration = 0;
 }
-
-void PlayerShip::initialize()
-{
-  GameObject::initialize();
-  m_healthBar = std::make_unique<HealthBar>(m_currentHp, 50, 5, this->m_graphicsItem.get());
-  m_healthBar->setPos(0, 45); // Position it below the ship
-}
-
-void PlayerShip::takeDamage(int amount)
-{
-  Ship::takeDamage(amount);
-  m_healthBar->updateHealth(-amount);
-}
-
 } // namespace Ships
 
 } // namespace GameObjects

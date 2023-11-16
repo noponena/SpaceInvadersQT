@@ -6,13 +6,13 @@
 #include <QPointF>
 #include <QRandomGenerator>
 
-namespace GameObjects {
+namespace InteractiveGraphics {
 namespace Effects {
 class Particle {
 public:
   Particle(QPointF position, float lifespanInSeconds, QColor color)
-        : m_position(position), m_lifeSpanInSeconds(lifespanInSeconds), m_lifeSpanLeft(lifespanInSeconds),
-        m_color(color) {
+      : m_position(position), m_lifeSpanInSeconds(lifespanInSeconds),
+        m_lifeSpanLeft(lifespanInSeconds), m_color(color) {
     m_velocity = randomVelocity(5000);
   };
 
@@ -23,7 +23,9 @@ public:
     return QPointF(cos(angle) * speed, sin(angle) * speed);
   }
 
-  void move(float deltaTimeInSeconds) { m_position += m_velocity * deltaTimeInSeconds; };
+  void move(float deltaTimeInSeconds) {
+    m_position += m_velocity * deltaTimeInSeconds;
+  };
   bool isDead() const { return m_lifeSpanLeft <= 0; };
 
   void draw(QPainter &painter) {
@@ -39,7 +41,7 @@ public:
     this->move(deltaTimeInSeconds);
     m_lifeSpanLeft -= deltaTimeInSeconds;
     if (m_lifeSpanLeft < 0)
-        m_lifeSpanLeft = 0;
+      m_lifeSpanLeft = 0;
   }
 
   QPointF position() const;
@@ -60,6 +62,6 @@ inline void Particle::setPosition(QPointF newPosition) {
 }
 
 } // namespace Effects
-} // namespace GameObjects
+} // namespace InteractiveGraphics
 
 #endif // PARTICLE_H

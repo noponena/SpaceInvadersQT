@@ -25,7 +25,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="0">
-     <widget class="Game::GameRunner" name="gameRunner">
+     <widget class="Game::Core::GameRunner" name="gameRunner">
       <property name="baseSize">
        <size>
         <width>0</width>
@@ -68,9 +68,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>Game::GameRunner</class>
+   <class>Game::Core::GameRunner</class>
    <extends>QGraphicsView</extends>
-   <header>Game/GameRunner.h</header>
+   <header location="global">Game/Core/GameRunner.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

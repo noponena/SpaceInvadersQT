@@ -1,34 +1,36 @@
 #ifndef ANIMATEDITEM_H
 #define ANIMATEDITEM_H
 
+#include <QElapsedTimer>
 #include <QGraphicsItem>
 #include <QPainter>
-#include <QElapsedTimer>
 
+namespace InteractiveGraphics {
 namespace Animations {
 
 class AnimatedItem : public QGraphicsItem {
 public:
-  AnimatedItem(QGraphicsItem *parent = nullptr, int animationCycles = 1, int delayBetweenFramesMs = 50)
-        : QGraphicsItem(parent), m_animationStarted(false), m_animationFinished(false),
-        m_accumulatedTimeMs(0), m_delayBetweenFramesMs(delayBetweenFramesMs), m_frameIndex(0),
-        m_frameCount(0), m_cycleIndex(0), m_cycleCount(animationCycles)
-    {
-      hide();
-    }
+  AnimatedItem(QGraphicsItem *parent = nullptr, int animationCycles = 1,
+               int delayBetweenFramesMs = 50)
+      : QGraphicsItem(parent), m_animationStarted(false),
+        m_animationFinished(false), m_accumulatedTimeMs(0),
+        m_delayBetweenFramesMs(delayBetweenFramesMs), m_frameIndex(0),
+        m_frameCount(0), m_cycleIndex(0), m_cycleCount(animationCycles) {
+    hide();
+  }
 
   void start() {
-      m_animationStarted = true;
-      m_animationFinished = false;
-      m_accumulatedTimeMs = 0;
-      m_frameIndex = 0;
-      m_cycleIndex = 0;
-      m_elapsedTimer.start();
+    m_animationStarted = true;
+    m_animationFinished = false;
+    m_accumulatedTimeMs = 0;
+    m_frameIndex = 0;
+    m_cycleIndex = 0;
+    m_elapsedTimer.start();
   }
 
   void stop() {
-      m_animationStarted = false;
-      hide();
+    m_animationStarted = false;
+    hide();
   }
 
   void showNextFrame() {
@@ -62,10 +64,9 @@ public:
   }
 
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *,
-             QWidget *) override
-  {
-      painter->drawPixmap(0, 0, m_spritesheet, m_sourceRect.x(), m_sourceRect.y(),
-                          m_sourceRect.width(), m_sourceRect.height());
+             QWidget *) override {
+    painter->drawPixmap(0, 0, m_spritesheet, m_sourceRect.x(), m_sourceRect.y(),
+                        m_sourceRect.width(), m_sourceRect.height());
   }
 
 private:
@@ -101,5 +102,5 @@ private:
 };
 
 } // namespace Animations
-
+} // namespace InteractiveGraphics
 #endif // ANIMATEDITEM_H

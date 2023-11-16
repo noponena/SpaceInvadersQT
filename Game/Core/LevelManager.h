@@ -1,9 +1,10 @@
 #ifndef LEVELMANAGER_H
 #define LEVELMANAGER_H
 
-#include "GameState.h"
+#include "Game/Core/GameState.h"
 
 namespace Game {
+namespace Core {
 class LevelManager : public QObject {
   Q_OBJECT
 public:
@@ -15,8 +16,9 @@ private:
   QElapsedTimer m_elapsedTimer;
   GameState *m_gameState;
   float m_lastSpawnTime = 0.0f;
-  const int m_spawnIntervalMs = 1000;
+  const int m_spawnIntervalMs = 500;
 };
+} // namespace Core
 } // namespace Game
 
 #endif // LEVELMANAGER_H

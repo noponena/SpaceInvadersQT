@@ -5,7 +5,7 @@
 #include <random>
 
 namespace Game {
-
+namespace Core {
 LevelManager::LevelManager(GameState *gameState)
     : m_gameState(gameState), m_lastSpawnTime(0) {
   m_elapsedTimer.start();
@@ -81,4 +81,5 @@ void LevelManager::update() {
     m_lastSpawnTime = 0;
   }
 }
+} // namespace Core
 } // namespace Game

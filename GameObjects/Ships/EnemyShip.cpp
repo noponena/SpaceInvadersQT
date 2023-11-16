@@ -10,7 +10,7 @@
 namespace GameObjects {
 namespace Ships {
 EnemyShip::EnemyShip(const int maxHp, const Position &position)
-    : Ship(maxHp, position) {
+    : ShipWithHealthBar(maxHp, 0, position) {
   m_objectType = ObjectType::ENEMY_SHIP;
   m_pixmapResourcePath = ":/Images/alien.png";
   m_onHitPixmapResourcePath = ":/Images/alien_on_hit.png";

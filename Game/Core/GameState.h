@@ -7,6 +7,7 @@
 #include "Weapons/WeaponBuilder.h"
 
 namespace Game {
+namespace Core {
 
 class GameState : public QObject {
   Q_OBJECT
@@ -15,12 +16,11 @@ public:
 
   void initialize();
   void addGameObject(std::shared_ptr<GameObjects::GameObject> object);
-  void removeGameObject(std::shared_ptr<GameObjects::GameObject> object);
   void setSize(int width, int height);
   void update(float deltaTimeInSeconds);
   void initEnemyShips();
 
-  const std::list<std::shared_ptr<GameObjects::GameObject>> &
+  const std::vector<std::shared_ptr<GameObjects::GameObject>> &
   gameObjects() const;
   GameObjects::Ships::PlayerShip *playerShip() const;
 
@@ -29,7 +29,7 @@ public:
   const unsigned &stellarTokens() const;
 
 private:
-  std::list<std::shared_ptr<GameObjects::GameObject>> m_gameObjects;
+  std::vector<std::shared_ptr<GameObjects::GameObject>> m_gameObjects;
   bool m_playerShipDeletedFromScene;
   unsigned m_stellarTokens;
   float m_playersShipStartSpeed;
@@ -55,6 +55,7 @@ private slots:
     emit playerShipDestroyed();
   }
 };
+} // namespace Core
 } // namespace Game
 
 #endif // GAMESTATE_H

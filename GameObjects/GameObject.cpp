@@ -9,16 +9,15 @@ long long unsigned GameObject::counter = 0;
 
 GameObject::GameObject(const Position &position)
     : m_position(position), m_hasCollided(false), m_collidable(true),
-    m_soundEnabled(true), m_onHitPixmapResourcePath(""), m_id(counter++),
-    m_destructionInitiated(false) {
-    m_objectType = ObjectType::UNDEFINED;
+      m_soundEnabled(true), m_onHitPixmapResourcePath(""), m_id(counter++),
+      m_destructionInitiated(false) {
+  m_objectType = ObjectType::UNDEFINED;
 }
 
-GameObject::~GameObject()
-{
-    if (m_graphicsItem && m_graphicsItem->scene()) {
-        m_graphicsItem->scene()->removeItem(m_graphicsItem.get());
-    }
+GameObject::~GameObject() {
+  if (m_graphicsItem && m_graphicsItem->scene()) {
+    m_graphicsItem->scene()->removeItem(m_graphicsItem.get());
+  }
 }
 
 void GameObject::initialize() {
@@ -29,10 +28,7 @@ void GameObject::initialize() {
   this->initializeDestructionEffects();
 }
 
-bool GameObject::shouldBeDeleted()
-{
-  return m_position.isBeyondAnyLimit(50);
-}
+bool GameObject::shouldBeDeleted() { return m_position.isBeyondAnyLimit(50); }
 
 void GameObject::update(const UpdateContext &context) {
   if (this->isDead() && !m_destructionInitiated)
@@ -78,7 +74,9 @@ QString GameObject::getOnHitPixmapResourcePath() const {
   return m_onHitPixmapResourcePath;
 }
 
-QGraphicsPixmapItem *GameObject::getGraphicsItem() const { return m_graphicsItem.get(); }
+QGraphicsPixmapItem *GameObject::getGraphicsItem() const {
+  return m_graphicsItem.get();
+}
 
 void GameObject::disableMovement() { m_movementStrategy.clear(); }
 
