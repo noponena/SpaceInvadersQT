@@ -1,5 +1,5 @@
 #include "GameState.h"
-#include "GameObjects/Projectiles/EnemyLaserBeam.h"
+#include "GameObjects/Projectiles/EnemyLaserProjectile.h"
 #include "GameObjects/Ships/EnemyShip.h"
 #include "Weapons/PrimaryWeapon.h"
 #include <iostream>
@@ -60,15 +60,14 @@ void GameState::initPlayerShip() {
       std::make_unique<GameObjects::Ships::PlayerShip>(
           25, m_playersShipStartSpeed, pos);
   playerShip->initialize();
-  connect(playerShip.get(),
-          &GameObjects::Ships::PlayerShip::playerShipDestroyed, this,
+  connect(playerShip.get(), &GameObjects::GameObject::objectDestroyed, this,
           &GameState::onPlayerShipDestroyed);
 
   std::unique_ptr<Weapons::Weapon> weapon =
       m_weaponBuilder.createWeapon(std::make_unique<Weapons::PrimaryWeapon>())
           .withProjectileDamage(1)
-          .withProjectile(
-              std::make_unique<GameObjects::Projectiles::PlayerLaserBeam>())
+          .withProjectile(std::make_unique<
+                          GameObjects::Projectiles::PlayerLaserProjectile>())
           .withProjectileMovementStrategy(
               Game::Movement::VerticalMovementStrategy(1000, -1))
           //.withProjectileProperty(Weapons::ProjectileProperty::PIERCING)
@@ -112,8 +111,8 @@ void GameState::initEnemyShips() {
   std::unique_ptr<Weapons::Weapon> weapon =
       m_weaponBuilder.createWeapon(std::make_unique<Weapons::PrimaryWeapon>())
           .withProjectileDamage(1)
-          .withProjectile(
-              std::make_unique<GameObjects::Projectiles::EnemyLaserBeam>())
+          .withProjectile(std::make_unique<
+                          GameObjects::Projectiles::EnemyLaserProjectile>())
           .withProjectileMovementStrategy(
               Game::Movement::VerticalMovementStrategy(500, 1))
           .withWeaponCooldownMs(0)

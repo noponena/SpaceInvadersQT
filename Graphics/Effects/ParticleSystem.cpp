@@ -43,18 +43,20 @@ void ParticleSystem::paint(QPainter *painter,
                            QWidget *widget) {
   Q_UNUSED(option)
   Q_UNUSED(widget)
-  if (!m_elapsedTimer.isValid()) {
-    m_elapsedTimer.start();
-  } else {
-    update(static_cast<float>(m_elapsedTimer.restart()) / 1000.0f);
+  if (!m_particles.empty()) {
+    if (!m_elapsedTimer.isValid()) {
+      m_elapsedTimer.start();
+    } else {
+      update(static_cast<float>(m_elapsedTimer.restart()) / 1000.0f);
+    }
+    painter->setRenderHint(QPainter::Antialiasing, false);
+    painter->save();
+    painter->setPen(Qt::NoPen);
+    for (Particle &particle : m_particles) {
+      particle.draw(*painter);
+    }
+    painter->restore();
   }
-  painter->setRenderHint(QPainter::Antialiasing, false);
-  painter->save();
-  painter->setPen(Qt::NoPen);
-  for (Particle &particle : m_particles) {
-    particle.draw(*painter);
-  }
-  painter->restore();
 }
 
 void ParticleSystem::setPosition(QPointF newPosition) {

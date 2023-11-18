@@ -1,6 +1,8 @@
 #include "EnemyShip.h"
 #include "Game/Audio/SoundInfo.h"
+#include "GameObjects/Collectables/Health.h"
 #include "GameObjects/Collectables/Stellar.h"
+#include "Utils/Utils.h"
 #include <QColor>
 #include <QGraphicsScene>
 #include <QPen>
@@ -10,15 +12,21 @@
 namespace GameObjects {
 namespace Ships {
 EnemyShip::EnemyShip(const int maxHp, const Position &position)
-    : ShipWithHealthBar(maxHp, 0, position) {}
+    : ShipWithHealthBar(maxHp, 0, position) {
+  m_stellarCoinSpawnCountMin = 2;
+  m_stellarCoinSpawnCountMax = 5;
+  m_healthSpawnProbability = 0.10;
+}
 
 void EnemyShip::executeDestructionProcedure() {
   GameObject::executeDestructionProcedure();
-  int count = QRandomGenerator::global()->bounded(2, 5);
-  spawnCollectables(count);
+  spawnStellarCoins();
+  spawnHealth();
 }
 
-void EnemyShip::spawnCollectables(int amount) {
+void EnemyShip::spawnStellarCoins() {
+  int amount = QRandomGenerator::global()->bounded(m_stellarCoinSpawnCountMin,
+                                                   m_stellarCoinSpawnCountMax);
   QPointF center = getBoundingBox().center();
   GameObjects::Position position(center.x(), center.y());
   position.setBounds(getPosition().getBounds());
@@ -30,10 +38,17 @@ void EnemyShip::spawnCollectables(int amount) {
   }
 }
 
-void EnemyShip::update(const UpdateContext &context) {
-  GameObject::update(context);
-  m_destructionAnimation.showNextFrame();
-  shoot();
+void EnemyShip::spawnHealth() {
+  if (Utils::probabilityCheck(m_healthSpawnProbability)) {
+    QPointF center = getBoundingBox().center();
+    GameObjects::Position position(center.x(), center.y());
+    position.setBounds(getPosition().getBounds());
+
+    std::unique_ptr<GameObjects::Collectables::Health> health =
+        std::make_unique<GameObjects::Collectables::Health>(position);
+    health->initialize();
+    emit objectCreated(std::move(health));
+  }
 }
 
 void EnemyShip::initializeObjectType() {

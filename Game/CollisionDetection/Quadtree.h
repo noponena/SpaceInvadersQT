@@ -15,7 +15,7 @@ public:
     }
   }
 
-  void clear() {
+  inline void clear() {
     m_objects.clear();
     for (auto &subnode : m_nodes) {
       if (subnode) {
@@ -25,7 +25,7 @@ public:
     }
   }
 
-  void insert(GameObjects::GameObject *object) {
+  inline void insert(GameObjects::GameObject *object) {
     if (m_nodes[0]) {
       GameObjects::Position position = object->getPosition();
       int x = position.x();
@@ -61,8 +61,8 @@ public:
     }
   }
 
-  std::vector<GameObjects::GameObject *>
-  query(const GameObjects::GameObject *queryObject) const {
+  std::vector<GameObjects::GameObject *> inline query(
+      const GameObjects::GameObject *queryObject) const {
     QRectF range = queryObject->getBoundingBox();
     std::vector<GameObjects::GameObject *> possibleCollisions;
 
@@ -104,11 +104,13 @@ private:
                      std::unordered_set<GameObjects::ObjectType>>
       m_collisionMap{
           {ObjectType::PLAYER_SHIP,
-           {ObjectType::ENEMY_PROJECTILE, ObjectType::COLLECTABLE}},
+           {ObjectType::ENEMY_PROJECTILE, ObjectType::STELLAR_COIN,
+            ObjectType::HEALTH}},
+
           {ObjectType::ENEMY_SHIP, {ObjectType::PLAYER_PROJECTILE}},
       };
 
-  void split() {
+  inline void split() {
     float subWidth = m_bounds.width() / 2;
     float subHeight = m_bounds.height() / 2;
     float x = m_bounds.x();
@@ -125,7 +127,7 @@ private:
   }
 
   // Determine which quadrant the object belongs to
-  int getIndex(float x, float y) const {
+  inline int getIndex(float x, float y) const {
     int index = -1;
     double verticalMidpoint = m_bounds.x() + (m_bounds.width() / 2);
     double horizontalMidpoint = m_bounds.y() + (m_bounds.height() / 2);
@@ -157,7 +159,7 @@ private:
     return index;
   }
 
-  bool canCollide(ObjectType type1, ObjectType type2) const {
+  inline bool canCollide(ObjectType type1, ObjectType type2) const {
     auto it = m_collisionMap.find(type1);
     return it != m_collisionMap.end() &&
            it->second.find(type2) != it->second.end();

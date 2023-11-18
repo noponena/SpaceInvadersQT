@@ -1,6 +1,7 @@
 HEADERS += \
-    $$PWD/PerformanceMonitor.h \
+    $$PWD/PerformanceBenchmark.h \
     $$PWD/Utils.h
 
 SOURCES += \
-    $$PWD/PerformanceMonitor.cpp
+    $$PWD/PerformanceBenchmark.cpp \
+    $$PWD/Utils.cpp

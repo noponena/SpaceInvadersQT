@@ -24,7 +24,7 @@ public:
   }
 
   void playSoundEffect(SoundInfo soundInfo);
-  float Gain = 1.0f;
+  float Gain = 0.1f;
 
 private:
   SoundManager();

@@ -1,26 +1,26 @@
 #include "LevelManager.h"
-#include "GameObjects/Projectiles/EnemyLaserBeam.h"
+#include "GameObjects/Projectiles/EnemyLaserProjectile.h"
 #include "GameObjects/Ships/EnemyShip.h"
+#include "Utils/Utils.h"
 #include "Weapons/PrimaryWeapon.h"
-#include <random>
 
 namespace Game {
 namespace Core {
-LevelManager::LevelManager(GameState *gameState)
+LevelManager::LevelManager(GameState *gameState, bool performanceTest)
     : m_gameState(gameState), m_lastSpawnTime(0) {
   m_elapsedTimer.start();
+  if (performanceTest) {
+    m_spawnIntervalMs = 50;
+    m_enemyWeaponCooldownMs = 500;
+    m_enemyShipHp = 3;
+  }
 }
 
 void LevelManager::update() {
   float currentTime = m_elapsedTimer.elapsed();
   if (currentTime - m_lastSpawnTime >= m_spawnIntervalMs) {
-    // 1. Generate a random x position between minX and maxX
-    std::random_device rd;  // obtain a random number from hardware
-    std::mt19937 eng(rd()); // seed the generator
-    std::uniform_int_distribution<> distr(
-        m_gameState->m_minX, m_gameState->m_maxX); // define the range
 
-    int randomX = distr(eng);
+    int randomX = Utils::randi(m_gameState->m_minX, m_gameState->m_maxX);
     int y = m_gameState->m_minY - 50;
     int minX = m_gameState->m_minX;
     int maxX = m_gameState->m_maxX;
@@ -30,20 +30,21 @@ void LevelManager::update() {
     // 2. Create a new enemy ship
     GameObjects::Position pos(randomX, y, minX, maxX, minY, maxY);
     std::unique_ptr<GameObjects::Ships::EnemyShip> enemyShip =
-        std::make_unique<GameObjects::Ships::EnemyShip>(5, pos);
+        std::make_unique<GameObjects::Ships::EnemyShip>(m_enemyShipHp, pos);
     enemyShip->initialize();
 
     std::unique_ptr<Weapons::Weapon> weapon =
         m_weaponBuilder.createWeapon(std::make_unique<Weapons::PrimaryWeapon>())
             .withProjectileDamage(1)
-            .withProjectile(
-                std::make_unique<GameObjects::Projectiles::EnemyLaserBeam>())
+            .withProjectile(std::make_unique<
+                            GameObjects::Projectiles::EnemyLaserProjectile>())
             .withProjectileMovementStrategy(
                 Game::Movement::VerticalMovementStrategy(500, 1))
-            .withWeaponCooldownMs(2000)
+            .withWeaponCooldownMs(m_enemyWeaponCooldownMs)
             .build();
 
     enemyShip->addWeapon(std::move(weapon));
+    enemyShip->setAutoShoot(true);
 
     Game::Movement::MovementStrategy horizontalStrategyLeft =
         Game::Movement::HorizontalMovementStrategy(200, -1);

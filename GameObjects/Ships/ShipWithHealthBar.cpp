@@ -16,7 +16,8 @@ void ShipWithHealthBar::initialize() {
 
 void ShipWithHealthBar::takeDamage(int amount) {
   Ship::takeDamage(amount);
-  m_healthBar->updateHealth(-amount);
+  if (!m_immortal)
+    m_healthBar->updateHealth(-amount);
 }
 
 void ShipWithHealthBar::heal(int amount) {

@@ -3,6 +3,8 @@
 
 #include "Game/Audio/SoundInfo.h"
 #include "Game/Movement/MovementStrategy.h"
+#include "Graphics/Animations/AnimatedItem.h"
+#include "Graphics/Effects/ParticleSystem.h"
 #include "Position.h"
 #include <QGraphicsItem>
 #include <QObject>
@@ -18,7 +20,8 @@ enum class ObjectType {
   ENEMY_SHIP,
   PLAYER_PROJECTILE,
   ENEMY_PROJECTILE,
-  COLLECTABLE
+  STELLAR_COIN,
+  HEALTH
 };
 
 namespace Projectiles {
@@ -29,7 +32,7 @@ class EnemyShip;
 class PlayerShip;
 } // namespace Ships
 namespace Collectables {
-class Stellar;
+class Collectable;
 }
 
 struct UpdateContext {
@@ -60,25 +63,24 @@ public:
   virtual void collideWithPlayerShip(Ships::PlayerShip &playerShip) {
     Q_UNUSED(playerShip);
   }
-  virtual void collideWithStellarToken(Collectables::Stellar &stellarToken) {
-    Q_UNUSED(stellarToken);
+  virtual void collideWithCollectable(Collectables::Collectable &collectable) {
+    Q_UNUSED(collectable);
   }
 
   // Update & Movement
   virtual void update(const UpdateContext &context);
+  void show();
+  void hide();
 
   // Getters & Setters
   Position getPosition() const;
   QPointF getCenterPosition() const;
-  void setPosition(const Position &newPosition);
+  QGraphicsScene *getScene() const;
   QGraphicsPixmapItem *getGraphicsItem() const;
+  QRectF getBoundingBox() const;
+  void setPosition(const Position &newPosition);
   bool isCollidable() const;
   long long unsigned id();
-  QRectF getBoundingBox() const {
-    QRectF localRect = m_graphicsItem->boundingRect();
-    QRectF sceneRect = m_graphicsItem->mapToScene(localRect).boundingRect();
-    return sceneRect;
-  }
 
   // Actions & Modifiers
   void moveTo(const QPointF &newPosition);
@@ -110,6 +112,9 @@ protected:
   QString m_pixmapResourcePath;
   QString m_onHitPixmapResourcePath;
 
+  Graphics::Effects::ParticleSystem m_destructionEffect;
+  Graphics::Animations::AnimatedItem m_destructionAnimation;
+
   struct Game::Audio::SoundInfo m_spawnSoundInfo;
   struct Game::Audio::SoundInfo m_destructionSoundInfo;
 
@@ -117,10 +122,12 @@ protected:
   virtual void initializeObjectType() = 0;
   virtual void initializeGraphics() = 0;
   virtual void initializeSounds() = 0;
+
   virtual void initializeDestructionAnimation(){};
   virtual void initializeDestructionEffects(){};
-  virtual void playDestructionAnimation(){};
-  virtual void playDestructionEffects(){};
+
+  virtual void playDestructionAnimation();
+  virtual void playDestructionEffects();
   virtual void executeDestructionProcedure();
   virtual void disableMovement();
 
@@ -145,6 +152,7 @@ private:
 
 signals:
   void objectCreated(std::shared_ptr<GameObjects::GameObject> object);
+  void objectDestroyed();
 };
 
 } // namespace GameObjects

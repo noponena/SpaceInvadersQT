@@ -48,6 +48,8 @@ public:
     }
   }
 
+  operator bool() const { return !m_spritesheet.isNull(); }
+
   QRectF boundingRect() const override { return m_sourceRect; }
 
   bool animationFinished() const { return m_animationFinished; }

@@ -17,14 +17,15 @@ public:
   // GameObject interface
 protected:
   void executeDestructionProcedure() override;
-  virtual void spawnCollectables(int amount);
-
-  // GameObject interface
-public:
-  void update(const UpdateContext &context) override;
+  void spawnStellarCoins();
+  void spawnHealth();
 
   // GameObject interface
 protected:
+  int m_stellarCoinSpawnCountMax;
+  int m_stellarCoinSpawnCountMin;
+  float m_healthSpawnProbability;
+
   void initializeObjectType() override;
   void initializeGraphics() override;
   void initializeSounds() override;

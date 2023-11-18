@@ -13,7 +13,7 @@
 #include <QLabel>
 #include <QWheelEvent>
 
-#define LOG_PERFORMANCE
+// #define PERFORMANCE_BENCHMARK
 
 namespace Game {
 namespace Core {
@@ -34,6 +34,7 @@ private:
   GameState *m_gameState;
   std::unique_ptr<LevelManager> m_levelManager;
   QTimer m_gameTimer;
+  QTimer m_benchmarkTimer;
   GameObjects::Ships::PlayerShip *m_playerShip;
   std::unique_ptr<CollisionDetector> m_collisionDetector;
   QElapsedTimer m_elapsedTimer;
@@ -57,6 +58,7 @@ private:
   void setupCounters();
   void setupConnections();
   void gameLoop();
+  void initializeBenchmark();
 
   inline void processInput(float deltaTimeInSeconds);
   inline void processGameAction(float deltaTimeInSeconds);
@@ -71,11 +73,7 @@ private:
   using GameAction = std::function<void(float)>;
 
   const std::unordered_map<int, MenuAction> m_menuActions{
-      {Qt::Key_Escape,
-       [&]() {
-         m_gameTimer.stop();
-         emit windowClosed();
-       }},
+      {Qt::Key_Escape, [&]() { quit(); }},
   };
   const std::unordered_map<int, GameAction> m_gameActions{
       {Qt::Key_Left, [&](float dt) { m_playerShip->accelerateLeft(dt); }},
@@ -112,6 +110,7 @@ private:
        [&](float dt) {
          Q_UNUSED(dt);
          m_continuousShoot = !m_continuousShoot;
+         m_playerShip->setAutoShoot(m_continuousShoot);
          m_pressedKeys.remove(Qt::Key_C);
        }},
       {Qt::Key_S,
@@ -138,6 +137,10 @@ private slots:
   void onPlayerShipDestroyed() {
     m_gameOver = true;
     m_playerShip = nullptr;
+  }
+  void quit() {
+    m_gameTimer.stop();
+    emit windowClosed();
   }
 };
 } // namespace Core

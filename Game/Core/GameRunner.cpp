@@ -1,6 +1,7 @@
 #include "Game/Core/GameRunner.h"
 #include "GameObjects/Ships/PlayerShip.h"
-#include "Utils/PerformanceMonitor.h"
+#include "Utils/PerformanceBenchmark.h"
+#include "Weapons/PrimaryWeapon.h"
 #include <QOpenGLWidget>
 #include <QTimer>
 
@@ -96,14 +97,20 @@ void GameRunner::startGame() {
   m_gameState->initialize();
   m_playerShip = m_gameState->playerShip();
   m_gameObjects = &(m_gameState->gameObjects());
-  m_levelManager = std::make_unique<LevelManager>(m_gameState);
   m_collisionDetector =
       std::make_unique<CollisionDetector>(m_gameState->gameObjects(), rect());
 
   // Create and start game loop timer
 
   connect(&m_gameTimer, &QTimer::timeout, this, &GameRunner::gameLoop);
-  m_gameTimer.start(8); // Approx. 120 frames per second
+  bool perfTest = false;
+
+#ifdef PERFORMANCE_BENCHMARK
+  perfTest = true;
+  initializeBenchmark();
+#endif
+  m_levelManager = std::make_unique<LevelManager>(m_gameState, perfTest);
+  m_gameTimer.start(0);
 
   // Hide menu and show game window
   // ...
@@ -114,10 +121,11 @@ void GameRunner::gameLoop() {
   float deltaTimeInSeconds = static_cast<float>(frameTimeMs) / 1000.0f;
   if (m_continuousEnemySpawn)
     m_levelManager->update();
-  if (m_continuousShoot)
-    m_playerShip->shoot();
 
+#ifndef PERFORMANCE_BENCHMARK
   processInput(deltaTimeInSeconds);
+#endif
+
   updateGameState(deltaTimeInSeconds);
   m_collisionDetector->detectQuadTree();
   updateFps();
@@ -136,14 +144,23 @@ void GameRunner::gameLoop() {
     m_playerHp->setPlainText("Player HP: " + QString::number(playerHp));
   }
 
-#ifdef LOG_PERFORMANCE
-  Utils::PerformanceMonitor::getInstance().logPerformance(
+#ifdef PERFORMANCE_BENCHMARK
+  Utils::PerformanceBenchmark::getInstance().logPerformance(
       frameTimeMs, gameObjectCount, sceneItemCount);
 #endif
 
   if (m_gameOver && !m_gameOverInfoDisplayed) {
     displayGameOverInfo();
   }
+}
+
+void GameRunner::initializeBenchmark() {
+  Utils::PerformanceBenchmark::getInstance().initializeBenchmark(m_playerShip);
+  connect(&m_benchmarkTimer, &QTimer::timeout, this, ([]() {
+    Utils::PerformanceBenchmark::getInstance().logPerformanceScore();
+  }));
+  connect(&m_benchmarkTimer, &QTimer::timeout, this, &GameRunner::quit);
+  m_benchmarkTimer.start(30000);
 }
 
 void GameRunner::processInput(float deltaTimeInSeconds) {

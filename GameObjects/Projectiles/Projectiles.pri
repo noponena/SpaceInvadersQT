@@ -1,9 +1,9 @@
 HEADERS += \
-    $$PWD/EnemyLaserBeam.h \
-    $$PWD/PlayerLaserBeam.h \
+    $$PWD/EnemyLaserProjectile.h \
+    $$PWD/PlayerLaserProjectile.h \
     $$PWD/Projectile.h \
 
 SOURCES += \
-    $$PWD/EnemyLaserBeam.cpp \
-    $$PWD/PlayerLaserBeam.cpp \
+    $$PWD/EnemyLaserProjectile.cpp \
+    $$PWD/PlayerLaserProjectile.cpp \
     $$PWD/Projectile.cpp \

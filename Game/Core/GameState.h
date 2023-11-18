@@ -2,7 +2,7 @@
 #define GAMESTATE_H
 
 #include "GameObjects/GameObject.h"
-#include "GameObjects/Projectiles/PlayerLaserBeam.h"
+#include "GameObjects/Projectiles/PlayerLaserProjectile.h"
 #include "GameObjects/Ships/PlayerShip.h"
 #include "Weapons/WeaponBuilder.h"
 
@@ -36,7 +36,8 @@ private:
   void initPlayerShip();
   void initMovementConstrains();
   void addLaser(
-      const std::shared_ptr<GameObjects::Projectiles::PlayerLaserBeam> &laser);
+      const std::shared_ptr<GameObjects::Projectiles::PlayerLaserProjectile>
+          &laser);
   GameObjects::Ships::PlayerShip *m_playerShip;
   Weapons::WeaponBuilder m_weaponBuilder;
 

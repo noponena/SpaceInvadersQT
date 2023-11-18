@@ -2,8 +2,6 @@
 #define GAMEOBJECTS_SHIP_H
 
 #include "GameObjects/GameObject.h"
-#include "Graphics/Animations/AnimatedItem.h"
-#include "Graphics/Effects/ParticleSystem.h"
 #include <QElapsedTimer>
 #include <QTimer>
 
@@ -13,7 +11,7 @@ class Weapon;
 
 namespace GameObjects {
 namespace Ships {
-struct magnetism {
+struct Magnetism {
   bool isMagnetic;
   float magneticRadius;
   float magneticStrength;
@@ -30,6 +28,7 @@ public:
   bool isDead() override;
   void updateFireRate(int amount = 1);
   void addWeapon(std::unique_ptr<Weapons::Weapon> newWeapon);
+  void clearWeapons();
 
   static QPixmap &loadSharedSpriteSheet(const QString &path) {
     static QPixmap m_sharedSpriteSheet;
@@ -39,26 +38,27 @@ public:
     return m_sharedSpriteSheet;
   }
 
-  const magnetism &magnetism() const;
+  const Magnetism &magnetism() const;
 
   int currentHp() const;
 
+  void setImmortal(bool newImmortal);
+
+  void setAutoShoot(bool newAutoShoot);
+
 protected:
+  bool m_immortal;
   int m_currentHp, m_maxHp, m_fireRate, m_shotCooldownMs;
   float m_speed;
   int m_onHitTimerId = -1;
   std::vector<std::unique_ptr<Weapons::Weapon>> m_primaryWeapons;
   bool m_onHitAnimationInProgress = false;
+  bool m_autoShoot = false;
   QColor m_originalColor;
-  Graphics::Effects::ParticleSystem m_destructionEffect;
-  Graphics::Animations::AnimatedItem m_destructionAnimation;
-  qreal m_halfWidth;
-  qreal m_halfHeight;
   QPixmap m_sharedPixmap;
+  struct Magnetism m_magnetism;
 
   virtual void initializeDestructionAnimation() override;
-  void playDestructionAnimation() override;
-  void playDestructionEffects() override;
   void initializeDestructionEffects() override;
 
   virtual void playOnHitAnimation();
@@ -66,11 +66,11 @@ protected slots:
   void onProjectileShot(std::shared_ptr<Projectiles::Projectile> projectile);
 
 private:
-  struct magnetism m_magnetism;
-
   void timerEvent(QTimerEvent *event) override;
-signals:
-  void destructionCompleted();
+
+  // GameObject interface
+public:
+  void update(const UpdateContext &context) override;
 };
 } // namespace Ships
 

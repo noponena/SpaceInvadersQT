@@ -16,6 +16,8 @@ public:
   void spawnParticles(int count, QColor color = nullptr,
                       float lifespanInSeconds = 1.0f);
 
+  operator bool() const { return !m_particles.empty(); }
+
 private:
   bool m_effectFinished;
   std::vector<Particle> m_particles;

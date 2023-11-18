@@ -14,7 +14,7 @@ public:
 public:
   void collideWith(GameObject &other) override;
   void collideWithProjectile(Projectiles::Projectile &projectile) override;
-  void collideWithStellarToken(Collectables::Stellar &stellarToken) override;
+  void collideWithCollectable(Collectables::Collectable &collectable) override;
 
   void accelerateLeft(float deltaTimeInSeconds);
   void accelerateRight(float deltaTimeInSeconds);
@@ -38,7 +38,6 @@ private:
   float m_acceleration = 1250;
 signals:
   void stellarTokenCollected();
-  void playerShipDestroyed();
 
   // GameObject interface
 protected:

@@ -1,15 +1,19 @@
-#ifndef PLAYERLASERBEAM_H
-#define PLAYERLASERBEAM_H
+#ifndef GAMEOBJECTS_PROJECTILES_ENEMYLASERBEAM_H
+#define GAMEOBJECTS_PROJECTILES_ENEMYLASERBEAM_H
 
 #include "Projectile.h"
 
 namespace GameObjects {
 namespace Projectiles {
-class PlayerLaserBeam : public Projectile {
+
+class EnemyLaserProjectile : public Projectile {
 public:
-  PlayerLaserBeam(
+  EnemyLaserProjectile(
       int damage = 1,
       std::unordered_set<Weapons::ProjectileProperty> properties = {});
+
+  // Projectile interface
+public:
   std::unique_ptr<Projectile> clone() const override;
 
   // GameObject interface
@@ -18,8 +22,8 @@ public:
   void initializeGraphics() override;
   void initializeSounds() override;
 };
-} // namespace Projectiles
 
+} // namespace Projectiles
 } // namespace GameObjects
 
-#endif // PLAYERLASERBEAM_H
+#endif // GAMEOBJECTS_PROJECTILES_ENEMYLASERBEAM_H

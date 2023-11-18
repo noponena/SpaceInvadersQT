@@ -1,4 +1,5 @@
 #include "PlayerShip.h"
+#include "GameObjects/Collectables/Collectable.h"
 #include "GameObjects/Projectiles/Projectile.h"
 #include <QPen>
 
@@ -7,8 +8,7 @@ namespace Ships {
 PlayerShip::PlayerShip(const int maxHp, const float speed,
                        const Position &position)
     : ShipWithHealthBar(maxHp, speed, position) {
-  connect(this, &Ship::destructionCompleted, this,
-          &PlayerShip::playerShipDestroyed);
+  m_magnetism = {true, 100.0f, 100.0f};
 }
 
 void PlayerShip::moveHorizontal(float deltaTimeInSeconds) {
@@ -98,9 +98,17 @@ void PlayerShip::collideWithProjectile(Projectiles::Projectile &projectile) {
     playOnHitAnimation();
 }
 
-void PlayerShip::collideWithStellarToken(Collectables::Stellar &stellarToken) {
-  Q_UNUSED(stellarToken);
-  emit stellarTokenCollected();
+void PlayerShip::collideWithCollectable(
+    Collectables::Collectable &collectable) {
+  switch (collectable.objectType()) {
+  case ObjectType::STELLAR_COIN:
+    stellarTokenCollected();
+    break;
+  case ObjectType::HEALTH:
+    heal(1);
+  default:
+    break;
+  }
 }
 
 void PlayerShip::disableMovement() {

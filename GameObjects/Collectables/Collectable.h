@@ -29,9 +29,9 @@ public:
   float m_blinkAccumulator = 0.0f;
 
   void update(const UpdateContext &context) override {
+    updateLifetime(context.deltaTimeInSeconds);
+    handleBlinking(context.deltaTimeInSeconds);
     if (context.playerShip) {
-      updateLifetime(context.deltaTimeInSeconds);
-      handleBlinking(context.deltaTimeInSeconds);
       GameObject::update(context);
       updateMovement(context);
     }
@@ -82,7 +82,7 @@ private:
     QPointF currentPlayerPosition = context.playerShip->getCenterPosition();
     Position currentPosition = getPosition();
     QPointF direction = currentPlayerPosition - currentPosition.pos;
-    Ships::magnetism magnetism = context.playerShip->magnetism();
+    Ships::Magnetism magnetism = context.playerShip->magnetism();
     bool isWithinMagneticRange =
         QVector2D(direction).length() < magnetism.magneticRadius;
 
@@ -132,7 +132,7 @@ private:
   }
 
   inline void handleMagneticMovement(const QPointF &direction,
-                                     Ships::magnetism &magnetism,
+                                     Ships::Magnetism &magnetism,
                                      float deltaTimeInSeconds,
                                      bool isWithinRange) {
     if (!isWithinRange) {
@@ -147,7 +147,7 @@ private:
     applyMovement(deltaTimeInSeconds, m_magneticVelocity);
   }
 
-  inline void handleStoppedState(Ships::magnetism &magnetism,
+  inline void handleStoppedState(Ships::Magnetism &magnetism,
                                  bool isWithinRange) {
     if (magnetism.isMagnetic && isWithinRange) {
       m_movementState = MovementState::Magnetic;
@@ -158,9 +158,9 @@ protected:
   bool isDead() override { return m_collected; }
 
   // GameObject interface
-protected:
-  void initializeObjectType() override {
-    m_objectType = ObjectType::COLLECTABLE;
+public:
+  void collideWith(GameObject &other) override {
+    other.collideWithCollectable(*this);
   }
 };
 

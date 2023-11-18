@@ -6,7 +6,7 @@
 
 namespace GameObjects {
 
-long long unsigned GameObject::counter = 0;
+unsigned long long int GameObject::counter = 0;
 
 GameObject::GameObject(const Position &position)
     : m_position(position), m_hasCollided(false), m_collidable(true),
@@ -32,6 +32,28 @@ void GameObject::update(const UpdateContext &context) {
     executeDestructionProcedure();
   applyMovementStrategy(context.deltaTimeInSeconds);
   updateGraphicsItemPosition();
+  if (m_destructionInitiated)
+    m_destructionAnimation.showNextFrame();
+}
+
+void GameObject::show() { m_graphicsItem->show(); }
+
+void GameObject::hide() { m_graphicsItem->hide(); }
+
+void GameObject::playDestructionAnimation() {
+  hide();
+  m_destructionAnimation.setPos(m_graphicsItem->pos());
+  getScene()->addItem(&m_destructionAnimation);
+  m_destructionAnimation.start();
+}
+
+void GameObject::playDestructionEffects() {
+  QRectF rect = m_graphicsItem->boundingRect();
+  qreal halfWidth = rect.width() / 2;
+  qreal halfHeight = rect.height() / 2;
+  QPointF p(m_position.x() + halfWidth, m_position.y() + halfHeight);
+  m_destructionEffect.setPosition(p);
+  getScene()->addItem(&m_destructionEffect);
 }
 
 void GameObject::applyMovementStrategy(float deltaTimeInSeconds) {
@@ -59,14 +81,26 @@ void GameObject::updateGraphicsItemPosition() {
 void GameObject::executeDestructionProcedure() {
   m_collidable = false;
   m_destructionInitiated = true;
+
   playDestructionSound();
   disableMovement();
-  playDestructionEffects();
-  playDestructionAnimation();
+
+  if (m_destructionEffect)
+    playDestructionEffects();
+  if (m_destructionAnimation)
+    playDestructionAnimation();
+
+  emit objectDestroyed();
 }
 
 QGraphicsPixmapItem *GameObject::getGraphicsItem() const {
   return m_graphicsItem.get();
+}
+
+QRectF GameObject::getBoundingBox() const {
+  QRectF localRect = m_graphicsItem->boundingRect();
+  QRectF sceneRect = m_graphicsItem->mapToScene(localRect).boundingRect();
+  return sceneRect;
 }
 
 void GameObject::disableMovement() { m_movementStrategy.clear(); }
@@ -144,6 +178,8 @@ QPointF GameObject::getCenterPosition() const {
   QRectF sceneRect = getBoundingBox();
   return sceneRect.center();
 }
+
+QGraphicsScene *GameObject::getScene() const { return m_graphicsItem->scene(); }
 
 void GameObject::setPosition(const Position &newPosition) {
   m_position = newPosition;

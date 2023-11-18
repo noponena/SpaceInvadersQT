@@ -12,5 +12,7 @@
         <file>Sounds/player_explosion.wav</file>
         <file>Sounds/lesser_enemy_laser.wav</file>
         <file>Images/enemy_laser_projectile.png</file>
+        <file>Images/health.png</file>
+        <file>Sounds/health.wav</file>
     </qresource>
 </RCC>
