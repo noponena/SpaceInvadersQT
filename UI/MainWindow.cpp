@@ -17,7 +17,7 @@ MainWindow::MainWindow(QWidget *parent)
   QScreen *screen = QGuiApplication::primaryScreen();
   QRect screenGeometry = screen->geometry();
   resize(screenGeometry.width(), screenGeometry.height());
-  // showFullScreen();
+  QApplication::setOverrideCursor(Qt::BlankCursor);
 }
 
 MainWindow::~MainWindow() { delete ui; }

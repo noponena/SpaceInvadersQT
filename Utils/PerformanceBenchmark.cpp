@@ -1,5 +1,5 @@
 #include "PerformanceBenchmark.h"
-#include "GameObjects/Projectiles/PlayerLaserProjectile.h"
+#include "GameObjects/Projectiles/ProjectileBuilder.h"
 #include "Weapons/PrimaryWeapon.h"
 #include "Weapons/WeaponBuilder.h"
 #include <QDebug>
@@ -7,6 +7,8 @@
 #include <deque>
 #include <iomanip>
 #include <sstream>
+#include <windows.h>
+#include <psapi.h>
 
 namespace Utils {
 
@@ -52,47 +54,68 @@ void PerformanceBenchmark::initializeBenchmark(
       Game::Movement::IntervalMovementStrategy(horizontalCombined, 10.0f);
 
   Weapons::WeaponBuilder weaponBuilder;
+  GameObjects::Projectiles::ProjectileBuilder projectileBuilder;
 
-  std::unique_ptr<Weapons::Weapon> firstWeapon =
-      weaponBuilder.createWeapon(std::make_unique<Weapons::PrimaryWeapon>())
-          .withProjectileDamage(1)
-          .withProjectile(std::make_unique<
-                          GameObjects::Projectiles::PlayerLaserProjectile>())
-          .withProjectileMovementStrategy(
-              Game::Movement::VerticalMovementStrategy(1000, -1))
-          .withWeaponCooldownMs(100)
+  std::unique_ptr<GameObjects::Projectiles::Projectile> primaryProjectile =
+      projectileBuilder
+          .createProjectile(std::make_unique<GameObjects::Projectiles::Projectile>())
+          .withDamage(1)
+          .withObjectType(GameObjects::ObjectType::PLAYER_PROJECTILE)
+          .withGrahpics(GameObjects::PixmapData{QPointF(30, 30), ":/Images/player_laser_projectile.png", ""})
+          .withSpawnSound(Game::Audio::SoundInfo({true, Game::Audio::SoundEffect::LASER}))
+          .withMovementStrategy(Game::Movement::VerticalMovementStrategy(1000, -1))
           .build();
 
+  // Create the primary weapon using WeaponBuilder
+  std::unique_ptr<Weapons::Weapon> weapon =
+      weaponBuilder
+          .createWeapon(std::make_unique<Weapons::PrimaryWeapon>())
+          .withProjectile(std::move(primaryProjectile))
+          .withWeaponCooldownMs(0)
+          .build();
+
+  // Clone the primary weapon and modify the projectile for the second weapon
   std::unique_ptr<Weapons::Weapon> secondWeapon =
-      weaponBuilder.cloneWeapon(firstWeapon)
-          .withProjectileMovementStrategy(
-              Game::Movement::AngledMovementStrategy(1000, -1, 85))
+      weaponBuilder.clone()
+          .withProjectile(
+              projectileBuilder
+                  .withMovementStrategy(Game::Movement::AngledMovementStrategy(1000, -1, 80))
+                  .build())
           .build();
 
+  // Clone the primary weapon and modify the projectile for the third weapon
   std::unique_ptr<Weapons::Weapon> thirdWeapon =
-      weaponBuilder.cloneWeapon(firstWeapon)
-          .withProjectileMovementStrategy(
-              Game::Movement::AngledMovementStrategy(1000, 1, -85))
+      weaponBuilder.clone()
+          .withProjectile(
+              projectileBuilder
+                  .withMovementStrategy(Game::Movement::AngledMovementStrategy(1000, 1, -80))
+                  .build())
           .build();
 
+  // Clone the primary weapon and modify the projectile for the fourth weapon
   std::unique_ptr<Weapons::Weapon> fourthWeapon =
-      weaponBuilder.cloneWeapon(firstWeapon)
-          .withProjectileMovementStrategy(
-              Game::Movement::AngledMovementStrategy(1000, -1, 80))
+      weaponBuilder.clone()
+          .withProjectile(
+              projectileBuilder
+                  .withMovementStrategy(Game::Movement::AngledMovementStrategy(1000, 1, -85))
+                  .build())
           .build();
 
+  // Clone the primary weapon and modify the projectile for the fifth weapon
   std::unique_ptr<Weapons::Weapon> fifthWeapon =
-      weaponBuilder.cloneWeapon(firstWeapon)
-          .withProjectileMovementStrategy(
-              Game::Movement::AngledMovementStrategy(1000, 1, -80))
+      weaponBuilder.clone()
+          .withProjectile(
+              projectileBuilder
+                  .withMovementStrategy(Game::Movement::AngledMovementStrategy(1000, -1, 85))
+                  .build())
           .build();
 
   playerShip->clearWeapons();
-  playerShip->addWeapon(std::move(firstWeapon));
-  playerShip->addWeapon(std::move(secondWeapon));
-  playerShip->addWeapon(std::move(thirdWeapon));
-  playerShip->addWeapon(std::move(fourthWeapon));
-  playerShip->addWeapon(std::move(fifthWeapon));
+  playerShip->addPrimaryWeapon(std::move(weapon));
+  playerShip->addPrimaryWeapon(std::move(secondWeapon));
+  playerShip->addPrimaryWeapon(std::move(thirdWeapon));
+  playerShip->addPrimaryWeapon(std::move(fourthWeapon));
+  playerShip->addPrimaryWeapon(std::move(fifthWeapon));
 
   GameObjects::Position position = playerShip->getPosition();
   position.setX(0);
@@ -117,6 +140,14 @@ float PerformanceBenchmark::calculateBenchmarkScore() {
   return m_gain / (totalFrameTime / m_stats.size());
 }
 
+float PerformanceBenchmark::getMemUsage()
+{
+  PROCESS_MEMORY_COUNTERS_EX pmc;
+  GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc));
+  SIZE_T privateMemUsedByMe = pmc.PrivateUsage;
+  return static_cast<float>(privateMemUsedByMe) / (1024 * 1024);
+}
+
 void PerformanceBenchmark::createFile() {
   openFile();
   if (m_outFile.is_open()) {
@@ -136,7 +167,7 @@ bool PerformanceBenchmark::isTimeToLog(int frameTimeMs) {
 }
 
 void PerformanceBenchmark::writeHeader() {
-  m_outFile << "timestamp" << m_csvDelimiter << "score\n";
+  m_outFile << "timestamp" << m_csvDelimiter << "score" << m_csvDelimiter << "mem_usage\n";
 }
 
 void PerformanceBenchmark::logPerformance(int frameTimeMs, int gameObjectCount,
@@ -180,11 +211,13 @@ void PerformanceBenchmark::logPerformanceScore() {
      << broken_down_time->tm_min << ':' << std::setw(2)
      << broken_down_time->tm_sec << 'Z';
 
+  float memUsage = getMemUsage();
+
   // Open the file in append mode
   std::ofstream file(m_filePath, std::ios::app);
   if (file.is_open()) {
     // Write the timestamp and the score to the file
-    file << ss.str() << m_csvDelimiter << score << std::endl;
+    file << ss.str() << m_csvDelimiter << score << m_csvDelimiter << memUsage << std::endl;
   }
 }
 

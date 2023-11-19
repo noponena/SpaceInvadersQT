@@ -1,7 +1,6 @@
 #include "Game/Core/GameRunner.h"
 #include "GameObjects/Ships/PlayerShip.h"
 #include "Utils/PerformanceBenchmark.h"
-#include "Weapons/PrimaryWeapon.h"
 #include <QOpenGLWidget>
 #include <QTimer>
 

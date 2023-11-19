@@ -71,7 +71,7 @@ public:
     }
 
     for (const auto &object : m_objects) {
-      if (canCollide(queryObject->objectType(), object->objectType())) {
+      if (canCollide(queryObject->objectTypes(), object->objectTypes())) {
         if (range.contains(object->getPosition().x(),
                            object->getPosition().y())) {
           possibleCollisions.push_back(object);
@@ -104,8 +104,7 @@ private:
                      std::unordered_set<GameObjects::ObjectType>>
       m_collisionMap{
           {ObjectType::PLAYER_SHIP,
-           {ObjectType::ENEMY_PROJECTILE, ObjectType::STELLAR_COIN,
-            ObjectType::HEALTH}},
+           {ObjectType::ENEMY_PROJECTILE, ObjectType::COLLECTABLE}},
 
           {ObjectType::ENEMY_SHIP, {ObjectType::PLAYER_PROJECTILE}},
       };
@@ -159,7 +158,18 @@ private:
     return index;
   }
 
-  inline bool canCollide(ObjectType type1, ObjectType type2) const {
+  inline bool canCollide(const std::unordered_set<ObjectType>& types1,
+                  const std::unordered_set<ObjectType>& types2) const {
+    for (const auto& type1 : types1) {
+      for (const auto& type2 : types2) {
+        if (canCollide(type1, type2))
+          return true;
+      }
+    }
+    return false;
+  }
+
+  inline bool canCollide(const ObjectType type1, const ObjectType type2) const {
     auto it = m_collisionMap.find(type1);
     return it != m_collisionMap.end() &&
            it->second.find(type2) != it->second.end();

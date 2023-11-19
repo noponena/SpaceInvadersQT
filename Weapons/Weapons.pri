@@ -1,7 +1,11 @@
 HEADERS += \
     $$PWD/PrimaryWeapon.h \
+    $$PWD/SecondaryWeapon.h \
     $$PWD/Weapon.h \
     $$PWD/WeaponBuilder.h
 
 SOURCES += \
-    $$PWD/Weapon.cpp
+    $$PWD/PrimaryWeapon.cpp \
+    $$PWD/SecondaryWeapon.cpp \
+    $$PWD/Weapon.cpp \
+    $$PWD/WeaponBuilder.cpp

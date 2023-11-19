@@ -8,79 +8,21 @@ namespace Weapons {
 
 class WeaponBuilder {
 public:
-  WeaponBuilder()
-      : m_weapon(nullptr),
-        m_movementStrategy(Game::Movement::StationaryMovementStrategy()),
-        m_projectileProperties({}), m_projectileDamage(1), m_cooldownMs(0) {}
-
-  WeaponBuilder &createWeapon(std::unique_ptr<Weapon> weapon) {
-    m_weapon = std::move(weapon);
-    return *this;
-  }
-
-  WeaponBuilder &cloneWeapon(const std::unique_ptr<Weapon> &weapon) {
-    if (weapon) {
-      m_weapon = std::unique_ptr<Weapon>(weapon->clone());
-    } else {
-      m_weapon.reset();
-    }
-    return *this;
-  }
-
-  WeaponBuilder &withSound(bool soundEnabled) {
-    if (soundEnabled)
-      m_weapon->enableSound();
-    else
-      m_weapon->disableSound();
-    return *this;
-  }
-
-  WeaponBuilder &withWeaponCooldownMs(const int cooldownMs) {
-    m_cooldownMs = cooldownMs;
-    return *this;
-  }
-
-  WeaponBuilder &withProjectileDamage(const int damage) {
-    m_projectileDamage = damage;
-    return *this;
-  }
-
+  WeaponBuilder();
+  WeaponBuilder clone() const;
+  WeaponBuilder &createWeapon(std::unique_ptr<Weapon> weapon);
+  WeaponBuilder &withSound(bool soundEnabled);
+  WeaponBuilder &withWeaponCooldownMs(const int cooldownMs);
   WeaponBuilder &withProjectile(
-      std::unique_ptr<GameObjects::Projectiles::Projectile> projectile) {
-    m_projectile = std::move(projectile);
-    return *this;
-  }
-
-  WeaponBuilder &withProjectileMovementStrategy(
-      const Game::Movement::MovementStrategy &strategy) {
-    m_movementStrategy = strategy;
-    return *this;
-  }
-
-  WeaponBuilder &withProjectileProperty(const ProjectileProperty property) {
-    m_projectileProperties.insert(property);
-    return *this;
-  }
-
-  std::unique_ptr<Weapon> build() {
-    std::unique_ptr<GameObjects::Projectiles::Projectile> projectileClone =
-        m_projectile->clone();
-    projectileClone->setDamage(m_projectileDamage);
-    projectileClone->setMovementStrategy(m_movementStrategy);
-    projectileClone->setProperties(m_projectileProperties);
-    m_weapon->setProjectilePrototype(std::move(projectileClone));
-    m_weapon->setCooldownMs(m_cooldownMs);
-    return std::move(m_weapon);
-  }
+      std::unique_ptr<GameObjects::Projectiles::Projectile> projectile);
+  std::unique_ptr<Weapon> build();
 
 private:
   std::unique_ptr<Weapon> m_weapon;
-  Game::Movement::MovementStrategy m_movementStrategy =
-      Game::Movement::StationaryMovementStrategy();
-  std::unordered_set<ProjectileProperty> m_projectileProperties = {};
   std::unique_ptr<GameObjects::Projectiles::Projectile> m_projectile;
-  int m_projectileDamage;
   int m_cooldownMs;
+
+  void logNullPointerWarning() const;
 };
 
 } // namespace Weapons

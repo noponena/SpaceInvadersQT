@@ -1,5 +1,6 @@
 #include "Ship.h"
 #include "Weapons/Weapon.h"
+#include "Graphics/PixmapLibrary.h"
 #include <QGraphicsColorizeEffect>
 #include <QGraphicsScene>
 #include <QTimer>
@@ -9,15 +10,21 @@ namespace GameObjects {
 namespace Ships {
 
 Ship::Ship(const int maxHp, const float speed, const Position &position)
-    : GameObject(position), m_immortal(false), m_currentHp(maxHp),
-      m_maxHp(maxHp), m_speed(speed) {}
+    : AttractableGameObject(position), m_immortal(false), m_currentHp(maxHp),
+    m_maxHp(maxHp), m_pixelWidth(50), m_pixelHeight(50), m_destructionParticleCount(250), m_activeSecondaryWeaponIndex(0), m_speed(speed) {}
 
 Ship::~Ship() {}
 
-void Ship::shoot() {
+void Ship::firePrimaryWeapons() {
   for (const auto &primaryWeapon : m_primaryWeapons) {
-    primaryWeapon->shoot();
+        primaryWeapon->fire();
   }
+}
+
+void Ship::fireActiveSecondaryWeapon()
+{
+  if (!m_secondaryWeapons.empty())
+        m_secondaryWeapons[m_activeSecondaryWeaponIndex]->fire();
 }
 
 void Ship::takeDamage(int amount) {
@@ -34,6 +41,16 @@ void Ship::heal(int amount) {
   }
 }
 
+void Ship::kill()
+{
+  m_currentHp = 0;
+}
+
+void Ship::restoreHealth()
+{
+  m_currentHp = m_maxHp;
+}
+
 bool Ship::isDead() { return m_currentHp <= 0; }
 
 void Ship::updateFireRate(int amount) {
@@ -42,14 +59,25 @@ void Ship::updateFireRate(int amount) {
   }
 }
 
-void Ship::addWeapon(std::unique_ptr<Weapons::Weapon> newWeapon) {
+void Ship::addPrimaryWeapon(std::unique_ptr<Weapons::Weapon> newWeapon) {
   newWeapon->setOwner(this);
-  connect(newWeapon.get(), &Weapons::Weapon::projectileShot, this,
-          &Ship::onProjectileShot);
+  connect(newWeapon.get(), &Weapons::Weapon::projectileFired, this,
+          &Ship::onProjectileFired);
   m_primaryWeapons.push_back(std::move(newWeapon));
 }
 
-void Ship::clearWeapons() { m_primaryWeapons.clear(); }
+void Ship::addSecondaryWeapon(std::unique_ptr<Weapons::Weapon> newWeapon)
+{
+  newWeapon->setOwner(this);
+  connect(newWeapon.get(), &Weapons::Weapon::projectileFired, this,
+          &Ship::onProjectileFired);
+  m_secondaryWeapons.push_back(std::move(newWeapon));
+}
+
+void Ship::clearWeapons() {
+  m_primaryWeapons.clear();
+  m_secondaryWeapons.clear();
+}
 
 void Ship::initializeDestructionAnimation() {
   int columns = 4;
@@ -57,9 +85,7 @@ void Ship::initializeDestructionAnimation() {
   int targetWidth = 200;
   int targetHeight = 200;
 
-  m_sharedPixmap = Ship::loadSharedSpriteSheet(":/Images/explosion.png")
-                       .scaled(targetWidth, targetHeight, Qt::IgnoreAspectRatio,
-                               Qt::SmoothTransformation);
+  QPixmap pixmap = Graphics::PixmapLibrary::getPixmap(":/Images/explosion.png", targetWidth, targetHeight);
 
   std::vector<QPoint> frameOffsets;
   // Calculate and store offsets for each frame
@@ -71,16 +97,16 @@ void Ship::initializeDestructionAnimation() {
     }
   }
 
-  m_destructionAnimation.setSpritesheet(m_sharedPixmap);
+  m_destructionAnimation.setSpritesheet(pixmap);
   m_destructionAnimation.setFrameOffsets(frameOffsets);
-  m_destructionAnimation.setFrameSize(QSize(50, 50));
+  m_destructionAnimation.setFrameSize(QSize(m_pixelWidth, m_pixelHeight));
 }
 
 void Ship::initializeDestructionEffects() {
-  m_destructionEffect.spawnParticles(250);
+  m_destructionEffect.spawnParticles(m_destructionParticleCount);
 }
 
-void Ship::onProjectileShot(
+void Ship::onProjectileFired(
     std::shared_ptr<Projectiles::Projectile> projectile) {
   emit objectCreated(std::move(projectile));
 }
@@ -89,11 +115,11 @@ void Ship::setImmortal(bool newImmortal) { m_immortal = newImmortal; }
 
 void Ship::setAutoShoot(bool newAutoShoot) { m_autoShoot = newAutoShoot; }
 
-const Magnetism &Ship::magnetism() const { return m_magnetism; }
-
 int Ship::currentHp() const { return m_currentHp; }
 
 bool Ship::shouldBeDeleted() {
+  if (m_position.isBeyondScreenBottomLimit())
+    emit bottomEdgeReached();
   return GameObject::shouldBeDeleted() ||
          (m_destructionAnimation.animationFinished() &&
           m_destructionEffect.effectFinished());
@@ -118,10 +144,15 @@ void Ship::timerEvent(QTimerEvent *event) {
   }
 }
 
+void Ship::initializeObjectType()
+{
+  m_objectTypes.insert(ObjectType::SHIP);
+}
+
 void Ship::update(const UpdateContext &context) {
-  GameObject::update(context);
+  AttractableGameObject::update(context);
   if (m_autoShoot)
-    shoot();
+    firePrimaryWeapons();
 }
 
 } // namespace Ships

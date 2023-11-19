@@ -2,7 +2,7 @@
 #define GAMESTATE_H
 
 #include "GameObjects/GameObject.h"
-#include "GameObjects/Projectiles/PlayerLaserProjectile.h"
+#include "GameObjects/Projectiles/ProjectileBuilder.h"
 #include "GameObjects/Ships/PlayerShip.h"
 #include "Weapons/WeaponBuilder.h"
 
@@ -30,16 +30,15 @@ public:
 
 private:
   std::vector<std::shared_ptr<GameObjects::GameObject>> m_gameObjects;
+    std::unordered_map<unsigned long long int, std::shared_ptr<GameObjects::GameObject>> m_magneticGameObjects;
   bool m_playerShipDeletedFromScene;
   unsigned m_stellarTokens;
   float m_playersShipStartSpeed;
   void initPlayerShip();
   void initMovementConstrains();
-  void addLaser(
-      const std::shared_ptr<GameObjects::Projectiles::PlayerLaserProjectile>
-          &laser);
   GameObjects::Ships::PlayerShip *m_playerShip;
   Weapons::WeaponBuilder m_weaponBuilder;
+  GameObjects::Projectiles::ProjectileBuilder m_projectileBuilder;
 
 signals:
   void objectDeleted(QGraphicsItem *object);

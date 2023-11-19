@@ -14,5 +14,9 @@
         <file>Images/enemy_laser_projectile.png</file>
         <file>Images/health.png</file>
         <file>Sounds/health.wav</file>
+        <file>Images/black_hole.png</file>
+        <file>Images/placeholder.png</file>
+        <file>Images/black_orb.png</file>
+        <file>Sounds/vortex_cannon.wav</file>
     </qresource>
 </RCC>

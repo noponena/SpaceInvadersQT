@@ -1,18 +1,19 @@
 #include "Weapon.h"
+#include "GameObjects/Ships/Ship.h"
 
 namespace Weapons {
 
 Weapon::Weapon()
-    : m_owner(nullptr), m_soundEnabled(true), m_minCooldownMs(100) {
+    : m_owner(nullptr), m_soundEnabled(true), m_minCooldownMs(100), m_firstShot(false) {
   {
     clampCooldownMs();
-    m_lastShotTimer.start();
+      m_lastFiredTimer.start();
   }
 }
 
-void Weapon::shoot() {
+void Weapon::fire() {
   if (canShoot()) {
-    m_lastShotTimer.restart();
+      m_lastFiredTimer.restart();
     std::unique_ptr<GameObjects::Projectiles::Projectile> projectile =
         createProjectile();
     projectile->initialize();
@@ -26,7 +27,7 @@ void Weapon::shoot() {
     GameObjects::Position projectilePosition = projectile->getPosition();
     projectilePosition.setPos(QPointF(newX, newY));
     projectile->setPosition(projectilePosition);
-    emit projectileShot(std::move(projectile));
+    emit projectileFired(std::move(projectile));
   }
 }
 
@@ -44,6 +45,14 @@ void Weapon::setCooldownMs(float newCooldownMs) {
   clampCooldownMs();
 }
 
+std::unique_ptr<GameObjects::Projectiles::Projectile> Weapon::createProjectile()
+{
+  auto projectile = m_projectilePrototype->clone();
+  projectile->setPosition(m_owner->getPosition());
+  projectile->setSoundEnabled(m_soundEnabled);
+  return projectile;
+}
+
 void Weapon::updateWeaponCooldown(float amount) {
   m_cooldownMs += amount;
   clampCooldownMs();
@@ -53,17 +62,21 @@ void Weapon::enableSound() { m_soundEnabled = true; }
 
 void Weapon::disableSound() { m_soundEnabled = false; }
 
-void Weapon::addProjectileProperty(ProjectileProperty property) {
+void Weapon::addProjectileProperty(GameObjects::Projectiles::ProjectileProperty property) {
   m_projectilePrototype->addProperty(property);
 }
 
-void Weapon::removeProjectileProperty(ProjectileProperty property) {
+void Weapon::removeProjectileProperty(GameObjects::Projectiles::ProjectileProperty property) {
   m_projectilePrototype->removeProperty(property);
 }
 
 bool Weapon::canShoot() {
   if (!m_owner->isDead()) {
-    int elapsed = m_lastShotTimer.elapsed();
+    if (!m_firstShot) {
+        m_firstShot = true;
+        return true;
+    }
+    int elapsed = m_lastFiredTimer.elapsed();
     if (elapsed >= m_cooldownMs) {
       return true;
     }

@@ -7,8 +7,21 @@ namespace GameObjects {
 namespace Ships {
 PlayerShip::PlayerShip(const int maxHp, const float speed,
                        const Position &position)
-    : ShipWithHealthBar(maxHp, speed, position) {
-  m_magnetism = {true, 100.0f, 100.0f};
+    : ShipWithHealthBar(maxHp, speed, position)
+{
+  m_magnetism = {true, true, 100.0f, 100.0f};
+  m_pixmapData.pixmapResourcePath = ":/Images/player_ship.png";
+  m_pixmapData.pixmapScale = QPointF(50.0, 50.0);
+}
+
+void PlayerShip::initializeObjectType() {
+  Ship::initializeObjectType();
+  m_objectTypes.insert(ObjectType::PLAYER_SHIP);
+}
+
+void PlayerShip::initializeSounds() {
+  m_destructionSoundInfo = Game::Audio::SoundInfo(
+      {m_soundEnabled, Game::Audio::SoundEffect::PLAYER_DESTROYED});
 }
 
 void PlayerShip::moveHorizontal(float deltaTimeInSeconds) {
@@ -100,35 +113,18 @@ void PlayerShip::collideWithProjectile(Projectiles::Projectile &projectile) {
 
 void PlayerShip::collideWithCollectable(
     Collectables::Collectable &collectable) {
-  switch (collectable.objectType()) {
-  case ObjectType::STELLAR_COIN:
-    stellarTokenCollected();
-    break;
-  case ObjectType::HEALTH:
+
+  std::unordered_set<ObjectType> types = collectable.objectTypes();
+  if (types.find(ObjectType::STELLAR_COIN) != types.end())
+    emit stellarTokenCollected();
+  else if (types.find(ObjectType::HEALTH) != types.end())
     heal(1);
-  default:
-    break;
-  }
 }
 
 void PlayerShip::disableMovement() {
   m_currentSpeedX = 0;
   m_currentSpeedY = 0;
   m_acceleration = 0;
-}
-
-void PlayerShip::initializeObjectType() {
-  m_objectType = ObjectType::PLAYER_SHIP;
-}
-
-void Ships::PlayerShip::initializeGraphics() {
-  m_pixmapResourcePath = ":/Images/player_ship.png";
-  m_pixmapScale = QPointF(50.0, 75.0);
-}
-
-void PlayerShip::initializeSounds() {
-  m_destructionSoundInfo = Game::Audio::SoundInfo(
-      {m_soundEnabled, Game::Audio::SoundEffect::PLAYER_DESTROYED});
 }
 } // namespace Ships
 

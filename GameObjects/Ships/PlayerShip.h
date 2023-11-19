@@ -42,7 +42,6 @@ signals:
   // GameObject interface
 protected:
   void initializeObjectType() override;
-  void initializeGraphics() override;
   void initializeSounds() override;
 };
 } // namespace Ships

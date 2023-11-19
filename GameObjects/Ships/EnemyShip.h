@@ -14,7 +14,11 @@ public:
   void collideWithProjectile(Projectiles::Projectile &projectile) override;
   void collideWithEnemyShip(EnemyShip &enemyShip) override;
 
-  // GameObject interface
+  void setStellarCoinSpawnRange(QPoint newStellarCoinSpawnRange);
+  void setHealthSpawnProbability(float newHealthSpawnProbability);
+  void updateHealthSpawnProbability(float multiplier);
+
+
 protected:
   void executeDestructionProcedure() override;
   void spawnStellarCoins();
@@ -22,13 +26,13 @@ protected:
 
   // GameObject interface
 protected:
-  int m_stellarCoinSpawnCountMax;
-  int m_stellarCoinSpawnCountMin;
+  QPoint m_stellarCoinSpawnRange;
   float m_healthSpawnProbability;
 
   void initializeObjectType() override;
-  void initializeGraphics() override;
   void initializeSounds() override;
+private:
+  void clampHealthSpawnProbability();
 };
 } // namespace Ships
 

@@ -1,7 +1,8 @@
 #ifndef GAMEOBJECTS_SHIP_H
 #define GAMEOBJECTS_SHIP_H
 
-#include "GameObjects/GameObject.h"
+#include "GameObjects/AttractableGameObject.h"
+#include "Weapons/Weapon.h"
 #include <QElapsedTimer>
 #include <QTimer>
 
@@ -11,66 +12,57 @@ class Weapon;
 
 namespace GameObjects {
 namespace Ships {
-struct Magnetism {
-  bool isMagnetic;
-  float magneticRadius;
-  float magneticStrength;
-};
-class Ship : public GameObject {
+
+class Ship : public AttractableGameObject {
   Q_OBJECT
 public:
   Ship(const int maxHp, const float speed, const Position &position);
   virtual ~Ship();
+  virtual void update(const UpdateContext &context) override;
+  virtual bool shouldBeDeleted() override;
+  bool isDead() override;
   virtual void takeDamage(int amount);
   virtual void heal(int amount);
-  void shoot();
-  bool shouldBeDeleted() override;
-  bool isDead() override;
+  virtual void kill();
+  virtual void restoreHealth();
+  void firePrimaryWeapons();
+  void fireActiveSecondaryWeapon();
   void updateFireRate(int amount = 1);
-  void addWeapon(std::unique_ptr<Weapons::Weapon> newWeapon);
+  void addPrimaryWeapon(std::unique_ptr<Weapons::Weapon> newWeapon);
+  void addSecondaryWeapon(std::unique_ptr<Weapons::Weapon> newWeapon);
   void clearWeapons();
 
-  static QPixmap &loadSharedSpriteSheet(const QString &path) {
-    static QPixmap m_sharedSpriteSheet;
-    if (m_sharedSpriteSheet.isNull()) {
-      m_sharedSpriteSheet.load(path);
-    }
-    return m_sharedSpriteSheet;
-  }
-
-  const Magnetism &magnetism() const;
-
   int currentHp() const;
-
   void setImmortal(bool newImmortal);
-
   void setAutoShoot(bool newAutoShoot);
 
 protected:
   bool m_immortal;
-  int m_currentHp, m_maxHp, m_fireRate, m_shotCooldownMs;
+  int m_currentHp, m_maxHp, m_fireRate, m_fireCooldownMs, m_pixelWidth, m_pixelHeight, m_destructionParticleCount, m_activeSecondaryWeaponIndex;
   float m_speed;
   int m_onHitTimerId = -1;
   std::vector<std::unique_ptr<Weapons::Weapon>> m_primaryWeapons;
+  std::vector<std::unique_ptr<Weapons::Weapon>> m_secondaryWeapons;
   bool m_onHitAnimationInProgress = false;
   bool m_autoShoot = false;
   QColor m_originalColor;
-  QPixmap m_sharedPixmap;
-  struct Magnetism m_magnetism;
 
   virtual void initializeDestructionAnimation() override;
   void initializeDestructionEffects() override;
 
   virtual void playOnHitAnimation();
 protected slots:
-  void onProjectileShot(std::shared_ptr<Projectiles::Projectile> projectile);
+  void onProjectileFired(std::shared_ptr<Projectiles::Projectile> projectile);
 
 private:
   void timerEvent(QTimerEvent *event) override;
 
-  // GameObject interface
-public:
-  void update(const UpdateContext &context) override;
+signals:
+  void bottomEdgeReached();
+
+    // GameObject interface
+protected:
+    void initializeObjectType() override;
 };
 } // namespace Ships
 

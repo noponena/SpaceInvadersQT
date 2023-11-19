@@ -3,11 +3,10 @@
 namespace GameObjects {
 namespace Collectables {
 
-Health::Health(const Position &position) : Collectable(position) {}
-
-void Health::initializeGraphics() {
-  m_pixmapResourcePath = ":/Images/health.png";
-  m_pixmapScale = QPointF(20.0, 20.0);
+Health::Health(const Position &position) : Collectable(position)
+{
+    m_pixmapData.pixmapResourcePath = ":/Images/health.png";
+    m_pixmapData.pixmapScale = QPointF(22.0, 22.0);
 }
 
 void Health::initializeSounds() {
@@ -15,7 +14,10 @@ void Health::initializeSounds() {
       {m_soundEnabled, Game::Audio::SoundEffect::HEALTH_COLLECTED});
 }
 
-void Health::initializeObjectType() { m_objectType = ObjectType::HEALTH; }
+void Health::initializeObjectType() {
+  Collectable::initializeObjectType();
+  m_objectTypes.insert(ObjectType::HEALTH);
+}
 
 } // namespace Collectables
 } // namespace GameObjects

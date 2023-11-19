@@ -12,10 +12,24 @@
 namespace GameObjects {
 namespace Ships {
 EnemyShip::EnemyShip(const int maxHp, const Position &position)
-    : ShipWithHealthBar(maxHp, 0, position) {
-  m_stellarCoinSpawnCountMin = 2;
-  m_stellarCoinSpawnCountMax = 5;
+    : ShipWithHealthBar(maxHp, 0, position)
+{
+  m_stellarCoinSpawnRange = QPoint(2, 5);
   m_healthSpawnProbability = 0.10;
+  m_pixmapData.pixmapResourcePath = ":/Images/alien.png";
+  m_pixmapData.onHitPixmapResourcePath = ":/Images/alien_on_hit.png";
+  m_pixmapData.pixmapScale = QPointF(50.0, 50.0);
+  m_magneticTargets = { ObjectType::PROJECTILE };
+}
+
+void EnemyShip::initializeObjectType() {
+  Ship::initializeObjectType();
+  m_objectTypes.insert(ObjectType::ENEMY_SHIP);
+}
+
+void EnemyShip::initializeSounds() {
+  m_destructionSoundInfo = Game::Audio::SoundInfo(
+      {m_soundEnabled, Game::Audio::SoundEffect::LESSER_ENEMY_DESTROYED});
 }
 
 void EnemyShip::executeDestructionProcedure() {
@@ -25,8 +39,8 @@ void EnemyShip::executeDestructionProcedure() {
 }
 
 void EnemyShip::spawnStellarCoins() {
-  int amount = QRandomGenerator::global()->bounded(m_stellarCoinSpawnCountMin,
-                                                   m_stellarCoinSpawnCountMax);
+  int amount = QRandomGenerator::global()->bounded(m_stellarCoinSpawnRange.x(),
+                                                   m_stellarCoinSpawnRange.y());
   QPointF center = getBoundingBox().center();
   GameObjects::Position position(center.x(), center.y());
   position.setBounds(getPosition().getBounds());
@@ -51,19 +65,29 @@ void EnemyShip::spawnHealth() {
   }
 }
 
-void EnemyShip::initializeObjectType() {
-  m_objectType = ObjectType::ENEMY_SHIP;
+void EnemyShip::setHealthSpawnProbability(float newHealthSpawnProbability)
+{
+  m_healthSpawnProbability = newHealthSpawnProbability;
+  clampHealthSpawnProbability();
 }
 
-void EnemyShip::initializeGraphics() {
-  m_pixmapResourcePath = ":/Images/alien.png";
-  m_onHitPixmapResourcePath = ":/Images/alien_on_hit.png";
-  m_pixmapScale = QPointF(50.0, 75.0);
+void EnemyShip::updateHealthSpawnProbability(float multiplier)
+{
+  m_healthSpawnProbability *= multiplier;
+  clampHealthSpawnProbability();
 }
 
-void EnemyShip::initializeSounds() {
-  m_destructionSoundInfo = Game::Audio::SoundInfo(
-      {m_soundEnabled, Game::Audio::SoundEffect::LESSER_ENEMY_DESTROYED});
+void EnemyShip::setStellarCoinSpawnRange(QPoint newStellarCoinSpawnRange)
+{
+  m_stellarCoinSpawnRange = newStellarCoinSpawnRange;
+}
+
+void EnemyShip::clampHealthSpawnProbability()
+{
+  if (m_healthSpawnProbability < 0)
+    m_healthSpawnProbability = 0;
+  else if (m_healthSpawnProbability > 1)
+    m_healthSpawnProbability = 1;
 }
 
 void EnemyShip::collideWith(GameObject &other) {

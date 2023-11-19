@@ -7,6 +7,7 @@ namespace Audio {
 enum class SoundEffect {
   LASER,
   LESSER_ENEMY_LASER,
+  VORTEX_CANNON,
   STELLAR_COIN_COLLECTED,
   HEALTH_COLLECTED,
   PLAYER_DESTROYED,

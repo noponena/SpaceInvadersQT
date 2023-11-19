@@ -13,13 +13,20 @@
 #include <unordered_set>
 
 namespace GameObjects {
+class GameObject;
 
 enum class ObjectType {
-  UNDEFINED,
+  BASE,
+
+  SHIP,
   PLAYER_SHIP,
   ENEMY_SHIP,
+
+  PROJECTILE,
   PLAYER_PROJECTILE,
   ENEMY_PROJECTILE,
+
+  COLLECTABLE,
   STELLAR_COIN,
   HEALTH
 };
@@ -35,9 +42,23 @@ namespace Collectables {
 class Collectable;
 }
 
+struct Magnetism {
+    bool isMagnetic = false;
+    bool enabled = false;
+    float magneticRadius = 0.0f;
+    float magneticStrength = 0.0f;
+};
+
 struct UpdateContext {
   float deltaTimeInSeconds;
   const Ships::PlayerShip *playerShip;
+  const std::unordered_map<unsigned long long int, std::shared_ptr<GameObjects::GameObject>> &magneticGameObjects;
+};
+
+struct PixmapData {
+  QPointF pixmapScale;
+  QString pixmapResourcePath;
+  QString onHitPixmapResourcePath;
 };
 
 class GameObject : public QObject {
@@ -81,6 +102,7 @@ public:
   void setPosition(const Position &newPosition);
   bool isCollidable() const;
   long long unsigned id();
+  const Magnetism &magnetism() const;
 
   // Actions & Modifiers
   void moveTo(const QPointF &newPosition);
@@ -93,24 +115,28 @@ public:
 
   void setPosition(const QPointF &newPosition);
   void setSoundEnabled(const bool newSoundEnabled);
+  void addObjectType(const ObjectType objectType);
 
-  ObjectType objectType() const;
+  std::unordered_set<ObjectType> objectTypes() const;
   virtual bool isDead() { return false; };
 
   Game::Movement::MovementStrategy movementStrategy() const;
 
-protected:
+  void setPixmapData(const PixmapData &newPixmapData);
+  void setSpawnSoundInfo(const Game::Audio::SoundInfo &newSpawnSoundInfo);
+  void setDestructionSoundInfo(const Game::Audio::SoundInfo &newDestructionSoundInfo);
+
+  protected:
   // Member Variables
-  ObjectType m_objectType;
+  std::unordered_set<ObjectType> m_objectTypes;
   Position m_position;
   std::unique_ptr<QGraphicsPixmapItem> m_graphicsItem;
   bool m_hasCollided;
   bool m_collidable;
   bool m_soundEnabled;
   std::unordered_set<int> m_collisions;
-  QPointF m_pixmapScale;
-  QString m_pixmapResourcePath;
-  QString m_onHitPixmapResourcePath;
+  struct PixmapData m_pixmapData;
+  struct Magnetism m_magnetism;
 
   Graphics::Effects::ParticleSystem m_destructionEffect;
   Graphics::Animations::AnimatedItem m_destructionAnimation;
@@ -120,7 +146,6 @@ protected:
 
   // Protected Helpers & Methods
   virtual void initializeObjectType() = 0;
-  virtual void initializeGraphics() = 0;
   virtual void initializeSounds() = 0;
 
   virtual void initializeDestructionAnimation(){};

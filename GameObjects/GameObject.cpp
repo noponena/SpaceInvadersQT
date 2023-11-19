@@ -10,16 +10,18 @@ unsigned long long int GameObject::counter = 0;
 
 GameObject::GameObject(const Position &position)
     : m_position(position), m_hasCollided(false), m_collidable(true),
-      m_soundEnabled(true), m_onHitPixmapResourcePath(""), m_id(counter++),
-      m_destructionInitiated(false) {
-  m_objectType = ObjectType::UNDEFINED;
+    m_soundEnabled(true), m_magnetism({false, 0, 0}),
+    m_id(counter++),
+    m_destructionInitiated(false)
+{
+    m_objectTypes = {ObjectType::BASE};
+    m_pixmapData = PixmapData{QPointF(30, 30), ":/Images/placeholder.png", ""};
 }
 
 void GameObject::initialize() {
   initializeObjectType();
   initializeSounds();
   playSpawnSound();
-  initializeGraphics();
   m_graphicsItem = std::make_unique<QGraphicsPixmapItem>(getPixmap());
   initializeDestructionAnimation();
   initializeDestructionEffects();
@@ -100,6 +102,14 @@ QGraphicsPixmapItem *GameObject::getGraphicsItem() const {
 QRectF GameObject::getBoundingBox() const {
   QRectF localRect = m_graphicsItem->boundingRect();
   QRectF sceneRect = m_graphicsItem->mapToScene(localRect).boundingRect();
+//  qDebug() << "x:" << m_position.x();
+//  qDebug() << "y:" << m_position.y();
+//  qDebug() << "scene x:" << sceneRect.x();
+//  qDebug() << "scene y:" << sceneRect.y();
+//  qDebug() << "width:" << sceneRect.width();
+//  qDebug() << "height:" << sceneRect.height();
+//  qDebug() << "center:" << sceneRect.center();
+//  qDebug();
   return sceneRect;
 }
 
@@ -107,19 +117,35 @@ void GameObject::disableMovement() { m_movementStrategy.clear(); }
 
 QPixmap GameObject::getPixmap() const {
   return Graphics::PixmapLibrary::getPixmap(
-      m_pixmapResourcePath, m_pixmapScale.x(), m_pixmapScale.y());
+      m_pixmapData.pixmapResourcePath, m_pixmapData.pixmapScale.x(),
+      m_pixmapData.pixmapScale.y());
 }
 
 QPixmap GameObject::getOnHitPixmap() const {
-  QString path = m_onHitPixmapResourcePath;
+  QString path = m_pixmapData.onHitPixmapResourcePath;
   if (path.isEmpty())
-    path = m_pixmapResourcePath;
-  return Graphics::PixmapLibrary::getPixmap(path, m_pixmapScale.x(),
-                                            m_pixmapScale.y());
+    path = m_pixmapData.pixmapResourcePath;;
+  return Graphics::PixmapLibrary::getPixmap(path, m_pixmapData.pixmapScale.x(),
+                                            m_pixmapData.pixmapScale.y());
 }
 
 Game::Movement::MovementStrategy GameObject::movementStrategy() const {
   return m_movementStrategy;
+}
+
+void GameObject::setPixmapData(const PixmapData &newPixmapData)
+{
+  m_pixmapData = newPixmapData;
+}
+
+void GameObject::setSpawnSoundInfo(const Game::Audio::SoundInfo &newSpawnSoundInfo)
+{
+  m_spawnSoundInfo = newSpawnSoundInfo;
+}
+
+void GameObject::setDestructionSoundInfo(const Game::Audio::SoundInfo &newDestructionSoundInfo)
+{
+  m_destructionSoundInfo = newDestructionSoundInfo;
 }
 
 void GameObject::setMovementStrategy(
@@ -133,6 +159,11 @@ void GameObject::addMovementStrategy(
 }
 
 long long unsigned GameObject::id() { return m_id; }
+
+const Magnetism &GameObject::magnetism() const
+{
+  return m_magnetism;
+}
 
 void GameObject::clampToXBounds() {
   if (m_position.isBeyondScreenRightLimit())
@@ -193,6 +224,11 @@ void GameObject::setSoundEnabled(const bool newSoundEnabled) {
   m_spawnSoundInfo.enabled = newSoundEnabled;
 }
 
-ObjectType GameObject::objectType() const { return m_objectType; }
+void GameObject::addObjectType(const ObjectType objectType)
+{
+  m_objectTypes.insert(objectType);
+}
+
+std::unordered_set<ObjectType> GameObject::objectTypes() const { return m_objectTypes; }
 
 } // namespace GameObjects

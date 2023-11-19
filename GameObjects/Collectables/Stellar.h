@@ -12,7 +12,6 @@ public:
 
   // GameObject interface
 protected:
-  void initializeGraphics() override;
   void initializeSounds() override;
   void initializeObjectType() override;
 };

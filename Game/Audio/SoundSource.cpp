@@ -31,13 +31,6 @@ void SoundSource::Play(const ALuint buffer_to_play) {
   }
 
   alSourcePlay(p_Source);
-
-  //    ALint state = AL_PLAYING;
-  //    while (state == AL_PLAYING && alGetError() == AL_NO_ERROR)
-  //    {
-  //        alGetSourcei(p_Source, AL_SOURCE_STATE, &state);
-  //        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-  //    }
 }
 
 ALuint SoundSource::getSourceID() const { return p_Source; }

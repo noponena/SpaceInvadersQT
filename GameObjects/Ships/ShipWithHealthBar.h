@@ -20,6 +20,8 @@ protected:
 public:
   void takeDamage(int amount) override;
   void heal(int amount) override;
+  void kill() override;
+  void restoreHealth() override;
 };
 
 } // namespace Ships

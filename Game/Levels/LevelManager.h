@@ -2,6 +2,7 @@
 #define LEVELMANAGER_H
 
 #include "Game/Core/GameState.h"
+#include "GameObjects/Projectiles/ProjectileBuilder.h"
 
 namespace Game {
 namespace Core {
@@ -13,6 +14,7 @@ public:
 
 private:
   Weapons::WeaponBuilder m_weaponBuilder;
+  GameObjects::Projectiles::ProjectileBuilder m_projectileBuilder;
   QElapsedTimer m_elapsedTimer;
   GameState *m_gameState;
   float m_lastSpawnTime = 0.0f;

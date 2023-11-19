@@ -3,11 +3,10 @@
 
 namespace GameObjects {
 namespace Collectables {
-Stellar::Stellar(const Position &position) : Collectable(position) {}
-
-void Stellar::initializeGraphics() {
-  m_pixmapResourcePath = ":/Images/coin.png";
-  m_pixmapScale = QPointF(5.0, 5.0);
+Stellar::Stellar(const Position &position) : Collectable(position)
+{
+    m_pixmapData.pixmapResourcePath = ":/Images/coin.png";
+    m_pixmapData.pixmapScale = QPointF(5.0, 5.0);
 }
 
 void Stellar::initializeSounds() {
@@ -16,7 +15,8 @@ void Stellar::initializeSounds() {
 }
 
 void Stellar::initializeObjectType() {
-  m_objectType = ObjectType::STELLAR_COIN;
+  Collectable::initializeObjectType();
+  m_objectTypes.insert(ObjectType::STELLAR_COIN);
 }
 
 } // namespace Collectables

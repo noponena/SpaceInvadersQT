@@ -1,5 +1,4 @@
 #include "LevelManager.h"
-#include "GameObjects/Projectiles/EnemyLaserProjectile.h"
 #include "GameObjects/Ships/EnemyShip.h"
 #include "Utils/Utils.h"
 #include "Weapons/PrimaryWeapon.h"
@@ -14,6 +13,22 @@ LevelManager::LevelManager(GameState *gameState, bool performanceTest)
     m_enemyWeaponCooldownMs = 500;
     m_enemyShipHp = 3;
   }
+
+  GameObjects::PixmapData pixmapData{QPointF(30, 30), ":/Images/enemy_laser_projectile.png", ""};
+
+  std::unique_ptr<GameObjects::Projectiles::Projectile> projectile = m_projectileBuilder
+          .createProjectile(std::make_unique<GameObjects::Projectiles::Projectile>())
+          .withDamage(1)
+          .withMovementStrategy(Game::Movement::VerticalMovementStrategy(500, 1))
+          .withGrahpics(pixmapData)
+          .withSpawnSound(Audio::SoundInfo({true, Game::Audio::SoundEffect::LESSER_ENEMY_LASER}))
+          .withObjectType(GameObjects::ObjectType::ENEMY_PROJECTILE)
+          .build();
+
+      m_weaponBuilder
+          .createWeapon(std::make_unique<Weapons::PrimaryWeapon>())
+          .withProjectile(std::move(projectile))
+      .withWeaponCooldownMs(m_enemyWeaponCooldownMs);
 }
 
 void LevelManager::update() {
@@ -33,17 +48,7 @@ void LevelManager::update() {
         std::make_unique<GameObjects::Ships::EnemyShip>(m_enemyShipHp, pos);
     enemyShip->initialize();
 
-    std::unique_ptr<Weapons::Weapon> weapon =
-        m_weaponBuilder.createWeapon(std::make_unique<Weapons::PrimaryWeapon>())
-            .withProjectileDamage(1)
-            .withProjectile(std::make_unique<
-                            GameObjects::Projectiles::EnemyLaserProjectile>())
-            .withProjectileMovementStrategy(
-                Game::Movement::VerticalMovementStrategy(500, 1))
-            .withWeaponCooldownMs(m_enemyWeaponCooldownMs)
-            .build();
-
-    enemyShip->addWeapon(std::move(weapon));
+    enemyShip->addPrimaryWeapon(m_weaponBuilder.build());
     enemyShip->setAutoShoot(true);
 
     Game::Movement::MovementStrategy horizontalStrategyLeft =

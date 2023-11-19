@@ -3,7 +3,7 @@
 
 #include "Game/CollisionDetection/CollisionDetector.h"
 #include "Game/Core/GameState.h"
-#include "Game/Core/LevelManager.h"
+#include "Game/Levels/LevelManager.h"
 #include "UI/FPSCounter.h"
 #include "UI/GameObjectCounter.h"
 #include "qtimer.h"
@@ -13,7 +13,7 @@
 #include <QLabel>
 #include <QWheelEvent>
 
-// #define PERFORMANCE_BENCHMARK
+//#define PERFORMANCE_BENCHMARK
 
 namespace Game {
 namespace Core {
@@ -83,7 +83,12 @@ private:
       {Qt::Key_Space,
        [&](float dt) {
          Q_UNUSED(dt);
-         m_playerShip->shoot();
+           m_playerShip->firePrimaryWeapons();
+       }},
+      {Qt::Key_Shift,
+       [&](float dt) {
+           Q_UNUSED(dt);
+           m_playerShip->fireActiveSecondaryWeapon();
        }},
       {Qt::Key_P,
        [&](float dt) {

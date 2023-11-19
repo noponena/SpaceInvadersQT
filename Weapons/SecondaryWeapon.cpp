@@ -1,9 +1,10 @@
-#include "PrimaryWeapon.h"
+#include "SecondaryWeapon.h"
 
 namespace Weapons {
-std::unique_ptr<Weapon> PrimaryWeapon::clone() const
+
+std::unique_ptr<Weapon> SecondaryWeapon::clone() const
 {
-    std::unique_ptr<PrimaryWeapon> weapon = std::make_unique<PrimaryWeapon>();
+    std::unique_ptr<SecondaryWeapon> weapon = std::make_unique<SecondaryWeapon>();
     weapon->m_owner = m_owner;
     weapon->m_projectilePrototype =
         std::unique_ptr<GameObjects::Projectiles::Projectile>(
@@ -12,6 +13,5 @@ std::unique_ptr<Weapon> PrimaryWeapon::clone() const
     weapon->m_cooldownMs = m_cooldownMs;
     return weapon;
 }
-}
 
-
+} // namespace Weapons

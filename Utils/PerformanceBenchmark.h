@@ -34,6 +34,7 @@ private:
   std::vector<std::tuple<int, int, int, float, float>> m_stats;
 
   float calculateBenchmarkScore();
+  float getMemUsage();
 
   inline void createFile();
   inline void openFile();

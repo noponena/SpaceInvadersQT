@@ -12,13 +12,13 @@ enum class ProjectileProperty;
 namespace GameObjects {
 namespace Projectiles {
 
+enum class ProjectileProperty { PIERCING, HOMING };
+
 class Projectile : public GameObject {
 public:
   Projectile();
-  Projectile(int damage = 1,
-             std::unordered_set<Weapons::ProjectileProperty> properties = {});
   virtual ~Projectile() = default;
-  virtual std::unique_ptr<Projectile> clone() const = 0;
+  virtual std::unique_ptr<Projectile> clone() const;
 
   bool shouldBeDeleted() override;
   void collideWith(GameObject &other) override;
@@ -28,13 +28,21 @@ public:
   void setDamage(int newDamage);
 
   void setProperties(
-      const std::unordered_set<Weapons::ProjectileProperty> &newProperties);
-  void addProperty(const Weapons::ProjectileProperty property);
-  void removeProperty(const Weapons::ProjectileProperty property);
+      const std::unordered_set<ProjectileProperty> &newProperties);
+  void addProperty(const ProjectileProperty property);
+  void removeProperty(const ProjectileProperty property);
 
 protected:
   int m_damage;
-  std::unordered_set<Weapons::ProjectileProperty> m_properties;
+  std::unordered_set<ProjectileProperty> m_properties;
+
+  // GameObject interface
+  protected:
+  void initializeObjectType() override;
+
+      // GameObject interface
+  protected:
+  void initializeSounds() override {};
 };
 } // namespace Projectiles
 } // namespace GameObjects
