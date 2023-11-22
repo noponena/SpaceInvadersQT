@@ -77,7 +77,7 @@ void GameState::initPlayerShip() {
       m_projectileBuilder
           .createProjectile(std::make_unique<GameObjects::Projectiles::WaveOfDestruction>())
           .withObjectType(GameObjects::ObjectType::PLAYER_PROJECTILE)
-          .withGrahpics(GameObjects::PixmapData{QPointF(m_maxX * 2, 20), ":/Images/wave.png", "", false})
+          .withGrahpics(GameObjects::PixmapData{QPointF(250, 20), ":/Images/wave.png", "", false})
           .withDamage(1000)
           .withMovementStrategy(Game::Movement::VerticalMovementStrategy(250, -1))
           .build();

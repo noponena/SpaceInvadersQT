@@ -107,7 +107,7 @@ void GameRunner::startGame() {
   m_playerShip = m_gameState->playerShip();
   m_gameObjects = &(m_gameState->gameObjects());
   m_collisionDetector =
-      std::make_unique<CollisionDetector>(m_gameState->gameObjects(), rect());
+      std::make_unique<CollisionDetection::CollisionDetector>(m_gameState->gameObjects(), rect());
 
   // Create and start game loop timer
 
@@ -138,7 +138,7 @@ void GameRunner::gameLoop() {
 #endif
 
       updateGameState(deltaTimeInSeconds);
-      m_collisionDetector->detectQuadTree();
+      m_collisionDetector->detectBVH();
       updateFps();
 
       int gameObjectCount = m_gameObjects->size();

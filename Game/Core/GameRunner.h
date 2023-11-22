@@ -15,7 +15,7 @@
 #include <QThread>
 #include <algorithm>
 
-//#define PERFORMANCE_BENCHMARK
+#define PERFORMANCE_BENCHMARK
 
 namespace Game {
 namespace Core {
@@ -38,7 +38,7 @@ private:
   QTimer m_gameTimer;
   QTimer m_benchmarkTimer;
   GameObjects::Ships::PlayerShip *m_playerShip;
-  std::unique_ptr<CollisionDetector> m_collisionDetector;
+  std::unique_ptr<CollisionDetection::CollisionDetector> m_collisionDetector;
   QElapsedTimer m_elapsedTimer;
   QElapsedTimer m_fpsTimer;
   QSet<int> m_pressedKeys;

@@ -1,6 +1,9 @@
 #include "CollisionDetector.h"
 #include <set>
 
+namespace Game {
+namespace CollisionDetection {
+
 CollisionDetector::CollisionDetector(
     const std::vector<std::shared_ptr<GameObjects::GameObject>> &gameObjects,
     QRectF screenRect)
@@ -41,6 +44,25 @@ void CollisionDetector::detectQuadTree() {
   checkedPairs.clear();
 }
 
+void CollisionDetector::detectBVH() {
+  std::vector<GameObjects::GameObject *> vec;
+  vec.reserve(m_gameObjects.size());
+  for (auto const &object : m_gameObjects) {
+    vec.push_back(object.get());
+  }
+
+  std::set<std::pair<uint64_t, uint64_t>> checkedPairs;
+  std::shared_ptr<BVHNode> node = m_bvhTree.build(vec);
+
+  for (auto const &object : m_gameObjects) {
+    m_bvhTree.clearProcessedPairs();
+    std::vector<GameObjects::GameObject*> collisionObjects = m_bvhTree.query(node, object.get());
+    for (auto const &collisionObject : collisionObjects) {
+      object->collide(*collisionObject);
+    }
+  }
+}
+
 void CollisionDetector::detect() {
   for (auto it1 = m_gameObjects.begin(); it1 != m_gameObjects.end(); ++it1) {
     for (auto it2 = std::next(it1); it2 != m_gameObjects.end(); ++it2) {
@@ -49,4 +71,7 @@ void CollisionDetector::detect() {
       }
     }
   }
+}
+
+}
 }
