@@ -36,7 +36,9 @@ public:
   void setImmortal(bool newImmortal);
   void setAutoShoot(bool newAutoShoot);
 
-protected:
+  void setDestructionParticleCount(int newDestructionParticleCount);
+
+  protected:
   bool m_immortal;
   int m_currentHp, m_maxHp, m_fireRate, m_fireCooldownMs, m_pixelWidth, m_pixelHeight, m_destructionParticleCount, m_activeSecondaryWeaponIndex;
   float m_speed;

@@ -12,6 +12,8 @@ LevelManager::LevelManager(GameState *gameState, bool performanceTest)
     m_spawnIntervalMs = 50;
     m_enemyWeaponCooldownMs = 500;
     m_enemyShipHp = 3;
+    m_enemyShipDestructionParticleCount = 250;
+    m_performanceTest = performanceTest;
   }
 
   GameObjects::PixmapData pixmapData{QPointF(30, 30), ":/Images/enemy_laser_projectile.png", ""};
@@ -46,6 +48,8 @@ void LevelManager::update() {
     GameObjects::Position pos(randomX, y, minX, maxX, minY, maxY);
     std::unique_ptr<GameObjects::Ships::EnemyShip> enemyShip =
         std::make_unique<GameObjects::Ships::EnemyShip>(m_enemyShipHp, pos);
+    if (m_performanceTest)
+        enemyShip->setDestructionParticleCount(m_enemyShipDestructionParticleCount);
     enemyShip->initialize();
 
     enemyShip->addPrimaryWeapon(m_weaponBuilder.build());

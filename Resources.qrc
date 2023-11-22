@@ -18,5 +18,6 @@
         <file>Images/placeholder.png</file>
         <file>Images/black_orb.png</file>
         <file>Sounds/vortex_cannon.wav</file>
+        <file>Images/wave.png</file>
     </qresource>
 </RCC>

@@ -26,8 +26,8 @@ void AttractableGameObject::updateMovement(const UpdateContext &context)
     for (const auto &pair : data) {
         QPointF magneticObjectPosition = pair.first;
         Magnetism magnetism = pair.second;
-        Position currentPosition = getPosition();
-        QPointF direction = magneticObjectPosition - currentPosition.pos;
+        QPointF currentPosition = getCenterPosition();
+        QPointF direction = magneticObjectPosition - currentPosition;
         bool isWithinMagneticRange =
             QVector2D(direction).length() < magnetism.magneticRadius;
 
@@ -74,7 +74,7 @@ const std::vector<std::pair<QPointF, Magnetism> > AttractableGameObject::getMagn
                         magneticData.push_back({object->getCenterPosition(), object->magnetism()});
                     }
                     else {
-                        magneticData.push_back({object->getCenterPosition() + QPointF(-25, -25), object->magnetism()});
+                        magneticData.push_back({object->getCenterPosition() /*+ QPointF(-25, -25)*/, object->magnetism()});
                     }
                     break;
                 }

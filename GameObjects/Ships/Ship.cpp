@@ -11,7 +11,7 @@ namespace Ships {
 
 Ship::Ship(const int maxHp, const float speed, const Position &position)
     : AttractableGameObject(position), m_immortal(false), m_currentHp(maxHp),
-    m_maxHp(maxHp), m_pixelWidth(50), m_pixelHeight(50), m_destructionParticleCount(250), m_activeSecondaryWeaponIndex(0), m_speed(speed) {}
+    m_maxHp(maxHp), m_pixelWidth(50), m_pixelHeight(50), m_destructionParticleCount(200), m_activeSecondaryWeaponIndex(0), m_speed(speed) {}
 
 Ship::~Ship() {}
 
@@ -115,13 +115,18 @@ void Ship::setImmortal(bool newImmortal) { m_immortal = newImmortal; }
 
 void Ship::setAutoShoot(bool newAutoShoot) { m_autoShoot = newAutoShoot; }
 
+void Ship::setDestructionParticleCount(int newDestructionParticleCount)
+{
+  m_destructionParticleCount = newDestructionParticleCount;
+}
+
 int Ship::currentHp() const { return m_currentHp; }
 
 bool Ship::shouldBeDeleted() {
   if (m_position.isBeyondScreenBottomLimit())
     emit bottomEdgeReached();
   return GameObject::shouldBeDeleted() ||
-         (m_destructionAnimation.animationFinished() &&
+         (isDead() && m_destructionAnimation.animationFinished() &&
           m_destructionEffect.effectFinished());
 }
 

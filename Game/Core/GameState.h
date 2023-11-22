@@ -5,6 +5,7 @@
 #include "GameObjects/Projectiles/ProjectileBuilder.h"
 #include "GameObjects/Ships/PlayerShip.h"
 #include "Weapons/WeaponBuilder.h"
+#include <mutex>
 
 namespace Game {
 namespace Core {
@@ -27,10 +28,13 @@ public:
   int m_minX, m_minY, m_maxX, m_maxY, m_windowWidth, m_windowHeight;
 
   const unsigned &stellarTokens() const;
+  std::mutex &mutex();
 
 private:
+  mutable std::mutex m_mutex;
+  std::vector<std::pair<uint64_t, uint64_t>> m_collidingPairs;
   std::vector<std::shared_ptr<GameObjects::GameObject>> m_gameObjects;
-    std::unordered_map<unsigned long long int, std::shared_ptr<GameObjects::GameObject>> m_magneticGameObjects;
+  std::unordered_map<uint64_t, std::shared_ptr<GameObjects::GameObject>> m_magneticGameObjectMap;
   bool m_playerShipDeletedFromScene;
   unsigned m_stellarTokens;
   float m_playersShipStartSpeed;

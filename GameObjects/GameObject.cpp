@@ -6,7 +6,7 @@
 
 namespace GameObjects {
 
-unsigned long long int GameObject::counter = 0;
+uint64_t GameObject::counter = 0;
 
 GameObject::GameObject(const Position &position)
     : m_position(position), m_hasCollided(false), m_collidable(true),
@@ -102,14 +102,6 @@ QGraphicsPixmapItem *GameObject::getGraphicsItem() const {
 QRectF GameObject::getBoundingBox() const {
   QRectF localRect = m_graphicsItem->boundingRect();
   QRectF sceneRect = m_graphicsItem->mapToScene(localRect).boundingRect();
-//  qDebug() << "x:" << m_position.x();
-//  qDebug() << "y:" << m_position.y();
-//  qDebug() << "scene x:" << sceneRect.x();
-//  qDebug() << "scene y:" << sceneRect.y();
-//  qDebug() << "width:" << sceneRect.width();
-//  qDebug() << "height:" << sceneRect.height();
-//  qDebug() << "center:" << sceneRect.center();
-//  qDebug();
   return sceneRect;
 }
 
@@ -118,15 +110,15 @@ void GameObject::disableMovement() { m_movementStrategy.clear(); }
 QPixmap GameObject::getPixmap() const {
   return Graphics::PixmapLibrary::getPixmap(
       m_pixmapData.pixmapResourcePath, m_pixmapData.pixmapScale.x(),
-      m_pixmapData.pixmapScale.y());
+      m_pixmapData.pixmapScale.y(), m_pixmapData.keepAspectRatio);
 }
 
 QPixmap GameObject::getOnHitPixmap() const {
   QString path = m_pixmapData.onHitPixmapResourcePath;
   if (path.isEmpty())
-    path = m_pixmapData.pixmapResourcePath;;
+    return getPixmap();
   return Graphics::PixmapLibrary::getPixmap(path, m_pixmapData.pixmapScale.x(),
-                                            m_pixmapData.pixmapScale.y());
+                                            m_pixmapData.pixmapScale.y(), m_pixmapData.keepAspectRatio);
 }
 
 Game::Movement::MovementStrategy GameObject::movementStrategy() const {
@@ -200,7 +192,7 @@ bool GameObject::isCollidingWith(const GameObject &other) const {
     return false;
   }
 
-  return getGraphicsItem()->collidesWithItem(other.getGraphicsItem());
+  return getGraphicsItem()->collidesWithItem(other.getGraphicsItem());;
 }
 
 Position GameObject::getPosition() const { return m_position; }

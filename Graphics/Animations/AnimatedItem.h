@@ -52,7 +52,12 @@ public:
 
   QRectF boundingRect() const override { return m_sourceRect; }
 
-  bool animationFinished() const { return m_animationFinished; }
+  bool animationFinished() const
+  {
+    if (m_spritesheet.isNull())
+        return true;
+    return m_animationFinished;
+  }
 
   void setSpritesheet(const QPixmap &newSpritesheet) {
     m_spritesheet = newSpritesheet;

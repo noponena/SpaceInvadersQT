@@ -12,6 +12,8 @@
 #include <QKeyEvent>
 #include <QLabel>
 #include <QWheelEvent>
+#include <QThread>
+#include <algorithm>
 
 //#define PERFORMANCE_BENCHMARK
 

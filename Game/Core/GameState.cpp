@@ -1,4 +1,5 @@
 #include "GameState.h"
+#include "GameObjects/Projectiles/WaveOfDestruction.h"
 #include "GameObjects/Ships/EnemyShip.h"
 #include "Weapons/PrimaryWeapon.h"
 #include "Weapons/SecondaryWeapon.h"
@@ -17,6 +18,7 @@ void GameState::initialize() {
   initMovementConstrains();
   initPlayerShip();
   m_stellarTokens = 0;
+  m_collidingPairs.clear();
 }
 
 void GameState::addGameObject(std::shared_ptr<GameObjects::GameObject> object) {
@@ -24,7 +26,7 @@ void GameState::addGameObject(std::shared_ptr<GameObjects::GameObject> object) {
           &GameState::onObjectCreated);
   m_gameObjects.emplace_back(object);
   if (object->magnetism().isMagnetic)
-      m_magneticGameObjects[object->id()] = object;
+      m_magneticGameObjectMap[object->id()] = object;
   emit objectAdded(object->getGraphicsItem());
 }
 
@@ -34,21 +36,15 @@ void GameState::setSize(int width, int height) {
 }
 
 void GameState::update(float deltaTimeInSeconds) {
-  for (size_t i = 0; i < m_gameObjects.size(); /* no increment here */) {
-      m_gameObjects[i]->update({deltaTimeInSeconds, m_playerShip, m_magneticGameObjects});
-
-    if (m_gameObjects[i]->shouldBeDeleted()) {
-
-      m_magneticGameObjects.erase(m_gameObjects[i]->id());
-      // Swap with the last element
-      std::swap(m_gameObjects[i], m_gameObjects.back());
-      // Pop the last element (which is now the one to be deleted)
-      m_gameObjects.pop_back();
-
-      // Don't increment i, as we now have a new element at index i
-    } else {
-      ++i; // Only increment if no deletion occurred
-    }
+  for (size_t i = 0; i < m_gameObjects.size();) {
+      m_gameObjects[i]->update({deltaTimeInSeconds, m_playerShip, m_magneticGameObjectMap});
+      if (m_gameObjects[i]->shouldBeDeleted()) {
+          m_magneticGameObjectMap.erase(m_gameObjects[i]->id());
+          std::swap(m_gameObjects[i], m_gameObjects.back());
+          m_gameObjects.pop_back();
+      } else {
+          ++i;
+      }
   }
 }
 
@@ -64,24 +60,33 @@ void GameState::initPlayerShip() {
   qDebug() << "playerShip x:" << m_windowWidth / 2 << "playerShip y:" << m_maxY;
   std::unique_ptr<GameObjects::Ships::PlayerShip> playerShip =
       std::make_unique<GameObjects::Ships::PlayerShip>(
-          25, m_playersShipStartSpeed, pos);
+          2500, m_playersShipStartSpeed, pos);
   playerShip->initialize();
   connect(playerShip.get(), &GameObjects::GameObject::objectDestroyed, this,
           &GameState::onPlayerShipDestroyed);
 
+//  std::unique_ptr<GameObjects::Projectiles::Projectile> secondaryProjectile =
+//      m_projectileBuilder
+//          .createProjectile(std::make_unique<GameObjects::Projectiles::Vortex>())
+//          .withObjectType(GameObjects::ObjectType::PLAYER_PROJECTILE)
+//          .withDamage(0)
+//          .withMovementStrategy(Game::Movement::VerticalMovementStrategy(1000, -1))
+//          .build();
+
   std::unique_ptr<GameObjects::Projectiles::Projectile> secondaryProjectile =
       m_projectileBuilder
-          .createProjectile(std::make_unique<GameObjects::Projectiles::Vortex>())
+          .createProjectile(std::make_unique<GameObjects::Projectiles::WaveOfDestruction>())
           .withObjectType(GameObjects::ObjectType::PLAYER_PROJECTILE)
-          .withDamage(0)
-          .withMovementStrategy(Game::Movement::VerticalMovementStrategy(1000, -1))
+          .withGrahpics(GameObjects::PixmapData{QPointF(m_maxX * 2, 20), ":/Images/wave.png", "", false})
+          .withDamage(1000)
+          .withMovementStrategy(Game::Movement::VerticalMovementStrategy(250, -1))
           .build();
 
   std::unique_ptr<Weapons::Weapon> secondaryWeapon =
       m_weaponBuilder
           .createWeapon(std::make_unique<Weapons::SecondaryWeapon>())
           .withProjectile(std::move(secondaryProjectile))
-          .withWeaponCooldownMs(5000)
+          .withWeaponCooldownMs(100)
           .build();
 
   std::unique_ptr<GameObjects::Projectiles::Projectile> primaryProjectile =
@@ -123,7 +128,7 @@ void GameState::initPlayerShip() {
   
   playerShip->addPrimaryWeapon(std::move(weapon));
   playerShip->addPrimaryWeapon(std::move(secondWeapon));
-  playerShip->addPrimaryWeapon(std::move(thirdWeapon));
+   playerShip->addPrimaryWeapon(std::move(thirdWeapon));
   playerShip->addSecondaryWeapon(std::move(secondaryWeapon));
   m_playerShip = playerShip.get();
   connect(m_playerShip, &GameObjects::Ships::PlayerShip::stellarTokenCollected,
@@ -189,5 +194,10 @@ GameObjects::Ships::PlayerShip *GameState::playerShip() const {
 }
 
 const unsigned &GameState::stellarTokens() const { return m_stellarTokens; }
+
+std::mutex &GameState::mutex()
+{
+  return m_mutex;
+}
 } // namespace Core
 } // namespace Game

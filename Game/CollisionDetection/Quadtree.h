@@ -26,36 +26,32 @@ public:
   }
 
   inline void insert(GameObjects::GameObject *object) {
+    // If the node has subnodes, attempt to insert the object into them
     if (m_nodes[0]) {
-      GameObjects::Position position = object->getPosition();
-      int x = position.x();
-      int y = position.y();
-      // qDebug() << "x:" << x << "y:" << y;
-      int index = getIndex(x, y);
+      int index = getIndex(object->getBoundingBox());
       if (index != -1) {
         m_nodes[index]->insert(object);
         return;
       }
+      // For objects that span multiple quadrants, continue and add to this node
     }
 
+    // Add the object to this node
     m_objects.emplace_back(object);
 
+    // If this node exceeds capacity and hasn't reached max level, split and redistribute objects
     if (m_objects.size() > MAX_OBJECTS && m_level < MAX_LEVELS) {
       if (!m_nodes[0]) {
         split();
       }
-
-      unsigned long i = 0;
+      uint64_t i = 0;
       while (i < m_objects.size()) {
-        GameObjects::Position position = m_objects[i]->getPosition();
-        int x = position.x();
-        int y = position.y();
-        int index = getIndex(x, y);
+        int index = getIndex(m_objects[i]->getBoundingBox());
         if (index != -1) {
-          m_nodes[index]->insert(m_objects[i]);
-          m_objects.erase(m_objects.begin() + i);
+            m_nodes[index]->insert(m_objects[i]);
+            m_objects.erase(m_objects.begin() + i);
         } else {
-          i++;
+            i++;
         }
       }
     }
@@ -70,14 +66,14 @@ public:
       return possibleCollisions;
     }
 
-    for (const auto &object : m_objects) {
-      if (canCollide(queryObject->objectTypes(), object->objectTypes())) {
-        if (range.contains(object->getPosition().x(),
-                           object->getPosition().y())) {
-          possibleCollisions.push_back(object);
+  for (const auto &object : m_objects) {
+    if (canCollide(queryObject->objectTypes(), object->objectTypes())) {
+        QRectF objectBounds = object->getBoundingBox();
+        if (range.intersects(objectBounds)) {
+            possibleCollisions.push_back(object);
         }
-      }
     }
+  }
 
     if (m_nodes[0]) {
       for (const auto &subnode : m_nodes) {
@@ -92,7 +88,7 @@ public:
   }
 
 private:
-  static constexpr int MAX_OBJECTS = 10;
+  static constexpr int MAX_OBJECTS = 20;
   static constexpr int MAX_LEVELS = 5;
 
   int m_level;
@@ -126,6 +122,38 @@ private:
   }
 
   // Determine which quadrant the object belongs to
+  inline int getIndex(const QRectF &objectBounds) const {
+    double verticalMidpoint = m_bounds.x() + (m_bounds.width() / 2);
+    double horizontalMidpoint = m_bounds.y() + (m_bounds.height() / 2);
+
+    // Check if object can completely fit within the top or bottom quadrants
+    bool topQuadrant = objectBounds.bottom() < horizontalMidpoint;
+    bool bottomQuadrant = objectBounds.top() >= horizontalMidpoint;
+
+    // Check if object can completely fit within the left or right quadrants
+    bool leftQuadrant = objectBounds.right() < verticalMidpoint;
+    bool rightQuadrant = objectBounds.left() >= verticalMidpoint;
+
+    // Object can completely fit within one quadrant
+    if (leftQuadrant) {
+      if (topQuadrant) {
+        return 1;
+      } else if (bottomQuadrant) {
+        return 2;
+      }
+    } else if (rightQuadrant) {
+      if (topQuadrant) {
+        return 0;
+      } else if (bottomQuadrant) {
+        return 3;
+      }
+    }
+
+    // Object spans multiple quadrants
+    return -1;
+  }
+
+
   inline int getIndex(float x, float y) const {
     int index = -1;
     double verticalMidpoint = m_bounds.x() + (m_bounds.width() / 2);

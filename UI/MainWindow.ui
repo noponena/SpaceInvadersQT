@@ -45,7 +45,7 @@
        <enum>Qt::ScrollBarAlwaysOff</enum>
       </property>
       <property name="cacheMode">
-       <set>QGraphicsView::CacheNone</set>
+       <set>QGraphicsView::CacheBackground</set>
       </property>
       <property name="optimizationFlags">
        <set>QGraphicsView::DontAdjustForAntialiasing|QGraphicsView::DontSavePainterState|QGraphicsView::IndirectPainting</set>

@@ -6,6 +6,7 @@
 #include "Graphics/Animations/AnimatedItem.h"
 #include "Graphics/Effects/ParticleSystem.h"
 #include "Position.h"
+#include "Game/Core/CustomGraphicsItem.h"
 #include <QGraphicsItem>
 #include <QObject>
 #include <QUrl>
@@ -59,6 +60,7 @@ struct PixmapData {
   QPointF pixmapScale;
   QString pixmapResourcePath;
   QString onHitPixmapResourcePath;
+  bool keepAspectRatio = true;
 };
 
 class GameObject : public QObject {
@@ -168,7 +170,7 @@ private:
   long long unsigned m_id;
   bool m_destructionInitiated;
   Game::Movement::MovementStrategy m_movementStrategy;
-  static long long unsigned counter;
+  static uint64_t counter;
 
   inline void applyMovementStrategy(float deltaTimeInSeconds);
   inline void playSpawnSound();

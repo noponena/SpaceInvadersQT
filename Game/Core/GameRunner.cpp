@@ -26,10 +26,19 @@ GameRunner::~GameRunner() {
 }
 
 void GameRunner::setupView() {
-  setViewport(new QOpenGLWidget);
+  QSurfaceFormat format;
+  //format.setSwapBehavior(QSurfaceFormat::TripleBuffer);
+  format.setSwapInterval(0);
+  format.setRenderableType(QSurfaceFormat::RenderableType::OpenGL);
+  QOpenGLWidget* glWidget = new QOpenGLWidget;
+  glWidget->setFormat(format);
+  QSurfaceFormat::setDefaultFormat(format);
+  setViewport(glWidget);
+
   setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
   setAlignment(Qt::AlignCenter);
   setInteractive(false);
+  setRenderHints(QPainter::SmoothPixmapTransform);
   setOptimizationFlags(QGraphicsView::DontAdjustForAntialiasing |
                        QGraphicsView::DontSavePainterState);
   setViewportMargins(0, 0, 0, 0);
@@ -38,6 +47,7 @@ void GameRunner::setupView() {
   m_scene.setBackgroundBrush(QBrush(Qt::black));
   setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
 }
 
 void GameRunner::setupCounters() {
@@ -116,41 +126,43 @@ void GameRunner::startGame() {
 }
 
 void GameRunner::gameLoop() {
-  int frameTimeMs = m_elapsedTimer.restart();
-  float deltaTimeInSeconds = static_cast<float>(frameTimeMs) / 1000.0f;
-  if (m_continuousEnemySpawn)
-    m_levelManager->update();
+      int frameTimeMs = m_elapsedTimer.restart();
+      float deltaTimeInSeconds = static_cast<float>(frameTimeMs) / 1000.0f;
+      int timeToSleep = frameTimeMs > 5 ? 0 : 5 - frameTimeMs;
+      std::this_thread::sleep_for(std::chrono::milliseconds(timeToSleep));
+      if (m_continuousEnemySpawn)
+          m_levelManager->update();
 
 #ifndef PERFORMANCE_BENCHMARK
-  processInput(deltaTimeInSeconds);
+      processInput(deltaTimeInSeconds);
 #endif
 
-  updateGameState(deltaTimeInSeconds);
-  m_collisionDetector->detectQuadTree();
-  updateFps();
+      updateGameState(deltaTimeInSeconds);
+      m_collisionDetector->detectQuadTree();
+      updateFps();
 
-  int gameObjectCount = m_gameObjects->size();
-  int sceneItemCount = scene()->items().size();
+      int gameObjectCount = m_gameObjects->size();
+      int sceneItemCount = scene()->items().size();
 
-  m_sceneItemCounter->setPlainText("Scene items: " +
-                                   QString::number(sceneItemCount));
-  m_gameObjectCounter->setObjectCount(gameObjectCount);
+      m_sceneItemCounter->setPlainText("Scene items: " +
+                                       QString::number(sceneItemCount));
+      m_gameObjectCounter->setObjectCount(gameObjectCount);
 
-  if (!m_gameOver) {
-    int playerHp = m_playerShip->currentHp();
-    m_stellarTokens->setPlainText(
-        "Stellar tokens: " + QString::number(m_gameState->stellarTokens()));
-    m_playerHp->setPlainText("Player HP: " + QString::number(playerHp));
-  }
+      if (!m_gameOver) {
+          int playerHp = m_playerShip->currentHp();
+          m_stellarTokens->setPlainText(
+              "Stellar tokens: " + QString::number(m_gameState->stellarTokens()));
+          m_playerHp->setPlainText("Player HP: " + QString::number(playerHp));
+      }
 
 #ifdef PERFORMANCE_BENCHMARK
-  Utils::PerformanceBenchmark::getInstance().logPerformance(
-      frameTimeMs, gameObjectCount, sceneItemCount);
+      Utils::PerformanceBenchmark::getInstance().logPerformance(
+          frameTimeMs, gameObjectCount, sceneItemCount);
 #endif
 
-  if (m_gameOver && !m_gameOverInfoDisplayed) {
-    displayGameOverInfo();
-  }
+      if (m_gameOver && !m_gameOverInfoDisplayed) {
+          displayGameOverInfo();
+      }
 }
 
 void GameRunner::initializeBenchmark() {

@@ -14,11 +14,11 @@ void CollisionDetector::detectQuadTree() {
 
   // Insert all game objects into the quadtree.
   for (const auto &object : m_gameObjects) {
-    m_quadtree->insert(object.get());
+      m_quadtree->insert(object.get());
   }
 
   // Check for potential collisions.
-  std::set<std::pair<long long unsigned, long long unsigned>> checkedPairs;
+  std::set<std::pair<uint64_t, uint64_t>> checkedPairs;
 
   for (const auto &object : m_gameObjects) {
     auto potentialCollisions = m_quadtree->query(object.get());
