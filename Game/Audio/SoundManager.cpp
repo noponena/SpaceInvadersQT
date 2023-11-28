@@ -60,8 +60,7 @@ void SoundManager::loadSounds() {
   m_sounds[SoundEffect::LASER] = std::make_pair(laser, 0.02f);
   m_sounds[SoundEffect::LESSER_ENEMY_LASER] =
       std::make_pair(lesserEnemyLaser, 0.025f);
-  m_sounds[SoundEffect::VORTEX_CANNON] =
-      std::make_pair(vortexCannon, 1.0f);
+  m_sounds[SoundEffect::VORTEX_CANNON] = std::make_pair(vortexCannon, 1.0f);
 
   m_sounds[SoundEffect::PLAYER_DESTROYED] =
       std::make_pair(playerDestroyed, 1.0f);

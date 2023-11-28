@@ -28,8 +28,10 @@ public:
   void updateWeaponCooldown(float amount);
   void enableSound();
   void disableSound();
-  void addProjectileProperty(GameObjects::Projectiles::ProjectileProperty property);
-  void removeProjectileProperty(GameObjects::Projectiles::ProjectileProperty property);
+  void
+  addProjectileProperty(GameObjects::Projectiles::ProjectileProperty property);
+  void removeProjectileProperty(
+      GameObjects::Projectiles::ProjectileProperty property);
 
   void setCooldownMs(float newCooldownMs);
 
@@ -44,8 +46,7 @@ private:
   QElapsedTimer m_lastFiredTimer;
   bool m_firstShot;
 
-  std::unique_ptr<GameObjects::Projectiles::Projectile>
-  createProjectile();
+  std::unique_ptr<GameObjects::Projectiles::Projectile> createProjectile();
   bool canShoot();
   void clampCooldownMs();
 

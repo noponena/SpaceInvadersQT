@@ -16,20 +16,24 @@ LevelManager::LevelManager(GameState *gameState, bool performanceTest)
     m_performanceTest = performanceTest;
   }
 
-  GameObjects::PixmapData pixmapData{QPointF(30, 30), ":/Images/enemy_laser_projectile.png", ""};
+  GameObjects::PixmapData pixmapData{QPointF(30, 30),
+                                     ":/Images/enemy_laser_projectile.png", ""};
 
-  std::unique_ptr<GameObjects::Projectiles::Projectile> projectile = m_projectileBuilder
-          .createProjectile(std::make_unique<GameObjects::Projectiles::Projectile>())
+  std::unique_ptr<GameObjects::Projectiles::Projectile> projectile =
+      m_projectileBuilder
+          .createProjectile(
+              std::make_unique<GameObjects::Projectiles::Projectile>())
           .withDamage(1)
-          .withMovementStrategy(Game::Movement::VerticalMovementStrategy(500, 1))
+          .withMovementStrategy(
+              Game::Movement::VerticalMovementStrategy(500, 1))
           .withGrahpics(pixmapData)
-          .withSpawnSound(Audio::SoundInfo({true, Game::Audio::SoundEffect::LESSER_ENEMY_LASER}))
+          .withSpawnSound(Audio::SoundInfo(
+              {true, Game::Audio::SoundEffect::LESSER_ENEMY_LASER}))
           .withObjectType(GameObjects::ObjectType::ENEMY_PROJECTILE)
           .build();
 
-      m_weaponBuilder
-          .createWeapon(std::make_unique<Weapons::PrimaryWeapon>())
-          .withProjectile(std::move(projectile))
+  m_weaponBuilder.createWeapon(std::make_unique<Weapons::PrimaryWeapon>())
+      .withProjectile(std::move(projectile))
       .withWeaponCooldownMs(m_enemyWeaponCooldownMs);
 }
 
@@ -49,7 +53,8 @@ void LevelManager::update() {
     std::unique_ptr<GameObjects::Ships::EnemyShip> enemyShip =
         std::make_unique<GameObjects::Ships::EnemyShip>(m_enemyShipHp, pos);
     if (m_performanceTest)
-        enemyShip->setDestructionParticleCount(m_enemyShipDestructionParticleCount);
+      enemyShip->setDestructionParticleCount(
+          m_enemyShipDestructionParticleCount);
     enemyShip->initialize();
 
     enemyShip->addPrimaryWeapon(m_weaponBuilder.build());

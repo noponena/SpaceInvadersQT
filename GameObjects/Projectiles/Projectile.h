@@ -27,8 +27,8 @@ public:
   int getDamage() const;
   void setDamage(int newDamage);
 
-  void setProperties(
-      const std::unordered_set<ProjectileProperty> &newProperties);
+  void
+  setProperties(const std::unordered_set<ProjectileProperty> &newProperties);
   void addProperty(const ProjectileProperty property);
   void removeProperty(const ProjectileProperty property);
 
@@ -37,12 +37,12 @@ protected:
   std::unordered_set<ProjectileProperty> m_properties;
 
   // GameObject interface
-  protected:
+protected:
   void initializeObjectType() override;
 
-      // GameObject interface
-  protected:
-  void initializeSounds() override {};
+  // GameObject interface
+protected:
+  void initializeSounds() override{};
 };
 } // namespace Projectiles
 } // namespace GameObjects

@@ -1,8 +1,10 @@
 HEADERS += \
     $$PWD/CustomGraphicsItem.h \
-    $$PWD/GameRunner.h \
+    $$PWD/GameRunnerScene.h \
     $$PWD/GameState.h \
+    $$PWD/HUDScene.h
 
 SOURCES += \
-    $$PWD/GameRunner.cpp \
+    $$PWD/GameRunnerScene.cpp \
     $$PWD/GameState.cpp \
+    $$PWD/HUDScene.cpp

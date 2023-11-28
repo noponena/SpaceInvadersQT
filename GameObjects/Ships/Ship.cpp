@@ -1,6 +1,6 @@
 #include "Ship.h"
-#include "Weapons/Weapon.h"
 #include "Graphics/PixmapLibrary.h"
+#include "Weapons/Weapon.h"
 #include <QGraphicsColorizeEffect>
 #include <QGraphicsScene>
 #include <QTimer>
@@ -11,20 +11,21 @@ namespace Ships {
 
 Ship::Ship(const int maxHp, const float speed, const Position &position)
     : AttractableGameObject(position), m_immortal(false), m_currentHp(maxHp),
-    m_maxHp(maxHp), m_pixelWidth(50), m_pixelHeight(50), m_destructionParticleCount(200), m_activeSecondaryWeaponIndex(0), m_speed(speed) {}
+      m_maxHp(maxHp), m_pixelWidth(50), m_pixelHeight(50),
+      m_destructionParticleCount(200), m_activeSecondaryWeaponIndex(0),
+      m_speed(speed) {}
 
 Ship::~Ship() {}
 
 void Ship::firePrimaryWeapons() {
   for (const auto &primaryWeapon : m_primaryWeapons) {
-        primaryWeapon->fire();
+    primaryWeapon->fire();
   }
 }
 
-void Ship::fireActiveSecondaryWeapon()
-{
+void Ship::fireActiveSecondaryWeapon() {
   if (!m_secondaryWeapons.empty())
-        m_secondaryWeapons[m_activeSecondaryWeaponIndex]->fire();
+    m_secondaryWeapons[m_activeSecondaryWeaponIndex]->fire();
 }
 
 void Ship::takeDamage(int amount) {
@@ -41,15 +42,9 @@ void Ship::heal(int amount) {
   }
 }
 
-void Ship::kill()
-{
-  m_currentHp = 0;
-}
+void Ship::kill() { m_currentHp = 0; }
 
-void Ship::restoreHealth()
-{
-  m_currentHp = m_maxHp;
-}
+void Ship::restoreHealth() { m_currentHp = m_maxHp; }
 
 bool Ship::isDead() { return m_currentHp <= 0; }
 
@@ -66,8 +61,7 @@ void Ship::addPrimaryWeapon(std::unique_ptr<Weapons::Weapon> newWeapon) {
   m_primaryWeapons.push_back(std::move(newWeapon));
 }
 
-void Ship::addSecondaryWeapon(std::unique_ptr<Weapons::Weapon> newWeapon)
-{
+void Ship::addSecondaryWeapon(std::unique_ptr<Weapons::Weapon> newWeapon) {
   newWeapon->setOwner(this);
   connect(newWeapon.get(), &Weapons::Weapon::projectileFired, this,
           &Ship::onProjectileFired);
@@ -85,7 +79,8 @@ void Ship::initializeDestructionAnimation() {
   int targetWidth = 200;
   int targetHeight = 200;
 
-  QPixmap pixmap = Graphics::PixmapLibrary::getPixmap(":/Images/explosion.png", targetWidth, targetHeight);
+  QPixmap pixmap = Graphics::PixmapLibrary::getPixmap(
+      ":/Images/explosion.png", targetWidth, targetHeight);
 
   std::vector<QPoint> frameOffsets;
   // Calculate and store offsets for each frame
@@ -115,8 +110,7 @@ void Ship::setImmortal(bool newImmortal) { m_immortal = newImmortal; }
 
 void Ship::setAutoShoot(bool newAutoShoot) { m_autoShoot = newAutoShoot; }
 
-void Ship::setDestructionParticleCount(int newDestructionParticleCount)
-{
+void Ship::setDestructionParticleCount(int newDestructionParticleCount) {
   m_destructionParticleCount = newDestructionParticleCount;
 }
 
@@ -149,10 +143,7 @@ void Ship::timerEvent(QTimerEvent *event) {
   }
 }
 
-void Ship::initializeObjectType()
-{
-  m_objectTypes.insert(ObjectType::SHIP);
-}
+void Ship::initializeObjectType() { m_objectTypes.insert(ObjectType::SHIP); }
 
 void Ship::update(const UpdateContext &context) {
   AttractableGameObject::update(context);

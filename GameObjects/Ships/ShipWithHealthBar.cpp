@@ -25,14 +25,12 @@ void ShipWithHealthBar::heal(int amount) {
   m_healthBar->updateHealth(amount);
 }
 
-void ShipWithHealthBar::kill()
-{
+void ShipWithHealthBar::kill() {
   Ship::kill();
   m_healthBar->updateHealth(-9999999);
 }
 
-void ShipWithHealthBar::restoreHealth()
-{
+void ShipWithHealthBar::restoreHealth() {
   Ship::restoreHealth();
   m_healthBar->updateHealth(9999999);
 }

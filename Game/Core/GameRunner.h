@@ -11,8 +11,8 @@
 #include <QGraphicsView>
 #include <QKeyEvent>
 #include <QLabel>
-#include <QWheelEvent>
 #include <QThread>
+#include <QWheelEvent>
 #include <algorithm>
 
 #define PERFORMANCE_BENCHMARK
@@ -20,11 +20,11 @@
 namespace Game {
 namespace Core {
 
-class GameRunner : public QGraphicsView {
+class GameRunnerScene : public QGraphicsView {
   Q_OBJECT
 public:
-  explicit GameRunner(QWidget *parent = nullptr);
-  ~GameRunner();
+  explicit GameRunnerScene(QWidget *parent = nullptr);
+  ~GameRunnerScene();
   void startGame();
 
 protected:
@@ -85,12 +85,12 @@ private:
       {Qt::Key_Space,
        [&](float dt) {
          Q_UNUSED(dt);
-           m_playerShip->firePrimaryWeapons();
+         m_playerShip->firePrimaryWeapons();
        }},
       {Qt::Key_Shift,
        [&](float dt) {
-           Q_UNUSED(dt);
-           m_playerShip->fireActiveSecondaryWeapon();
+         Q_UNUSED(dt);
+         m_playerShip->fireActiveSecondaryWeapon();
        }},
       {Qt::Key_P,
        [&](float dt) {

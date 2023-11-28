@@ -12,14 +12,13 @@
 namespace GameObjects {
 namespace Ships {
 EnemyShip::EnemyShip(const int maxHp, const Position &position)
-    : ShipWithHealthBar(maxHp, 0, position)
-{
+    : ShipWithHealthBar(maxHp, 0, position) {
   m_stellarCoinSpawnRange = QPoint(2, 5);
   m_healthSpawnProbability = 0.10;
   m_pixmapData.pixmapResourcePath = ":/Images/alien.png";
   m_pixmapData.onHitPixmapResourcePath = ":/Images/alien_on_hit.png";
   m_pixmapData.pixmapScale = QPointF(50.0, 50.0);
-  m_magneticTargets = { ObjectType::PROJECTILE };
+  m_magneticTargets = {ObjectType::PROJECTILE};
 }
 
 void EnemyShip::initializeObjectType() {
@@ -65,25 +64,21 @@ void EnemyShip::spawnHealth() {
   }
 }
 
-void EnemyShip::setHealthSpawnProbability(float newHealthSpawnProbability)
-{
+void EnemyShip::setHealthSpawnProbability(float newHealthSpawnProbability) {
   m_healthSpawnProbability = newHealthSpawnProbability;
   clampHealthSpawnProbability();
 }
 
-void EnemyShip::updateHealthSpawnProbability(float multiplier)
-{
+void EnemyShip::updateHealthSpawnProbability(float multiplier) {
   m_healthSpawnProbability *= multiplier;
   clampHealthSpawnProbability();
 }
 
-void EnemyShip::setStellarCoinSpawnRange(QPoint newStellarCoinSpawnRange)
-{
+void EnemyShip::setStellarCoinSpawnRange(QPoint newStellarCoinSpawnRange) {
   m_stellarCoinSpawnRange = newStellarCoinSpawnRange;
 }
 
-void EnemyShip::clampHealthSpawnProbability()
-{
+void EnemyShip::clampHealthSpawnProbability() {
   if (m_healthSpawnProbability < 0)
     m_healthSpawnProbability = 0;
   else if (m_healthSpawnProbability > 1)

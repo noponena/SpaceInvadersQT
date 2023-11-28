@@ -7,8 +7,7 @@ namespace GameObjects {
 namespace Ships {
 PlayerShip::PlayerShip(const int maxHp, const float speed,
                        const Position &position)
-    : ShipWithHealthBar(maxHp, speed, position)
-{
+    : ShipWithHealthBar(maxHp, speed, position) {
   m_magnetism = {true, true, 100.0f, 100.0f};
   m_pixmapData.pixmapResourcePath = ":/Images/player_ship.png";
   m_pixmapData.pixmapScale = QPointF(50.0, 50.0);

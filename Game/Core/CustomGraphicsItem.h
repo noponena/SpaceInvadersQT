@@ -5,34 +5,34 @@
 #include <QPainter>
 
 class CustomGraphicsItem : public QGraphicsPixmapItem {
-    // ... other members and methods ...
+  // ... other members and methods ...
 
 public:
-    CustomGraphicsItem(const QPixmap &pixmap) : QGraphicsPixmapItem(pixmap) {}
+  CustomGraphicsItem(const QPixmap &pixmap) : QGraphicsPixmapItem(pixmap) {}
 
-    // QGraphicsItem interface
+  // QGraphicsItem interface
 public:
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override {
-        // Call the base class paint method to draw the item itself
-        QGraphicsPixmapItem::paint(painter, option, widget);
+  void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
+             QWidget *widget) override {
+    // Call the base class paint method to draw the item itself
+    QGraphicsPixmapItem::paint(painter, option, widget);
 
-        // Save the painter's state
-        painter->save();
+    // Save the painter's state
+    painter->save();
 
-        // Set the pen for drawing the bounding box outline
-        QPen pen(Qt::red, 1, Qt::DashLine);
-        painter->setPen(pen);
+    // Set the pen for drawing the bounding box outline
+    QPen pen(Qt::red, 1, Qt::DashLine);
+    painter->setPen(pen);
 
-        // Set the brush to NoBrush to make the rectangle non-solid
-        painter->setBrush(Qt::NoBrush);
+    // Set the brush to NoBrush to make the rectangle non-solid
+    painter->setBrush(Qt::NoBrush);
 
-        // Draw the bounding box outline
-        painter->drawRect(boundingRect());
+    // Draw the bounding box outline
+    painter->drawRect(boundingRect());
 
-        // Restore the painter's state
-        painter->restore();
-    }
+    // Restore the painter's state
+    painter->restore();
+  }
 };
-
 
 #endif // CUSTOMGRAPHICSITEM_H

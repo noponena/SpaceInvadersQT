@@ -10,7 +10,8 @@ namespace Graphics {
 
 class PixmapLibrary {
 public:
-  static QPixmap &getPixmap(const QString &path, float width, float height, bool keepAspectRatio = true) {
+  static QPixmap &getPixmap(const QString &path, float width, float height,
+                            bool keepAspectRatio = true) {
     static QMap<QString, QPixmap> pixmaps;
     QString key = generateKey(path, width, height);
 
@@ -25,10 +26,11 @@ public:
 
 private:
   inline static QPixmap setPixmapSize(QPixmap &pixmap, float width,
-                                      float height, bool keepAspectRatio = true) {
-    Qt::AspectRatioMode mode = keepAspectRatio ? Qt::KeepAspectRatio : Qt::IgnoreAspectRatio;
-    pixmap = pixmap.scaled(width, height, mode,
-                           Qt::SmoothTransformation);
+                                      float height,
+                                      bool keepAspectRatio = true) {
+    Qt::AspectRatioMode mode =
+        keepAspectRatio ? Qt::KeepAspectRatio : Qt::IgnoreAspectRatio;
+    pixmap = pixmap.scaled(width, height, mode, Qt::SmoothTransformation);
     return pixmap;
   }
   inline static QString generateKey(const QString &path, float scaleX,

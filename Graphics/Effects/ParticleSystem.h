@@ -31,7 +31,8 @@ private:
   QColor getRandomColor();
 
   void runUpdateLoop();
-  public:
+
+public:
   QRectF boundingRect() const override { return QRectF(); };
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
              QWidget *widget) override;
@@ -39,7 +40,7 @@ private:
   // Effect interface
 public:
   void setPosition(QPointF newPosition) override;
-    bool effectFinished() const;
+  bool effectFinished() const;
 };
 
 } // namespace Effects

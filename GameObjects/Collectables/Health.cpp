@@ -3,10 +3,9 @@
 namespace GameObjects {
 namespace Collectables {
 
-Health::Health(const Position &position) : Collectable(position)
-{
-    m_pixmapData.pixmapResourcePath = ":/Images/health.png";
-    m_pixmapData.pixmapScale = QPointF(22.0, 22.0);
+Health::Health(const Position &position) : Collectable(position) {
+  m_pixmapData.pixmapResourcePath = ":/Images/health.png";
+  m_pixmapData.pixmapScale = QPointF(22.0, 22.0);
 }
 
 void Health::initializeSounds() {

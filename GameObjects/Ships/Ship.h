@@ -38,9 +38,10 @@ public:
 
   void setDestructionParticleCount(int newDestructionParticleCount);
 
-  protected:
+protected:
   bool m_immortal;
-  int m_currentHp, m_maxHp, m_fireRate, m_fireCooldownMs, m_pixelWidth, m_pixelHeight, m_destructionParticleCount, m_activeSecondaryWeaponIndex;
+  int m_currentHp, m_maxHp, m_fireRate, m_fireCooldownMs, m_pixelWidth,
+      m_pixelHeight, m_destructionParticleCount, m_activeSecondaryWeaponIndex;
   float m_speed;
   int m_onHitTimerId = -1;
   std::vector<std::unique_ptr<Weapons::Weapon>> m_primaryWeapons;
@@ -62,9 +63,9 @@ private:
 signals:
   void bottomEdgeReached();
 
-    // GameObject interface
+  // GameObject interface
 protected:
-    void initializeObjectType() override;
+  void initializeObjectType() override;
 };
 } // namespace Ships
 

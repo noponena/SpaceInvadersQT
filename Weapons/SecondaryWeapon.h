@@ -7,9 +7,9 @@ namespace Weapons {
 
 class SecondaryWeapon : public Weapon {
 
-    // Weapon interface
+  // Weapon interface
 public:
-    std::unique_ptr<Weapon> clone() const override;
+  std::unique_ptr<Weapon> clone() const override;
 };
 
 } // namespace Weapons

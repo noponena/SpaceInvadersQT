@@ -2,11 +2,11 @@
 #define GAMEOBJECT_H
 
 #include "Game/Audio/SoundInfo.h"
+#include "Game/Core/CustomGraphicsItem.h"
 #include "Game/Movement/MovementStrategy.h"
 #include "Graphics/Animations/AnimatedItem.h"
 #include "Graphics/Effects/ParticleSystem.h"
 #include "Position.h"
-#include "Game/Core/CustomGraphicsItem.h"
 #include <QGraphicsItem>
 #include <QObject>
 #include <QUrl>
@@ -44,16 +44,18 @@ class Collectable;
 }
 
 struct Magnetism {
-    bool isMagnetic = false;
-    bool enabled = false;
-    float magneticRadius = 0.0f;
-    float magneticStrength = 0.0f;
+  bool isMagnetic = false;
+  bool enabled = false;
+  float magneticRadius = 0.0f;
+  float magneticStrength = 0.0f;
 };
 
 struct UpdateContext {
   float deltaTimeInSeconds;
   const Ships::PlayerShip *playerShip;
-  const std::unordered_map<unsigned long long int, std::shared_ptr<GameObjects::GameObject>> &magneticGameObjects;
+  const std::unordered_map<unsigned long long int,
+                           std::shared_ptr<GameObjects::GameObject>>
+      &magneticGameObjects;
 };
 
 struct PixmapData {
@@ -126,9 +128,10 @@ public:
 
   void setPixmapData(const PixmapData &newPixmapData);
   void setSpawnSoundInfo(const Game::Audio::SoundInfo &newSpawnSoundInfo);
-  void setDestructionSoundInfo(const Game::Audio::SoundInfo &newDestructionSoundInfo);
+  void setDestructionSoundInfo(
+      const Game::Audio::SoundInfo &newDestructionSoundInfo);
 
-  protected:
+protected:
   // Member Variables
   std::unordered_set<ObjectType> m_objectTypes;
   Position m_position;

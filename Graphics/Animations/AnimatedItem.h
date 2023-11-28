@@ -52,10 +52,9 @@ public:
 
   QRectF boundingRect() const override { return m_sourceRect; }
 
-  bool animationFinished() const
-  {
+  bool animationFinished() const {
     if (m_spritesheet.isNull())
-        return true;
+      return true;
     return m_animationFinished;
   }
 

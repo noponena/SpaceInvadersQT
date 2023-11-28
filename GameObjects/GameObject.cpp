@@ -10,12 +10,10 @@ uint64_t GameObject::counter = 0;
 
 GameObject::GameObject(const Position &position)
     : m_position(position), m_hasCollided(false), m_collidable(true),
-    m_soundEnabled(true), m_magnetism({false, 0, 0}),
-    m_id(counter++),
-    m_destructionInitiated(false)
-{
-    m_objectTypes = {ObjectType::BASE};
-    m_pixmapData = PixmapData{QPointF(30, 30), ":/Images/placeholder.png", ""};
+      m_soundEnabled(true), m_magnetism({false, 0, 0}), m_id(counter++),
+      m_destructionInitiated(false) {
+  m_objectTypes = {ObjectType::BASE};
+  m_pixmapData = PixmapData{QPointF(30, 30), ":/Images/placeholder.png", ""};
 }
 
 void GameObject::initialize() {
@@ -118,25 +116,25 @@ QPixmap GameObject::getOnHitPixmap() const {
   if (path.isEmpty())
     return getPixmap();
   return Graphics::PixmapLibrary::getPixmap(path, m_pixmapData.pixmapScale.x(),
-                                            m_pixmapData.pixmapScale.y(), m_pixmapData.keepAspectRatio);
+                                            m_pixmapData.pixmapScale.y(),
+                                            m_pixmapData.keepAspectRatio);
 }
 
 Game::Movement::MovementStrategy GameObject::movementStrategy() const {
   return m_movementStrategy;
 }
 
-void GameObject::setPixmapData(const PixmapData &newPixmapData)
-{
+void GameObject::setPixmapData(const PixmapData &newPixmapData) {
   m_pixmapData = newPixmapData;
 }
 
-void GameObject::setSpawnSoundInfo(const Game::Audio::SoundInfo &newSpawnSoundInfo)
-{
+void GameObject::setSpawnSoundInfo(
+    const Game::Audio::SoundInfo &newSpawnSoundInfo) {
   m_spawnSoundInfo = newSpawnSoundInfo;
 }
 
-void GameObject::setDestructionSoundInfo(const Game::Audio::SoundInfo &newDestructionSoundInfo)
-{
+void GameObject::setDestructionSoundInfo(
+    const Game::Audio::SoundInfo &newDestructionSoundInfo) {
   m_destructionSoundInfo = newDestructionSoundInfo;
 }
 
@@ -152,10 +150,7 @@ void GameObject::addMovementStrategy(
 
 long long unsigned GameObject::id() { return m_id; }
 
-const Magnetism &GameObject::magnetism() const
-{
-  return m_magnetism;
-}
+const Magnetism &GameObject::magnetism() const { return m_magnetism; }
 
 void GameObject::clampToXBounds() {
   if (m_position.isBeyondScreenRightLimit())
@@ -192,7 +187,8 @@ bool GameObject::isCollidingWith(const GameObject &other) const {
     return false;
   }
 
-  return getGraphicsItem()->collidesWithItem(other.getGraphicsItem());;
+  return getGraphicsItem()->collidesWithItem(other.getGraphicsItem());
+  ;
 }
 
 Position GameObject::getPosition() const { return m_position; }
@@ -216,11 +212,12 @@ void GameObject::setSoundEnabled(const bool newSoundEnabled) {
   m_spawnSoundInfo.enabled = newSoundEnabled;
 }
 
-void GameObject::addObjectType(const ObjectType objectType)
-{
+void GameObject::addObjectType(const ObjectType objectType) {
   m_objectTypes.insert(objectType);
 }
 
-std::unordered_set<ObjectType> GameObject::objectTypes() const { return m_objectTypes; }
+std::unordered_set<ObjectType> GameObject::objectTypes() const {
+  return m_objectTypes;
+}
 
 } // namespace GameObjects

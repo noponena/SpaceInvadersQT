@@ -1,8 +1,7 @@
 #include "ParticleSystem.h"
 #include <QTimer>
-#include <thread>
 #include <chrono>
-
+#include <thread>
 
 namespace Graphics {
 namespace Effects {
@@ -15,11 +14,12 @@ QColor ParticleSystem::getRandomColor() {
   return QColor(r, g, b);
 }
 
-ParticleSystem::ParticleSystem() : m_effectFinished(false),
-    m_particlesUpdated(false), m_particlesDrawn(true), m_updateThreadStarted(false)
-{
+ParticleSystem::ParticleSystem()
+    : m_effectFinished(false), m_particlesUpdated(false),
+      m_particlesDrawn(true), m_updateThreadStarted(false) {
   moveToThread(&m_updateThread);
-  connect(&m_updateThread, &QThread::started, this, &ParticleSystem::runUpdateLoop);
+  connect(&m_updateThread, &QThread::started, this,
+          &ParticleSystem::runUpdateLoop);
 }
 
 void ParticleSystem::update(float deltaTimeInSeconds) {
@@ -46,7 +46,8 @@ void ParticleSystem::runUpdateLoop() {
       m_elapsedTimer.start();
       deltaTimeInSeconds = 0;
     } else {
-      deltaTimeInSeconds = static_cast<float>(m_elapsedTimer.restart()) / 1000.0f;
+      deltaTimeInSeconds =
+          static_cast<float>(m_elapsedTimer.restart()) / 1000.0f;
     }
 
     // Update particles if they have been drawn
@@ -69,8 +70,7 @@ void ParticleSystem::spawnParticles(int count, QColor color,
   }
 }
 
-bool ParticleSystem::effectFinished() const
-{
+bool ParticleSystem::effectFinished() const {
   if (m_particles.empty())
     return true;
   return m_effectFinished;

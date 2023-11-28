@@ -18,7 +18,6 @@ public:
   void setHealthSpawnProbability(float newHealthSpawnProbability);
   void updateHealthSpawnProbability(float multiplier);
 
-
 protected:
   void executeDestructionProcedure() override;
   void spawnStellarCoins();
@@ -31,6 +30,7 @@ protected:
 
   void initializeObjectType() override;
   void initializeSounds() override;
+
 private:
   void clampHealthSpawnProbability();
 };

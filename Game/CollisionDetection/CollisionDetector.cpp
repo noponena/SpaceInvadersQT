@@ -17,7 +17,7 @@ void CollisionDetector::detectQuadTree() {
 
   // Insert all game objects into the quadtree.
   for (const auto &object : m_gameObjects) {
-      m_quadtree->insert(object.get());
+    m_quadtree->insert(object.get());
   }
 
   // Check for potential collisions.
@@ -56,22 +56,17 @@ void CollisionDetector::detectBVH() {
 
   for (auto const &object : m_gameObjects) {
     m_bvhTree.clearProcessedPairs();
-    std::vector<GameObjects::GameObject*> collisionObjects = m_bvhTree.query(node, object.get());
+    std::vector<GameObjects::GameObject *> collisionObjects =
+        m_bvhTree.query(node, object.get());
     for (auto const &collisionObject : collisionObjects) {
       object->collide(*collisionObject);
     }
   }
 }
 
-void CollisionDetector::detect() {
-  for (auto it1 = m_gameObjects.begin(); it1 != m_gameObjects.end(); ++it1) {
-    for (auto it2 = std::next(it1); it2 != m_gameObjects.end(); ++it2) {
-      if ((*it1)->isCollidingWith(**it2)) {
-        (*it1)->collide(**it2);
-      }
-    }
-  }
+void CollisionDetector::detectBruteForce() {
+  m_bruteForce.detect(m_gameObjects);
 }
 
-}
-}
+} // namespace CollisionDetection
+} // namespace Game

@@ -1,15 +1,16 @@
 #include "MainWindow.h"
-#include "Game/Core/GameRunner.h"
+#include "Game/Core/GameRunnerScene.h"
 #include "ui_MainWindow.h"
 #include <QTimer>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
   ui->setupUi(this);
-  QTimer::singleShot(0, ui->gameRunner, &Game::Core::GameRunner::startGame);
+  QTimer::singleShot(0, ui->gameRunnerScene,
+                     &Game::Core::GameRunnerScene::startGame);
   QTimer::singleShot(0, this, SLOT(bringToForeground()));
   // QTimer::singleShot(0, this, SLOT(adjustGameRunnerSize()));
-  connect(ui->gameRunner, &Game::Core::GameRunner::windowClosed, this,
+  connect(ui->gameRunnerScene, &Game::Core::GameRunnerScene::windowClosed, this,
           &MainWindow::onWindowClosed);
 
   setStyleSheet("background-color: black;");
@@ -28,21 +29,21 @@ void MainWindow::resizeEvent(QResizeEvent *event) {
 }
 
 void MainWindow::adjustGameRunnerSize() {
-  if (ui->gameRunner) {
+  if (ui->gameRunnerScene) {
     // Adjust the scene rect to the new size
     QRectF newRect(0, 0, width(), height());
-    ui->gameRunner->scene()->setSceneRect(newRect);
-    ui->gameRunner->setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
-    ui->gameRunner->showFullScreen();
+    ui->gameRunnerScene->scene()->setSceneRect(newRect);
+    ui->gameRunnerScene->setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
+    ui->gameRunnerScene->showFullScreen();
 
     // No need to set styles or window flags here
   }
 }
 
 void MainWindow::bringToForeground() {
-  ui->gameRunner->activateWindow();
-  ui->gameRunner->raise();
-  ui->gameRunner->setFocus();
+  ui->gameRunnerScene->activateWindow();
+  ui->gameRunnerScene->raise();
+  ui->gameRunnerScene->setFocus();
 }
 
 void MainWindow::onWindowClosed() { QCoreApplication::quit(); }

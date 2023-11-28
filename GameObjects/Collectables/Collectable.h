@@ -13,7 +13,7 @@ enum class MovementState { Initial, Magnetic, Stopped };
 
 class Collectable : public AttractableGameObject {
 public:
-   Collectable(const Position &position);
+  Collectable(const Position &position);
   ~Collectable(){};
 
   bool m_collected = false;
@@ -34,8 +34,7 @@ private:
 private:
   inline void updateLifetime(float deltaTimeInSeconds);
   inline void handleBlinking(float deltaTimeInSeconds);
-  inline bool shouldBlinkVisible(float remainingLifePercent,
-                                 float accumulator);
+  inline bool shouldBlinkVisible(float remainingLifePercent, float accumulator);
 
   inline void handleInitialMovement(float deltaTimeInSeconds);
   inline void initiateMovement();

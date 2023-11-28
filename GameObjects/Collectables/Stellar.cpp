@@ -3,10 +3,9 @@
 
 namespace GameObjects {
 namespace Collectables {
-Stellar::Stellar(const Position &position) : Collectable(position)
-{
-    m_pixmapData.pixmapResourcePath = ":/Images/coin.png";
-    m_pixmapData.pixmapScale = QPointF(5.0, 5.0);
+Stellar::Stellar(const Position &position) : Collectable(position) {
+  m_pixmapData.pixmapResourcePath = ":/Images/coin.png";
+  m_pixmapData.pixmapScale = QPointF(5.0, 5.0);
 }
 
 void Stellar::initializeSounds() {

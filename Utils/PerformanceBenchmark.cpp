@@ -6,9 +6,10 @@
 #include <chrono>
 #include <deque>
 #include <iomanip>
+#include <minwindef.h>
+#include <psapi.h>
 #include <sstream>
 #include <windows.h>
-#include <psapi.h>
 
 namespace Utils {
 
@@ -58,18 +59,21 @@ void PerformanceBenchmark::initializeBenchmark(
 
   std::unique_ptr<GameObjects::Projectiles::Projectile> primaryProjectile =
       projectileBuilder
-          .createProjectile(std::make_unique<GameObjects::Projectiles::Projectile>())
+          .createProjectile(
+              std::make_unique<GameObjects::Projectiles::Projectile>())
           .withDamage(1)
           .withObjectType(GameObjects::ObjectType::PLAYER_PROJECTILE)
-          .withGrahpics(GameObjects::PixmapData{QPointF(30, 30), ":/Images/player_laser_projectile.png", ""})
-          .withSpawnSound(Game::Audio::SoundInfo({true, Game::Audio::SoundEffect::LASER}))
-          .withMovementStrategy(Game::Movement::VerticalMovementStrategy(1000, -1))
+          .withGrahpics(GameObjects::PixmapData{
+              QPointF(30, 30), ":/Images/player_laser_projectile.png", ""})
+          .withSpawnSound(
+              Game::Audio::SoundInfo({true, Game::Audio::SoundEffect::LASER}))
+          .withMovementStrategy(
+              Game::Movement::VerticalMovementStrategy(1000, -1))
           .build();
 
   // Create the primary weapon using WeaponBuilder
   std::unique_ptr<Weapons::Weapon> weapon =
-      weaponBuilder
-          .createWeapon(std::make_unique<Weapons::PrimaryWeapon>())
+      weaponBuilder.createWeapon(std::make_unique<Weapons::PrimaryWeapon>())
           .withProjectile(std::move(primaryProjectile))
           .withWeaponCooldownMs(0)
           .build();
@@ -79,7 +83,8 @@ void PerformanceBenchmark::initializeBenchmark(
       weaponBuilder.clone()
           .withProjectile(
               projectileBuilder
-                  .withMovementStrategy(Game::Movement::AngledMovementStrategy(1000, -1, 80))
+                  .withMovementStrategy(
+                      Game::Movement::AngledMovementStrategy(1000, -1, 80))
                   .build())
           .build();
 
@@ -88,7 +93,8 @@ void PerformanceBenchmark::initializeBenchmark(
       weaponBuilder.clone()
           .withProjectile(
               projectileBuilder
-                  .withMovementStrategy(Game::Movement::AngledMovementStrategy(1000, 1, -80))
+                  .withMovementStrategy(
+                      Game::Movement::AngledMovementStrategy(1000, 1, -80))
                   .build())
           .build();
 
@@ -97,7 +103,8 @@ void PerformanceBenchmark::initializeBenchmark(
       weaponBuilder.clone()
           .withProjectile(
               projectileBuilder
-                  .withMovementStrategy(Game::Movement::AngledMovementStrategy(1000, 1, -85))
+                  .withMovementStrategy(
+                      Game::Movement::AngledMovementStrategy(1000, 1, -85))
                   .build())
           .build();
 
@@ -106,7 +113,8 @@ void PerformanceBenchmark::initializeBenchmark(
       weaponBuilder.clone()
           .withProjectile(
               projectileBuilder
-                  .withMovementStrategy(Game::Movement::AngledMovementStrategy(1000, -1, 85))
+                  .withMovementStrategy(
+                      Game::Movement::AngledMovementStrategy(1000, -1, 85))
                   .build())
           .build();
 
@@ -140,10 +148,10 @@ float PerformanceBenchmark::calculateBenchmarkScore() {
   return m_gain / (totalFrameTime / m_stats.size());
 }
 
-float PerformanceBenchmark::getMemUsage()
-{
+float PerformanceBenchmark::getMemUsage() {
   PROCESS_MEMORY_COUNTERS_EX pmc;
-  GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc));
+  GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS *)&pmc,
+                       sizeof(pmc));
   SIZE_T privateMemUsedByMe = pmc.PrivateUsage;
   return static_cast<float>(privateMemUsedByMe) / (1024 * 1024);
 }
@@ -167,7 +175,8 @@ bool PerformanceBenchmark::isTimeToLog(int frameTimeMs) {
 }
 
 void PerformanceBenchmark::writeHeader() {
-  m_outFile << "timestamp" << m_csvDelimiter << "score" << m_csvDelimiter << "mem_usage\n";
+  m_outFile << "timestamp" << m_csvDelimiter << "score" << m_csvDelimiter
+            << "mem_usage\n";
 }
 
 void PerformanceBenchmark::logPerformance(int frameTimeMs, int gameObjectCount,
@@ -217,7 +226,8 @@ void PerformanceBenchmark::logPerformanceScore() {
   std::ofstream file(m_filePath, std::ios::app);
   if (file.is_open()) {
     // Write the timestamp and the score to the file
-    file << ss.str() << m_csvDelimiter << score << m_csvDelimiter << memUsage << std::endl;
+    file << ss.str() << m_csvDelimiter << score << m_csvDelimiter << memUsage
+         << std::endl;
   }
 }
 

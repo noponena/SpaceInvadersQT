@@ -6,18 +6,17 @@
 namespace GameObjects {
 namespace Projectiles {
 
-class WaveOfDestruction : public Projectile
-{
+class WaveOfDestruction : public Projectile {
 public:
-    WaveOfDestruction();
+  WaveOfDestruction();
 
-    // GameObject interface
+  // GameObject interface
 public:
-    bool shouldBeDeleted() override;
+  bool shouldBeDeleted() override;
 
-    // Projectile interface
+  // Projectile interface
 public:
-    std::unique_ptr<Projectile> clone() const override;
+  std::unique_ptr<Projectile> clone() const override;
 };
 
 } // namespace Projectiles

@@ -3,10 +3,7 @@
 namespace Game {
 namespace Levels {
 
-Level::Level()
-{
-
-}
+Level::Level() {}
 
 } // namespace Levels
 } // namespace Game
