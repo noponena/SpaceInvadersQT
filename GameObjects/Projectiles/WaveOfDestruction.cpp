@@ -3,7 +3,13 @@
 namespace GameObjects {
 namespace Projectiles {
 
-WaveOfDestruction::WaveOfDestruction() {}
+WaveOfDestruction::WaveOfDestruction() {
+  m_spawnSoundInfo.enabled = false;
+  m_pixmapData.pixmapResourcePath = ":/Images/wave.png";
+  m_pixmapData.hudPixmapResourcePath = ":/Images/wave_of_destruction_hud.png";
+  m_pixmapData.pixmapScale = QPointF(250, 20);
+  m_pixmapData.keepAspectRatio = false;
+}
 
 bool WaveOfDestruction::shouldBeDeleted() {
   return m_position.isBeyondScreenBottomLimit(50) ||

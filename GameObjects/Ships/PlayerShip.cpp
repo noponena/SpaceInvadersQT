@@ -5,12 +5,17 @@
 
 namespace GameObjects {
 namespace Ships {
-PlayerShip::PlayerShip(const int maxHp, const float speed,
-                       const Position &position)
-    : ShipWithHealthBar(maxHp, speed, position) {
+PlayerShip::PlayerShip(const float speed, const Position &position)
+    : Ship(0, speed, position) {
   m_magnetism = {true, true, 100.0f, 100.0f};
   m_pixmapData.pixmapResourcePath = ":/Images/player_ship.png";
   m_pixmapData.pixmapScale = QPointF(50.0, 50.0);
+}
+
+void PlayerShip::update(const UpdateContext &context) {
+  Ship::update(context);
+  regenerateEnergy();
+  emit playerEnergyUpdated(m_currentEnergy);
 }
 
 void PlayerShip::initializeObjectType() {
@@ -87,6 +92,36 @@ void PlayerShip::decelerateY(float deltaTimeInSeconds) {
   }
 }
 
+float PlayerShip::maxEnergy() const { return m_maxEnergy; }
+
+void PlayerShip::setMaxEnergy(float newMaxEnergy) {
+  m_maxEnergy = newMaxEnergy;
+  emit playerMaxEnergySet(m_maxEnergy);
+}
+
+float PlayerShip::maxHealth() const { return m_maxHealth; }
+
+void PlayerShip::setMaxHealth(float newMaxHealth) {
+  m_maxHealth = newMaxHealth;
+  emit playerMaxHealthSet(newMaxHealth);
+}
+
+void PlayerShip::setSecondaryWeapon(std::unique_ptr<Weapons::Weapon> newWeapon,
+                                    unsigned weaponIndex) {
+  Ship::setSecondaryWeapon(std::move(newWeapon), weaponIndex);
+  emit playerSecondaryWeaponsChanged(m_secondaryWeapons);
+}
+
+bool PlayerShip::fireSecondaryWeapon(unsigned int weaponIndex) {
+  bool success = Ship::fireSecondaryWeapon(weaponIndex);
+  if (success) {
+    unsigned cooldownMs = m_secondaryWeapons[weaponIndex]->cooldownMs();
+    emit playerSecondaryWeaponFired(weaponIndex, cooldownMs);
+    emit playerEnergyUpdated(m_currentEnergy);
+  }
+  return success;
+}
+
 void PlayerShip::moveX(float amount) {
   float current = m_position.x();
   m_position.setX(current + amount);
@@ -106,6 +141,7 @@ void PlayerShip::collideWith(GameObject &other) {
 void PlayerShip::collideWithProjectile(Projectiles::Projectile &projectile) {
 
   takeDamage(projectile.getDamage());
+  emit playerHealthUpdated(m_currentHealth);
   if (!isDead())
     playOnHitAnimation();
 }
@@ -116,8 +152,10 @@ void PlayerShip::collideWithCollectable(
   std::unordered_set<ObjectType> types = collectable.objectTypes();
   if (types.find(ObjectType::STELLAR_COIN) != types.end())
     emit stellarTokenCollected();
-  else if (types.find(ObjectType::HEALTH) != types.end())
+  else if (types.find(ObjectType::HEALTH) != types.end()) {
     heal(1);
+    emit playerHealthUpdated(m_currentHealth);
+  }
 }
 
 void PlayerShip::disableMovement() {

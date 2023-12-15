@@ -4,32 +4,34 @@
 namespace Weapons {
 
 Weapon::Weapon()
-    : m_owner(nullptr), m_soundEnabled(true), m_minCooldownMs(100),
-      m_firstShot(false) {
+    : m_owner(nullptr), m_soundEnabled(true), m_energyConsuption(0),
+      m_minCooldownMs(100), m_firstShot(false) {
   {
     clampCooldownMs();
     m_lastFiredTimer.start();
   }
 }
 
-void Weapon::fire() {
-  if (canShoot()) {
-    m_lastFiredTimer.restart();
-    std::unique_ptr<GameObjects::Projectiles::Projectile> projectile =
-        createProjectile();
-    projectile->initialize();
+bool Weapon::fire() {
+  if (!canFire())
+    return false;
 
-    QPointF ownerCenter = m_owner->getGraphicsItem()->boundingRect().center();
-    QPointF projectileCenter =
-        projectile->getGraphicsItem()->boundingRect().center();
-    QPointF delta = projectileCenter - ownerCenter;
-    float newX = projectile->getPosition().x() - delta.x();
-    float newY = projectile->getPosition().y() - delta.y();
-    GameObjects::Position projectilePosition = projectile->getPosition();
-    projectilePosition.setPos(QPointF(newX, newY));
-    projectile->setPosition(projectilePosition);
-    emit projectileFired(std::move(projectile));
-  }
+  m_lastFiredTimer.restart();
+  std::unique_ptr<GameObjects::Projectiles::Projectile> projectile =
+      createProjectile();
+  projectile->initialize();
+
+  QPointF ownerCenter = m_owner->getGraphicsItem()->boundingRect().center();
+  QPointF projectileCenter =
+      projectile->getGraphicsItem()->boundingRect().center();
+  QPointF delta = projectileCenter - ownerCenter;
+  float newX = projectile->getPosition().x() - delta.x();
+  float newY = projectile->getPosition().y() - delta.y();
+  GameObjects::Position projectilePosition = projectile->getPosition();
+  projectilePosition.setPos(QPointF(newX, newY));
+  projectile->setPosition(projectilePosition);
+  emit projectileFired(std::move(projectile));
+  return true;
 }
 
 void Weapon::setOwner(GameObjects::Ships::Ship *newOwner) {
@@ -44,6 +46,18 @@ void Weapon::setProjectilePrototype(
 void Weapon::setCooldownMs(float newCooldownMs) {
   m_cooldownMs = newCooldownMs;
   clampCooldownMs();
+}
+
+GameObjects::Projectiles::Projectile *Weapon::projectilePrototype() const {
+  return m_projectilePrototype.get();
+}
+
+float Weapon::cooldownMs() const { return m_cooldownMs; }
+
+unsigned int Weapon::energyConsuption() const { return m_energyConsuption; }
+
+void Weapon::setEnergyConsuption(unsigned int newEnergyConsuption) {
+  m_energyConsuption = newEnergyConsuption;
 }
 
 std::unique_ptr<GameObjects::Projectiles::Projectile>
@@ -73,7 +87,7 @@ void Weapon::removeProjectileProperty(
   m_projectilePrototype->removeProperty(property);
 }
 
-bool Weapon::canShoot() {
+bool Weapon::canFire() {
   if (!m_owner->isDead()) {
     if (!m_firstShot) {
       m_firstShot = true;

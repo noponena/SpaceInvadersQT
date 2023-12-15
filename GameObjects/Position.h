@@ -38,6 +38,14 @@ public:
            isBeyondScreenLeftLimit(offset) || isBeyondScreenRightLimit(offset);
   }
 
+  bool isBeyondLimits(float leftOffset, float rightOffset, float topOffset,
+                      float bottomOffset) {
+    return isBeyondScreenTopLimit(topOffset) ||
+           isBeyondScreenBottomLimit(bottomOffset) ||
+           isBeyondScreenLeftLimit(leftOffset) ||
+           isBeyondScreenRightLimit(rightOffset);
+  }
+
   float x() const { return pos.x(); }
   float y() const { return pos.y(); }
 

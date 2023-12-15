@@ -1,7 +1,7 @@
 #ifndef GAMEOBJECTS_SHIPS_SHIPWITHHEALTHBAR_H
 #define GAMEOBJECTS_SHIPS_SHIPWITHHEALTHBAR_H
 
-#include "HealthBar.h"
+#include "Graphics/HealthBar.h"
 #include "Ship.h"
 
 namespace GameObjects {
@@ -9,17 +9,17 @@ namespace Ships {
 
 class ShipWithHealthBar : public Ship {
 public:
-  ShipWithHealthBar(const int maxHp, const float speed,
+  ShipWithHealthBar(const unsigned maxHp, const float speed,
                     const Position &position);
   void initialize() override;
 
 protected:
-  std::unique_ptr<HealthBar> m_healthBar;
+  std::unique_ptr<Graphics::HealthBar> m_healthBar;
 
   // Ship interface
 public:
-  void takeDamage(int amount) override;
-  void heal(int amount) override;
+  void takeDamage(unsigned int amount) override;
+  void heal(unsigned int amount) override;
   void kill() override;
   void restoreHealth() override;
 };

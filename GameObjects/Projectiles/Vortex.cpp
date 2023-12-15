@@ -9,6 +9,7 @@ Vortex::Vortex() : m_timeToLiveSeconds(5.0f), m_timeSinceSpawnSeconds(0.0f) {
       Game::Audio::SoundInfo({true, Game::Audio::SoundEffect::VORTEX_CANNON});
   m_pixmapData.pixmapResourcePath = ":/Images/black_orb.png";
   m_pixmapData.onHitPixmapResourcePath = ":/Images/black_hole.png";
+  m_pixmapData.hudPixmapResourcePath = ":/Images/black_hole_hud.png";
   m_pixmapData.pixmapScale = QPointF(25, 25);
 }
 

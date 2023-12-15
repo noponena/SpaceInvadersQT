@@ -1,4 +1,4 @@
-#include "Game/Core/GameRunnerScene.h"
+#include "Game/Core/GameRunnerView.h"
 #include "GameObjects/Ships/PlayerShip.h"
 #include "Utils/PerformanceBenchmark.h"
 #include <QOpenGLWidget>
@@ -6,11 +6,12 @@
 
 namespace Game {
 namespace Core {
-GameRunnerScene::GameRunnerScene(QWidget *parent)
-    : QGraphicsView(parent), m_scene(this),
-      m_continuousShoot(false), m_continuousEnemySpawn(true), m_gameOver(false),
+GameRunnerView::GameRunnerView(QWidget *parent)
+    : QGraphicsView(parent), m_scene(this), m_continuousShoot(false),
+      m_continuousEnemySpawn(true), m_gameOver(false),
       m_gameOverInfoDisplayed(false) {
   m_gameState = new GameState();
+  m_playerShip = m_gameState->playerShip();
   setupView();
   setupCounters();
   setupConnections();
@@ -18,14 +19,14 @@ GameRunnerScene::GameRunnerScene(QWidget *parent)
   m_fpsTimer.start();
 }
 
-GameRunnerScene::~GameRunnerScene() {
+GameRunnerView::~GameRunnerView() {
   // We have to make sure that the game objects
   // are destroyed before the scene (QGraphicsScene)
   // destroys the graphics items in the scene.
   delete m_gameState;
 }
 
-void GameRunnerScene::setupView() {
+void GameRunnerView::setupView() {
   QSurfaceFormat format;
   // format.setSwapBehavior(QSurfaceFormat::TripleBuffer);
   format.setSwapInterval(0);
@@ -36,20 +37,21 @@ void GameRunnerScene::setupView() {
   setViewport(glWidget);
 
   setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
-  setAlignment(Qt::AlignCenter);
+  setAlignment(Qt::AlignTop);
   setInteractive(false);
   setRenderHints(QPainter::SmoothPixmapTransform);
   setOptimizationFlags(QGraphicsView::DontAdjustForAntialiasing |
                        QGraphicsView::DontSavePainterState);
   setViewportMargins(0, 0, 0, 0);
   setScene(&m_scene);
+  setStyleSheet("border:0px");
   m_scene.setItemIndexMethod(QGraphicsScene::BspTreeIndex);
   m_scene.setBackgroundBrush(QBrush(Qt::black));
   setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 }
 
-void GameRunnerScene::setupCounters() {
+void GameRunnerView::setupCounters() {
   m_fpsCounter = new UI::FPSCounter();
   m_gameObjectCounter = new UI::GameObjectCounter();
 
@@ -84,33 +86,58 @@ void GameRunnerScene::setupCounters() {
   scene()->addItem(m_stellarTokens);
   scene()->addItem(m_playerHp);
   scene()->addItem(m_gameOverInfo);
-  connect(this, &GameRunnerScene::fpsUpdated, m_fpsCounter,
+  connect(this, &GameRunnerView::fpsUpdated, m_fpsCounter,
           &UI::FPSCounter::updateFPS);
 }
 
-void GameRunnerScene::setupConnections() {
+void GameRunnerView::setupConnections() {
   connect(m_gameState, &GameState::objectAdded, this,
-          &GameRunnerScene::onObjectAdded);
+          &GameRunnerView::onObjectAdded);
   connect(m_gameState, &GameState::objectDeleted, this,
-          &GameRunnerScene::onObjectDeleted);
+          &GameRunnerView::onObjectDeleted);
   connect(m_gameState, &GameState::playerShipDestroyed, this,
-          &GameRunnerScene::onPlayerShipDestroyed);
+          &GameRunnerView::onPlayerShipDestroyed);
 }
 
-void GameRunnerScene::startGame() {
+void GameRunnerView::startGame() {
   // Initialize game state
   qDebug() << "starting game..";
+  int width = scene()->sceneRect().width();
+  int height = scene()->sceneRect().height();
+  m_gameHUD = new Core::GameHUD(width, height);
+  m_scene.addItem(m_gameHUD);
+  m_gameHUD->setPos(0, height * 0.9);
+
+  connect(m_playerShip,
+          &GameObjects::Ships::PlayerShip::playerSecondaryWeaponsChanged,
+          m_gameHUD, &Core::GameHUD::onPlayerSecondaryWeaponsChanged);
+
+  connect(m_playerShip,
+          &GameObjects::Ships::PlayerShip::playerSecondaryWeaponFired,
+          m_gameHUD, &Core::GameHUD::onPlayerSecondaryWeaponFired);
+
+  connect(m_playerShip, &GameObjects::Ships::PlayerShip::playerEnergyUpdated,
+          m_gameHUD, &Core::GameHUD::onPlayerEnergyUpdated);
+
+  connect(m_playerShip, &GameObjects::Ships::PlayerShip::playerMaxEnergySet,
+          m_gameHUD, &Core::GameHUD::onPlayerMaxEnergySet);
+
+  connect(m_playerShip, &GameObjects::Ships::PlayerShip::playerHealthUpdated,
+          m_gameHUD, &Core::GameHUD::onPlayerHealthUpdated);
+
+  connect(m_playerShip, &GameObjects::Ships::PlayerShip::playerMaxHealthSet,
+          m_gameHUD, &Core::GameHUD::onPlayerMaxHealthSet);
+
   m_gameState->setSize(scene()->sceneRect().width(),
                        scene()->sceneRect().height());
   m_gameState->initialize();
-  m_playerShip = m_gameState->playerShip();
   m_gameObjects = &(m_gameState->gameObjects());
   m_collisionDetector = std::make_unique<CollisionDetection::CollisionDetector>(
       m_gameState->gameObjects(), rect());
 
   // Create and start game loop timer
 
-  connect(&m_gameTimer, &QTimer::timeout, this, &GameRunnerScene::gameLoop);
+  connect(&m_gameTimer, &QTimer::timeout, this, &GameRunnerView::gameLoop);
   bool perfTest = false;
 
 #ifdef PERFORMANCE_BENCHMARK
@@ -124,7 +151,7 @@ void GameRunnerScene::startGame() {
   // ...
 }
 
-void GameRunnerScene::gameLoop() {
+void GameRunnerView::gameLoop() {
   auto loopStartTime = std::chrono::high_resolution_clock::now();
 
   float renderTimeUs = calculateRenderTime(loopStartTime);
@@ -135,97 +162,107 @@ void GameRunnerScene::gameLoop() {
   processInput(deltaTimeInSeconds);
 #endif
 
-  float updateTimeUs = measureFunctionDuration([&]() { updateGameState(deltaTimeInSeconds); });
-  float collisionDetectionTimeUs = measureFunctionDuration([&]() { m_collisionDetector->detectBVH(); });
+  float updateTimeUs =
+      measureFunctionDuration([&]() { updateGameState(deltaTimeInSeconds); });
+  float collisionDetectionTimeUs =
+      measureFunctionDuration([&]() { m_collisionDetector->detectBVH(); });
   updateFps();
 
-  logFrameStatistics(renderTimeUs, updateTimeUs, collisionDetectionTimeUs);
+  // logFrameStatistics(renderTimeUs, updateTimeUs, collisionDetectionTimeUs);
 
   updateGameCounters();
   checkGameOver();
-
   m_lastFrameEndTime = std::chrono::high_resolution_clock::now();
 }
 
-float GameRunnerScene::calculateRenderTime(const std::chrono::high_resolution_clock::time_point& loopStartTime) {
+float GameRunnerView::calculateRenderTime(
+    const std::chrono::high_resolution_clock::time_point &loopStartTime) {
   if (m_lastFrameEndTime.time_since_epoch().count() > 0) {
-      auto renderDuration = std::chrono::duration_cast<std::chrono::microseconds>(loopStartTime - m_lastFrameEndTime);
-      return renderDuration.count();
+    auto renderDuration = std::chrono::duration_cast<std::chrono::microseconds>(
+        loopStartTime - m_lastFrameEndTime);
+    return renderDuration.count();
   }
   return 0;
 }
 
-float GameRunnerScene::calculateDeltaTime() {
+float GameRunnerView::calculateDeltaTime() {
   int frameTimeMs = m_elapsedTimer.restart();
+#ifdef PERFORMANCE_BENCHMARK
+  Utils::PerformanceBenchmark::getInstance().logPerformance(
+      frameTimeMs, m_gameObjects->size(), m_scene.items().size());
+#endif
   return static_cast<float>(frameTimeMs) / 1000.0f;
 }
 
-void GameRunnerScene::manageEnemySpawn(float deltaTimeInSeconds) {
-  int timeToSleep = deltaTimeInSeconds > 0.005f ? 0 : 5 - static_cast<int>(deltaTimeInSeconds * 1000);
+void GameRunnerView::manageEnemySpawn(float deltaTimeInSeconds) {
+  int timeToSleep = deltaTimeInSeconds > 0.005f
+                        ? 0
+                        : 5 - static_cast<int>(deltaTimeInSeconds * 1000);
   std::this_thread::sleep_for(std::chrono::milliseconds(timeToSleep));
   if (m_continuousEnemySpawn) {
-      m_levelManager->update();
+    m_levelManager->update();
   }
 }
 
-template<typename Func>
-float GameRunnerScene::measureFunctionDuration(Func&& func) {
+template <typename Func>
+float GameRunnerView::measureFunctionDuration(Func &&func) {
   auto start = std::chrono::high_resolution_clock::now();
   func();
   auto end = std::chrono::high_resolution_clock::now();
-  return std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+  return std::chrono::duration_cast<std::chrono::microseconds>(end - start)
+      .count();
 }
 
-void GameRunnerScene::logFrameStatistics(float renderTimeUs, float updateTimeUs, float collisionDetectionTimeUs) {
+void GameRunnerView::logFrameStatistics(float renderTimeUs, float updateTimeUs,
+                                        float collisionDetectionTimeUs) {
   if (renderTimeUs > 0) {
-      float totalTimeUs = renderTimeUs + updateTimeUs + collisionDetectionTimeUs;
+    float totalTimeUs = renderTimeUs + updateTimeUs + collisionDetectionTimeUs;
 
-      QString renderPercent = QString::number((renderTimeUs / totalTimeUs) * 100.0f, 'f', 2);
-      QString updatePercent = QString::number((updateTimeUs / totalTimeUs) * 100.0f, 'f', 2);
-      QString collisionPercent = QString::number((collisionDetectionTimeUs / totalTimeUs) * 100.0f, 'f', 2);
+    QString renderPercent =
+        QString::number((renderTimeUs / totalTimeUs) * 100.0f, 'f', 2);
+    QString updatePercent =
+        QString::number((updateTimeUs / totalTimeUs) * 100.0f, 'f', 2);
+    QString collisionPercent = QString::number(
+        (collisionDetectionTimeUs / totalTimeUs) * 100.0f, 'f', 2);
 
-      qDebug() << "render:" << renderPercent + "%"
-               << "update:" << updatePercent + "%"
-               << "collision:" << collisionPercent + "%";
+    qDebug() << "render:" << renderPercent + "%"
+             << "update:" << updatePercent + "%"
+             << "collision:" << collisionPercent + "%";
   }
 }
 
-
-void GameRunnerScene::updateGameCounters() {
+void GameRunnerView::updateGameCounters() {
   int gameObjectCount = m_gameObjects->size();
   int sceneItemCount = scene()->items().size();
 
-  m_sceneItemCounter->setPlainText("Scene items: " + QString::number(sceneItemCount));
+  m_sceneItemCounter->setPlainText("Scene items: " +
+                                   QString::number(sceneItemCount));
   m_gameObjectCounter->setObjectCount(gameObjectCount);
 
   if (!m_gameOver) {
-      int playerHp = m_playerShip->currentHp();
-      m_stellarTokens->setPlainText("Stellar tokens: " + QString::number(m_gameState->stellarTokens()));
-      m_playerHp->setPlainText("Player HP: " + QString::number(playerHp));
+    int playerHp = m_playerShip->currentHp();
+    m_stellarTokens->setPlainText(
+        "Stellar tokens: " + QString::number(m_gameState->stellarTokens()));
+    m_playerHp->setPlainText("Player HP: " + QString::number(playerHp));
   }
 }
 
-void GameRunnerScene::checkGameOver() {
-#ifdef PERFORMANCE_BENCHMARK
-  Utils::PerformanceBenchmark::getInstance().logPerformance(
-      frameTimeMs, gameObjectCount, sceneItemCount);
-#endif
-
+void GameRunnerView::checkGameOver() {
   if (m_gameOver && !m_gameOverInfoDisplayed) {
-      displayGameOverInfo();
+    displayGameOverInfo();
   }
 }
 
-void GameRunnerScene::initializeBenchmark() {
+void GameRunnerView::initializeBenchmark() {
   Utils::PerformanceBenchmark::getInstance().initializeBenchmark(m_playerShip);
   connect(&m_benchmarkTimer, &QTimer::timeout, this, ([]() {
     Utils::PerformanceBenchmark::getInstance().logPerformanceScore();
   }));
-  connect(&m_benchmarkTimer, &QTimer::timeout, this, &GameRunnerScene::quit);
+  connect(&m_benchmarkTimer, &QTimer::timeout, this, &GameRunnerView::quit);
   m_benchmarkTimer.start(30000);
 }
 
-void GameRunnerScene::processInput(float deltaTimeInSeconds) {
+void GameRunnerView::processInput(float deltaTimeInSeconds) {
 
   if (!m_gameOver) {
     processGameAction(deltaTimeInSeconds);
@@ -234,7 +271,7 @@ void GameRunnerScene::processInput(float deltaTimeInSeconds) {
   processMenuAction();
 }
 
-void GameRunnerScene::processGameAction(float deltaTimeInSeconds) {
+void GameRunnerView::processGameAction(float deltaTimeInSeconds) {
   for (const auto &[key, action] : m_gameActions) {
     if (m_pressedKeys.contains(key))
       action(deltaTimeInSeconds);
@@ -258,18 +295,18 @@ void GameRunnerScene::processGameAction(float deltaTimeInSeconds) {
   m_playerShip->moveVertical(deltaTimeInSeconds);
 }
 
-void GameRunnerScene::processMenuAction() {
+void GameRunnerView::processMenuAction() {
   for (const auto &[key, action] : m_menuActions) {
     if (m_pressedKeys.contains(key))
       action();
   }
 }
 
-void GameRunnerScene::updateGameState(float deltaTime) {
+void GameRunnerView::updateGameState(float deltaTime) {
   m_gameState->update(deltaTime);
 }
 
-void GameRunnerScene::updateFps() {
+void GameRunnerView::updateFps() {
   m_frameCount++;
   if (m_fpsTimer.elapsed() >= 1000) {
     emit fpsUpdated(m_frameCount);
@@ -278,7 +315,7 @@ void GameRunnerScene::updateFps() {
   }
 }
 
-void GameRunnerScene::displayGameOverInfo() {
+void GameRunnerView::displayGameOverInfo() {
   m_gameOverInfo->setPlainText("GAME OVER");
   QRectF textBoundingRect = m_gameOverInfo->boundingRect();
   QRectF sceneRect = scene()->sceneRect();
@@ -289,12 +326,17 @@ void GameRunnerScene::displayGameOverInfo() {
   m_gameOverInfoDisplayed = true;
 }
 
-void GameRunnerScene::keyPressEvent(QKeyEvent *event) {
+void GameRunnerView::keyPressEvent(QKeyEvent *event) {
   m_pressedKeys.insert(event->key());
 }
 
-void GameRunnerScene::keyReleaseEvent(QKeyEvent *event) {
+void GameRunnerView::keyReleaseEvent(QKeyEvent *event) {
   m_pressedKeys.remove(event->key());
 }
+
+GameObjects::Ships::PlayerShip *GameRunnerView::playerShip() const {
+  return m_playerShip;
+}
+
 } // namespace Core
 } // namespace Game

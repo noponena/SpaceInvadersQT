@@ -16,8 +16,8 @@ LevelManager::LevelManager(GameState *gameState, bool performanceTest)
     m_performanceTest = performanceTest;
   }
 
-  GameObjects::PixmapData pixmapData{QPointF(30, 30),
-                                     ":/Images/enemy_laser_projectile.png", ""};
+  GameObjects::PixmapData pixmapData{
+      QPointF(30, 30), ":/Images/enemy_laser_projectile.png", "", ""};
 
   std::unique_ptr<GameObjects::Projectiles::Projectile> projectile =
       m_projectileBuilder

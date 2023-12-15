@@ -4,14 +4,17 @@
 #include "GameObjects/Ships/EnemyShip.h"
 #include "Weapons/PrimaryWeapon.h"
 #include "Weapons/SecondaryWeapon.h"
-#include <iostream>
-#include <sstream>
 
 namespace Game {
 namespace Core {
 GameState::GameState(QObject *parent)
     : QObject(parent), m_playerShipDeletedFromScene(false) {
   m_playersShipStartSpeed = 500;
+  m_playerShip = std::make_shared<GameObjects::Ships::PlayerShip>(
+      m_playersShipStartSpeed, GameObjects::Position(0, 0));
+  connect(m_playerShip.get(),
+          &GameObjects::Ships::PlayerShip::stellarTokenCollected, this,
+          &GameState::onStellarTokenCollected);
 }
 
 void GameState::initialize() {
@@ -38,7 +41,7 @@ void GameState::setSize(int width, int height) {
 void GameState::update(float deltaTimeInSeconds) {
   for (size_t i = 0; i < m_gameObjects.size();) {
     m_gameObjects[i]->update(
-        {deltaTimeInSeconds, m_playerShip, m_magneticGameObjectMap});
+        {deltaTimeInSeconds, m_playerShip.get(), m_magneticGameObjectMap});
     if (m_gameObjects[i]->shouldBeDeleted()) {
       m_magneticGameObjectMap.erase(m_gameObjects[i]->id());
       std::swap(m_gameObjects[i], m_gameObjects.back());
@@ -58,39 +61,44 @@ void GameState::initPlayerShip() {
 
   GameObjects::Position pos(m_windowWidth / 2, m_maxY, m_minX, m_maxX, m_minY,
                             m_maxY);
-  qDebug() << "playerShip x:" << m_windowWidth / 2 << "playerShip y:" << m_maxY;
-  std::unique_ptr<GameObjects::Ships::PlayerShip> playerShip =
-      std::make_unique<GameObjects::Ships::PlayerShip>(
-          2500, m_playersShipStartSpeed, pos);
-  playerShip->initialize();
-  connect(playerShip.get(), &GameObjects::GameObject::objectDestroyed, this,
+  m_playerShip->setPosition(pos);
+  m_playerShip->initialize();
+  connect(m_playerShip.get(), &GameObjects::GameObject::objectDestroyed, this,
           &GameState::onPlayerShipDestroyed);
 
-  //  std::unique_ptr<GameObjects::Projectiles::Projectile> secondaryProjectile
-  //  =
-  //      m_projectileBuilder
-  //          .createProjectile(std::make_unique<GameObjects::Projectiles::Vortex>())
-  //          .withObjectType(GameObjects::ObjectType::PLAYER_PROJECTILE)
-  //          .withDamage(0)
-  //          .withMovementStrategy(Game::Movement::VerticalMovementStrategy(1000,
-  //          -1)) .build();
-
-  std::unique_ptr<GameObjects::Projectiles::Projectile> secondaryProjectile =
+  std::unique_ptr<GameObjects::Projectiles::Projectile> vortexProjectile =
       m_projectileBuilder
           .createProjectile(
-              std::make_unique<GameObjects::Projectiles::WaveOfDestruction>())
+              std::make_unique<GameObjects::Projectiles::Vortex>())
           .withObjectType(GameObjects::ObjectType::PLAYER_PROJECTILE)
-          .withGrahpics(GameObjects::PixmapData{QPointF(250, 20),
-                                                ":/Images/wave.png", "", false})
-          .withDamage(1000)
+          .withDamage(0)
           .withMovementStrategy(
-              Game::Movement::VerticalMovementStrategy(250, -1))
+              Game::Movement::VerticalMovementStrategy(1000, -1))
           .build();
 
-  std::unique_ptr<Weapons::Weapon> secondaryWeapon =
+  std::unique_ptr<GameObjects::Projectiles::Projectile>
+      waveOfDestructionProjectile =
+          m_projectileBuilder
+              .createProjectile(std::make_unique<
+                                GameObjects::Projectiles::WaveOfDestruction>())
+              .withObjectType(GameObjects::ObjectType::PLAYER_PROJECTILE)
+              .withDamage(1000)
+              .withMovementStrategy(
+                  Game::Movement::VerticalMovementStrategy(250, -1))
+              .build();
+
+  std::unique_ptr<Weapons::Weapon> waveOfDestruction =
       m_weaponBuilder.createWeapon(std::make_unique<Weapons::SecondaryWeapon>())
-          .withProjectile(std::move(secondaryProjectile))
-          .withWeaponCooldownMs(100)
+          .withProjectile(std::move(waveOfDestructionProjectile))
+          .withWeaponCooldownMs(5000)
+          .withEnergyConsuption(500)
+          .build();
+
+  std::unique_ptr<Weapons::Weapon> vortex =
+      m_weaponBuilder.createWeapon(std::make_unique<Weapons::SecondaryWeapon>())
+          .withProjectile(std::move(vortexProjectile))
+          .withWeaponCooldownMs(5000)
+          .withEnergyConsuption(1000)
           .build();
 
   std::unique_ptr<GameObjects::Projectiles::Projectile> primaryProjectile =
@@ -103,7 +111,7 @@ void GameState::initPlayerShip() {
               Game::Movement::VerticalMovementStrategy(1000, -1))
           //.withProperty(GameObjects::Projectiles::ProjectileProperty::PIERCING)
           .withGrahpics(GameObjects::PixmapData{
-              QPointF(30, 30), ":/Images/player_laser_projectile.png", ""})
+              QPointF(30, 30), ":/Images/player_laser_projectile.png", "", ""})
           .withSpawnSound(
               Audio::SoundInfo({true, Game::Audio::SoundEffect::LASER}))
           .build();
@@ -135,23 +143,27 @@ void GameState::initPlayerShip() {
                   .build())
           .build();
 
-  playerShip->addPrimaryWeapon(std::move(weapon));
-  playerShip->addPrimaryWeapon(std::move(secondWeapon));
-  playerShip->addPrimaryWeapon(std::move(thirdWeapon));
-  playerShip->addSecondaryWeapon(std::move(secondaryWeapon));
-  m_playerShip = playerShip.get();
-  connect(m_playerShip, &GameObjects::Ships::PlayerShip::stellarTokenCollected,
-          this, &GameState::onStellarTokenCollected);
-  addGameObject(std::move(playerShip));
+  m_playerShip->addPrimaryWeapon(std::move(weapon));
+  m_playerShip->addPrimaryWeapon(std::move(secondWeapon));
+  m_playerShip->addPrimaryWeapon(std::move(thirdWeapon));
+  m_playerShip->setSecondaryWeapon(std::move(waveOfDestruction), 0);
+  m_playerShip->setSecondaryWeapon(std::move(vortex), 1);
+  m_playerShip->setMaxEnergy(1000);
+  m_playerShip->setMaxHealth(50);
+  m_playerShip->fullyRestoreEnergy();
+  m_playerShip->fullyRestoreHealth();
+  m_playerShip->setEnergyRegenerationRate(1);
+
+  addGameObject(m_playerShip);
 }
 
 void GameState::initEnemyShips() {
   int rows = 1;
   int cols = 1;
-  int width = m_maxX - m_minX;
-  int height = m_maxY - m_minY - 300;
-  int xSpacing = width / (cols + 1);
-  int ySpacing = height / (rows + 1);
+  // int width = m_maxX - m_minX;
+  // int height = m_maxY - m_minY - 300;
+  // int xSpacing = width / (cols + 1);
+  // int ySpacing = height / (rows + 1);
   std::random_device rd;  // obtain a random number from hardware
   std::mt19937 eng(rd()); // seed the generator
   std::uniform_int_distribution<> distr(100, 1500);
@@ -195,11 +207,11 @@ void GameState::initMovementConstrains() {
   m_minX = 0;
   m_maxX = m_windowWidth * 0.98;
   m_minY = 0;
-  m_maxY = m_windowHeight * 0.95;
+  m_maxY = m_windowHeight * 0.865;
 }
 
 GameObjects::Ships::PlayerShip *GameState::playerShip() const {
-  return m_playerShip;
+  return m_playerShip.get();
 }
 
 const unsigned &GameState::stellarTokens() const { return m_stellarTokens; }

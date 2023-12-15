@@ -64,7 +64,7 @@ void PerformanceBenchmark::initializeBenchmark(
           .withDamage(1)
           .withObjectType(GameObjects::ObjectType::PLAYER_PROJECTILE)
           .withGrahpics(GameObjects::PixmapData{
-              QPointF(30, 30), ":/Images/player_laser_projectile.png", ""})
+              QPointF(30, 30), ":/Images/player_laser_projectile.png", "", ""})
           .withSpawnSound(
               Game::Audio::SoundInfo({true, Game::Audio::SoundEffect::LASER}))
           .withMovementStrategy(

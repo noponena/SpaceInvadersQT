@@ -41,7 +41,7 @@ private:
   float m_playersShipStartSpeed;
   void initPlayerShip();
   void initMovementConstrains();
-  GameObjects::Ships::PlayerShip *m_playerShip;
+  std::shared_ptr<GameObjects::Ships::PlayerShip> m_playerShip;
   Weapons::WeaponBuilder m_weaponBuilder;
   GameObjects::Projectiles::ProjectileBuilder m_projectileBuilder;
 

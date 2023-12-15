@@ -12,7 +12,8 @@ public:
   WeaponBuilder clone() const;
   WeaponBuilder &createWeapon(std::unique_ptr<Weapon> weapon);
   WeaponBuilder &withSound(bool soundEnabled);
-  WeaponBuilder &withWeaponCooldownMs(const int cooldownMs);
+  WeaponBuilder &withWeaponCooldownMs(const unsigned cooldownMs);
+  WeaponBuilder &withEnergyConsuption(const unsigned energyConsuption);
   WeaponBuilder &withProjectile(
       std::unique_ptr<GameObjects::Projectiles::Projectile> projectile);
   std::unique_ptr<Weapon> build();

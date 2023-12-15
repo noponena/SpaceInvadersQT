@@ -25,7 +25,9 @@ void GameObject::initialize() {
   initializeDestructionEffects();
 }
 
-bool GameObject::shouldBeDeleted() { return m_position.isBeyondAnyLimit(50); }
+bool GameObject::shouldBeDeleted() {
+  return m_position.isBeyondLimits(25, 25, 50, 30);
+}
 
 void GameObject::update(const UpdateContext &context) {
   if (isDead() && !m_destructionInitiated)
@@ -101,6 +103,10 @@ QRectF GameObject::getBoundingBox() const {
   QRectF localRect = m_graphicsItem->boundingRect();
   QRectF sceneRect = m_graphicsItem->mapToScene(localRect).boundingRect();
   return sceneRect;
+}
+
+QString GameObject::getHudPixmapPath() const {
+  return m_pixmapData.hudPixmapResourcePath;
 }
 
 void GameObject::disableMovement() { m_movementStrategy.clear(); }

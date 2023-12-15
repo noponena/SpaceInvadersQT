@@ -10,6 +10,10 @@ class PrimaryWeapon : public Weapon {
   // Weapon interface
 public:
   std::unique_ptr<Weapon> clone() const override;
+
+  // Weapon interface
+public:
+  QString getHudImagePath() const override;
 };
 
 } // namespace Weapons

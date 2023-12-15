@@ -29,11 +29,18 @@ WeaponBuilder &WeaponBuilder::withSound(bool soundEnabled) {
   return *this;
 }
 
-WeaponBuilder &WeaponBuilder::withWeaponCooldownMs(const int cooldownMs) {
+WeaponBuilder &WeaponBuilder::withWeaponCooldownMs(const unsigned cooldownMs) {
   if (m_weapon)
     m_weapon->setCooldownMs(cooldownMs);
   else
     logNullPointerWarning();
+  return *this;
+}
+
+WeaponBuilder &
+WeaponBuilder::withEnergyConsuption(const unsigned int energyConsuption) {
+  if (m_weapon)
+    m_weapon->setEnergyConsuption(energyConsuption);
   return *this;
 }
 

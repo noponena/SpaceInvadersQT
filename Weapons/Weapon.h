@@ -3,7 +3,6 @@
 
 #include "GameObjects/Projectiles/Projectile.h"
 #include <QElapsedTimer>
-#include <set>
 
 namespace GameObjects {
 namespace Ships {
@@ -20,10 +19,11 @@ public:
 
   virtual ~Weapon() = default;
   virtual std::unique_ptr<Weapon> clone() const = 0;
+  virtual QString getHudImagePath() const = 0;
 
   void setProjectilePrototype(
       std::unique_ptr<GameObjects::Projectiles::Projectile> prototype);
-  void fire();
+  bool fire();
   void setOwner(GameObjects::Ships::Ship *newOwner);
   void updateWeaponCooldown(float amount);
   void enableSound();
@@ -35,6 +35,13 @@ public:
 
   void setCooldownMs(float newCooldownMs);
 
+  GameObjects::Projectiles::Projectile *projectilePrototype() const;
+
+  float cooldownMs() const;
+
+  unsigned int energyConsuption() const;
+  void setEnergyConsuption(unsigned int newEnergyConsuption);
+
 protected:
   GameObjects::Ships::Ship *m_owner;
   bool m_soundEnabled;
@@ -42,12 +49,13 @@ protected:
   std::unique_ptr<GameObjects::Projectiles::Projectile> m_projectilePrototype;
 
 private:
+  unsigned int m_energyConsuption;
   float m_minCooldownMs;
   QElapsedTimer m_lastFiredTimer;
   bool m_firstShot;
 
   std::unique_ptr<GameObjects::Projectiles::Projectile> createProjectile();
-  bool canShoot();
+  bool canFire();
   void clampCooldownMs();
 
 signals:

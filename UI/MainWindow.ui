@@ -22,38 +22,7 @@
   <property name="styleSheet">
    <string notr="true">background-color: rgb(0, 0, 0)</string>
   </property>
-  <widget class="QWidget" name="centralwidget">
-   <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="0">
-     <widget class="Game::Core::GameRunnerScene" name="gameRunnerScene">
-      <property name="baseSize">
-       <size>
-        <width>0</width>
-        <height>0</height>
-       </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">background-color: rgb(0, 0, 0)</string>
-      </property>
-      <property name="lineWidth">
-       <number>1</number>
-      </property>
-      <property name="verticalScrollBarPolicy">
-       <enum>Qt::ScrollBarAlwaysOff</enum>
-      </property>
-      <property name="horizontalScrollBarPolicy">
-       <enum>Qt::ScrollBarAlwaysOff</enum>
-      </property>
-      <property name="cacheMode">
-       <set>QGraphicsView::CacheBackground</set>
-      </property>
-      <property name="optimizationFlags">
-       <set>QGraphicsView::DontAdjustForAntialiasing|QGraphicsView::DontSavePainterState|QGraphicsView::IndirectPainting</set>
-      </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
+  <widget class="QWidget" name="centralwidget"/>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
@@ -66,13 +35,6 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>Game::Core::GameRunnerScene</class>
-   <extends>QGraphicsView</extends>
-   <header>Game/Core/GameRunnerScene.h</header>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

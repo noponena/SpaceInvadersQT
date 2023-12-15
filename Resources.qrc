@@ -19,5 +19,8 @@
         <file>Images/black_orb.png</file>
         <file>Sounds/vortex_cannon.wav</file>
         <file>Images/wave.png</file>
+        <file>Images/black_hole_hud.png</file>
+        <file>Images/wave_of_destruction_hud.png</file>
+        <file>Images/weapon_slot.png</file>
     </qresource>
 </RCC>

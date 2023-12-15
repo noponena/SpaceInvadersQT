@@ -9,11 +9,12 @@
 namespace GameObjects {
 namespace Ships {
 
-Ship::Ship(const int maxHp, const float speed, const Position &position)
-    : AttractableGameObject(position), m_immortal(false), m_currentHp(maxHp),
-      m_maxHp(maxHp), m_pixelWidth(50), m_pixelHeight(50),
-      m_destructionParticleCount(200), m_activeSecondaryWeaponIndex(0),
-      m_speed(speed) {}
+Ship::Ship(const unsigned int maxHp, const float speed,
+           const Position &position)
+    : AttractableGameObject(position), m_immortal(false), m_pixelWidth(50),
+      m_pixelHeight(50), m_destructionParticleCount(200),
+      m_currentHealth(maxHp), m_maxHealth(maxHp), m_speed(speed),
+      m_energyRegenerationRate(0) {}
 
 Ship::~Ship() {}
 
@@ -23,30 +24,43 @@ void Ship::firePrimaryWeapons() {
   }
 }
 
-void Ship::fireActiveSecondaryWeapon() {
-  if (!m_secondaryWeapons.empty())
-    m_secondaryWeapons[m_activeSecondaryWeaponIndex]->fire();
+bool Ship::fireSecondaryWeapon(unsigned weaponIndex) {
+  if (weaponIndex < 4) {
+    Weapons::Weapon *weapon = m_secondaryWeapons[weaponIndex].get();
+    unsigned int weaponEnergyConsuption = weapon->energyConsuption();
+    if (m_currentEnergy >= weaponEnergyConsuption) {
+      if (!weapon->fire())
+        return false;
+      m_currentEnergy -= weaponEnergyConsuption;
+      return true;
+    }
+  }
+  return false;
 }
 
-void Ship::takeDamage(int amount) {
-  if (!m_immortal)
-    m_currentHp -= amount;
+void Ship::takeDamage(unsigned int amount) {
+  if (!m_immortal) {
+    if (amount > m_currentHealth)
+      m_currentHealth = 0;
+    else
+      m_currentHealth -= amount;
+  }
 }
 
-void Ship::heal(int amount) {
+void Ship::heal(unsigned int amount) {
   if (!isDead()) {
-    m_currentHp += amount;
-    if (m_currentHp > m_maxHp) {
-      m_currentHp = m_maxHp;
+    m_currentHealth += amount;
+    if (m_currentHealth > m_maxHealth) {
+      m_currentHealth = m_maxHealth;
     }
   }
 }
 
-void Ship::kill() { m_currentHp = 0; }
+void Ship::kill() { m_currentHealth = 0; }
 
-void Ship::restoreHealth() { m_currentHp = m_maxHp; }
+void Ship::restoreHealth() { m_currentHealth = m_maxHealth; }
 
-bool Ship::isDead() { return m_currentHp <= 0; }
+bool Ship::isDead() { return m_currentHealth <= 0; }
 
 void Ship::updateFireRate(int amount) {
   for (const auto &primaryWeapon : m_primaryWeapons) {
@@ -61,16 +75,19 @@ void Ship::addPrimaryWeapon(std::unique_ptr<Weapons::Weapon> newWeapon) {
   m_primaryWeapons.push_back(std::move(newWeapon));
 }
 
-void Ship::addSecondaryWeapon(std::unique_ptr<Weapons::Weapon> newWeapon) {
+void Ship::setSecondaryWeapon(std::unique_ptr<Weapons::Weapon> newWeapon,
+                              unsigned int weaponIndex) {
   newWeapon->setOwner(this);
   connect(newWeapon.get(), &Weapons::Weapon::projectileFired, this,
           &Ship::onProjectileFired);
-  m_secondaryWeapons.push_back(std::move(newWeapon));
+  m_secondaryWeapons[weaponIndex] = std::move(newWeapon);
 }
 
 void Ship::clearWeapons() {
   m_primaryWeapons.clear();
-  m_secondaryWeapons.clear();
+  for (unsigned i = 0; i < 4; i++) {
+    m_secondaryWeapons[i] = nullptr;
+  }
 }
 
 void Ship::initializeDestructionAnimation() {
@@ -108,13 +125,25 @@ void Ship::onProjectileFired(
 
 void Ship::setImmortal(bool newImmortal) { m_immortal = newImmortal; }
 
-void Ship::setAutoShoot(bool newAutoShoot) { m_autoShoot = newAutoShoot; }
+void Ship::setAutoShoot(bool newAutoShoot) { m_autoFire = newAutoShoot; }
 
 void Ship::setDestructionParticleCount(int newDestructionParticleCount) {
   m_destructionParticleCount = newDestructionParticleCount;
 }
 
-int Ship::currentHp() const { return m_currentHp; }
+void Ship::fullyRestoreEnergy() { m_currentEnergy = m_maxEnergy; }
+
+void Ship::fullyRestoreHealth() { m_currentHealth = m_maxHealth; }
+
+unsigned int Ship::energyRegenerationRate() const {
+  return m_energyRegenerationRate;
+}
+
+void Ship::setEnergyRegenerationRate(unsigned int newEnergyRegenerationRate) {
+  m_energyRegenerationRate = newEnergyRegenerationRate;
+}
+
+int Ship::currentHp() const { return m_currentHealth; }
 
 bool Ship::shouldBeDeleted() {
   if (m_position.isBeyondScreenBottomLimit())
@@ -134,6 +163,14 @@ void Ship::playOnHitAnimation() {
   m_onHitTimerId = startTimer(100);
 }
 
+void Ship::regenerateEnergy() {
+  m_currentEnergy += m_energyRegenerationRate;
+  if (m_currentEnergy > m_maxEnergy)
+    m_currentEnergy = m_maxEnergy;
+  else if (m_currentEnergy < 0)
+    m_currentEnergy = 0;
+}
+
 void Ship::timerEvent(QTimerEvent *event) {
   if (event->timerId() == m_onHitTimerId) {
     killTimer(m_onHitTimerId);
@@ -147,7 +184,7 @@ void Ship::initializeObjectType() { m_objectTypes.insert(ObjectType::SHIP); }
 
 void Ship::update(const UpdateContext &context) {
   AttractableGameObject::update(context);
-  if (m_autoShoot)
+  if (m_autoFire)
     firePrimaryWeapons();
 }
 

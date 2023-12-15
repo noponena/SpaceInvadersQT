@@ -16,20 +16,21 @@ namespace Ships {
 class Ship : public AttractableGameObject {
   Q_OBJECT
 public:
-  Ship(const int maxHp, const float speed, const Position &position);
+  Ship(const unsigned maxHp, const float speed, const Position &position);
   virtual ~Ship();
   virtual void update(const UpdateContext &context) override;
   virtual bool shouldBeDeleted() override;
   bool isDead() override;
-  virtual void takeDamage(int amount);
-  virtual void heal(int amount);
+  virtual void takeDamage(unsigned int amount);
+  virtual void heal(unsigned int amount);
   virtual void kill();
   virtual void restoreHealth();
   void firePrimaryWeapons();
-  void fireActiveSecondaryWeapon();
+  virtual bool fireSecondaryWeapon(unsigned int weaponIndex);
   void updateFireRate(int amount = 1);
   void addPrimaryWeapon(std::unique_ptr<Weapons::Weapon> newWeapon);
-  void addSecondaryWeapon(std::unique_ptr<Weapons::Weapon> newWeapon);
+  virtual void setSecondaryWeapon(std::unique_ptr<Weapons::Weapon> newWeapon,
+                                  unsigned weaponIndex);
   void clearWeapons();
 
   int currentHp() const;
@@ -37,23 +38,29 @@ public:
   void setAutoShoot(bool newAutoShoot);
 
   void setDestructionParticleCount(int newDestructionParticleCount);
+  void fullyRestoreEnergy();
+  void fullyRestoreHealth();
+
+  unsigned int energyRegenerationRate() const;
+  void setEnergyRegenerationRate(unsigned int newEnergyRegenerationRate);
 
 protected:
   bool m_immortal;
-  int m_currentHp, m_maxHp, m_fireRate, m_fireCooldownMs, m_pixelWidth,
-      m_pixelHeight, m_destructionParticleCount, m_activeSecondaryWeaponIndex;
-  float m_speed;
+  unsigned m_fireRate, m_fireCooldownMs, m_pixelWidth, m_pixelHeight,
+      m_destructionParticleCount;
+  float m_currentHealth, m_maxHealth, m_speed, m_maxEnergy, m_currentEnergy,
+      m_energyRegenerationRate;
   int m_onHitTimerId = -1;
   std::vector<std::unique_ptr<Weapons::Weapon>> m_primaryWeapons;
-  std::vector<std::unique_ptr<Weapons::Weapon>> m_secondaryWeapons;
+  std::unique_ptr<Weapons::Weapon> m_secondaryWeapons[4];
   bool m_onHitAnimationInProgress = false;
-  bool m_autoShoot = false;
+  bool m_autoFire = false;
   QColor m_originalColor;
 
   virtual void initializeDestructionAnimation() override;
   void initializeDestructionEffects() override;
-
   virtual void playOnHitAnimation();
+  void regenerateEnergy();
 protected slots:
   void onProjectileFired(std::shared_ptr<Projectiles::Projectile> projectile);
 

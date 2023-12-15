@@ -61,7 +61,8 @@ struct UpdateContext {
 struct PixmapData {
   QPointF pixmapScale;
   QString pixmapResourcePath;
-  QString onHitPixmapResourcePath;
+  QString onHitPixmapResourcePath = "";
+  QString hudPixmapResourcePath = "";
   bool keepAspectRatio = true;
 };
 
@@ -103,6 +104,7 @@ public:
   QGraphicsScene *getScene() const;
   QGraphicsPixmapItem *getGraphicsItem() const;
   QRectF getBoundingBox() const;
+  QString getHudPixmapPath() const;
   void setPosition(const Position &newPosition);
   bool isCollidable() const;
   long long unsigned id();

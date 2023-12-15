@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "Game/Core/GameRunnerView.h"
 #include <QMainWindow>
 
 QT_BEGIN_NAMESPACE
@@ -21,6 +22,7 @@ protected:
 
 private:
   Ui::MainWindow *ui;
+  Game::Core::GameRunnerView *m_gameRunnerView;
 
 private slots:
   void onWindowClosed();

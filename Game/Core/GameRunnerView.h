@@ -1,31 +1,33 @@
-#ifndef GAMERUNNERSCENE_H
-#define GAMERUNNERSCENE_H
+#ifndef GAMERUNNERVIEW_H
+#define GAMERUNNERVIEW_H
 
 #include "Game/CollisionDetection/CollisionDetector.h"
+#include "Game/Core/GameHUD.h"
 #include "Game/Core/GameState.h"
 #include "Game/Levels/LevelManager.h"
 #include "UI/FPSCounter.h"
 #include "UI/GameObjectCounter.h"
-#include "qtimer.h"
 #include <QElapsedTimer>
 #include <QGraphicsView>
 #include <QKeyEvent>
 #include <QLabel>
 #include <QThread>
+#include <QTimer>
 #include <QWheelEvent>
-#include <algorithm>
 
 // #define PERFORMANCE_BENCHMARK
 
 namespace Game {
 namespace Core {
 
-class GameRunnerScene : public QGraphicsView {
+class GameRunnerView : public QGraphicsView {
   Q_OBJECT
 public:
-  explicit GameRunnerScene(QWidget *parent = nullptr);
-  ~GameRunnerScene();
+  explicit GameRunnerView(QWidget *parent = nullptr);
+  ~GameRunnerView();
   void startGame();
+
+  GameObjects::Ships::PlayerShip *playerShip() const;
 
 protected:
   void keyPressEvent(QKeyEvent *event) override;
@@ -34,6 +36,7 @@ protected:
 
 private:
   GameState *m_gameState;
+  Core::GameHUD *m_gameHUD;
   std::unique_ptr<LevelManager> m_levelManager;
   QTimer m_gameTimer;
   QTimer m_benchmarkTimer;
@@ -88,10 +91,15 @@ private:
          Q_UNUSED(dt);
          m_playerShip->firePrimaryWeapons();
        }},
-      {Qt::Key_Shift,
+      {Qt::Key_1,
        [&](float dt) {
          Q_UNUSED(dt);
-         m_playerShip->fireActiveSecondaryWeapon();
+         m_playerShip->fireSecondaryWeapon(0);
+       }},
+      {Qt::Key_2,
+       [&](float dt) {
+         Q_UNUSED(dt);
+         m_playerShip->fireSecondaryWeapon(1);
        }},
       {Qt::Key_P,
        [&](float dt) {
@@ -129,12 +137,13 @@ private:
        }},
   };
 
-  inline float calculateRenderTime(const std::chrono::high_resolution_clock::time_point &loopStartTime);
+  inline float calculateRenderTime(
+      const std::chrono::high_resolution_clock::time_point &loopStartTime);
   inline float calculateDeltaTime();
   inline void manageEnemySpawn(float deltaTimeInSeconds);
-  template<typename Func>
-  inline float measureFunctionDuration(Func &&func);
-  inline void logFrameStatistics(float renderTimeUs, float updateTimeUs, float collisionDetectionTimeUs);
+  template <typename Func> inline float measureFunctionDuration(Func &&func);
+  inline void logFrameStatistics(float renderTimeUs, float updateTimeUs,
+                                 float collisionDetectionTimeUs);
   inline void updateGameCounters();
   inline void checkGameOver();
 signals:
@@ -162,4 +171,4 @@ private slots:
 } // namespace Core
 } // namespace Game
 
-#endif // GAMERUNNERSCENE_H
+#endif // GAMERUNNERVIEW_H

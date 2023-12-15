@@ -11,7 +11,7 @@
 
 namespace GameObjects {
 namespace Ships {
-EnemyShip::EnemyShip(const int maxHp, const Position &position)
+EnemyShip::EnemyShip(const unsigned int maxHp, const Position &position)
     : ShipWithHealthBar(maxHp, 0, position) {
   m_stellarCoinSpawnRange = QPoint(2, 5);
   m_healthSpawnProbability = 0.10;
