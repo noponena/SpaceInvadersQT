@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include "Game/Core/GameRunnerView.h"
+#include "Game/Core/MainMenuView.h"
 #include <QMainWindow>
 
 QT_BEGIN_NAMESPACE
@@ -22,11 +23,13 @@ protected:
 
 private:
   Ui::MainWindow *ui;
+  Game::Core::MainMenuView *m_mainMenuView;
   Game::Core::GameRunnerView *m_gameRunnerView;
 
 private slots:
   void onWindowClosed();
   void bringToForeground();
+  void adjustMainMenuSize();
   void adjustGameRunnerSize();
 };
 #endif // MAINWINDOW_H

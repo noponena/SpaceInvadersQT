@@ -8,6 +8,7 @@ namespace Graphics {
 class EnergyBar : public ProgressBar {
 public:
   EnergyBar(float maxEnergy, float width, float height,
+            bool showNumericProgression = false,
             QGraphicsItem *parent = nullptr);
 
   // ProgressBar interface

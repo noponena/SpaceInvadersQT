@@ -18,8 +18,8 @@ private:
   QElapsedTimer m_elapsedTimer;
   GameState *m_gameState;
   float m_lastSpawnTime = 0.0f;
-  int m_spawnIntervalMs = 200;
-  int m_enemyWeaponCooldownMs = 2000;
+  int m_spawnIntervalMs = 1000;
+  int m_enemyWeaponCooldownMs = 2500;
   int m_enemyShipHp = 5;
   int m_enemyShipDestructionParticleCount = 250;
   bool m_performanceTest;

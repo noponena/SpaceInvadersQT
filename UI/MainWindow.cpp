@@ -21,24 +21,30 @@ MainWindow::MainWindow(QWidget *parent)
   m_gameRunnerView->setSizePolicy(QSizePolicy::Expanding,
                                   QSizePolicy::Expanding);
 
+  m_mainMenuView = new Game::Core::MainMenuView(centralWidget);
+  m_mainMenuView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
   // Add the views to the layout
-  layout->addWidget(m_gameRunnerView);
+  // layout->addWidget(m_gameRunnerView);
+  layout->addWidget(m_mainMenuView);
 
   // Set central widget of the main window
   setCentralWidget(centralWidget);
 
   setStyleSheet("border:0px");
 
-  QTimer::singleShot(0, m_gameRunnerView,
-                     [this]() { m_gameRunnerView->startGame(); });
-  QTimer::singleShot(0, this, SLOT(bringToForeground()));
-  connect(m_gameRunnerView, &Game::Core::GameRunnerView::windowClosed, this,
+  // QTimer::singleShot(0, m_gameRunnerView,
+  //                    [this]() { m_gameRunnerView->startGame(); });
+  // QTimer::singleShot(0, this, SLOT(bringToForeground()));
+  // connect(m_gameRunnerView, &Game::Core::GameRunnerView::windowClosed, this,
+  //         &MainWindow::onWindowClosed);
+  connect(m_mainMenuView, &Game::Core::MainMenuView::windowClosed, this,
           &MainWindow::onWindowClosed);
 
   QScreen *screen = QGuiApplication::primaryScreen();
   QRect screenGeometry = screen->geometry();
   resize(screenGeometry.width(), screenGeometry.height());
-  QApplication::setOverrideCursor(Qt::BlankCursor);
+  // QApplication::setOverrideCursor(Qt::BlankCursor);
 
   setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
   showFullScreen();
@@ -48,7 +54,8 @@ MainWindow::~MainWindow() { delete ui; }
 
 void MainWindow::resizeEvent(QResizeEvent *event) {
   QMainWindow::resizeEvent(event); // Call base class handler
-  adjustGameRunnerSize();
+  // adjustGameRunnerSize();
+  adjustMainMenuSize();
 }
 
 void MainWindow::adjustGameRunnerSize() {
@@ -62,6 +69,13 @@ void MainWindow::bringToForeground() {
   m_gameRunnerView->activateWindow();
   m_gameRunnerView->raise();
   m_gameRunnerView->setFocus();
+}
+
+void MainWindow::adjustMainMenuSize() {
+  if (m_mainMenuView) {
+    QRectF newRect(0, 0, width(), height());
+    m_mainMenuView->scene()->setSceneRect(newRect);
+  }
 }
 
 void MainWindow::onWindowClosed() { QCoreApplication::quit(); }

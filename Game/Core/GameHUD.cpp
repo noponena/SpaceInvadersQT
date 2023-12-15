@@ -10,8 +10,8 @@ GameHUD::GameHUD(int width, int height)
   qDebug() << "initializing game hud with width" << width << "and height"
            << height;
   m_background->setBrush(QColor(22, 21, 19));
-  m_energyBar = new Graphics::EnergyBar(0, width / 2, 20, this);
-  m_healthBar = new Graphics::HealthBar(0, width / 2, 20, this);
+  m_energyBar = new Graphics::EnergyBar(0, width / 2, 20, true, this);
+  m_healthBar = new Graphics::HealthBar(0, width / 2, 20, true, this);
   QPixmap weapon1;
   QPixmap weapon2;
   QPixmap weapon3;

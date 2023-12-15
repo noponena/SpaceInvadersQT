@@ -3,8 +3,8 @@
 namespace Graphics {
 
 HealthBar::HealthBar(float maxHealth, float width, float height,
-                     QGraphicsItem *parent)
-    : ProgressBar(maxHealth, width, height, parent) {}
+                     bool showNumericProgression, QGraphicsItem *parent)
+    : ProgressBar(maxHealth, width, height, showNumericProgression, parent) {}
 
 QBrush HealthBar::selectBrush() {
   if (m_progressPercentage < 0.3)

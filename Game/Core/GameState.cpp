@@ -91,14 +91,14 @@ void GameState::initPlayerShip() {
       m_weaponBuilder.createWeapon(std::make_unique<Weapons::SecondaryWeapon>())
           .withProjectile(std::move(waveOfDestructionProjectile))
           .withWeaponCooldownMs(5000)
-          .withEnergyConsuption(500)
+          .withEnergyConsuption(200)
           .build();
 
   std::unique_ptr<Weapons::Weapon> vortex =
       m_weaponBuilder.createWeapon(std::make_unique<Weapons::SecondaryWeapon>())
           .withProjectile(std::move(vortexProjectile))
           .withWeaponCooldownMs(5000)
-          .withEnergyConsuption(1000)
+          .withEnergyConsuption(300)
           .build();
 
   std::unique_ptr<GameObjects::Projectiles::Projectile> primaryProjectile =
@@ -152,7 +152,7 @@ void GameState::initPlayerShip() {
   m_playerShip->setMaxHealth(50);
   m_playerShip->fullyRestoreEnergy();
   m_playerShip->fullyRestoreHealth();
-  m_playerShip->setEnergyRegenerationRate(100);
+  m_playerShip->setEnergyRegenerationRate(5);
 
   addGameObject(m_playerShip);
 }

@@ -3,8 +3,8 @@
 namespace Graphics {
 
 EnergyBar::EnergyBar(float maxEnergy, float width, float height,
-                     QGraphicsItem *parent)
-    : ProgressBar(maxEnergy, width, height, parent) {}
+                     bool showNumericProgression, QGraphicsItem *parent)
+    : ProgressBar(maxEnergy, width, height, showNumericProgression, parent) {}
 
 QBrush EnergyBar::selectBrush() { return QBrush(QColor(86, 123, 179)); }
 
