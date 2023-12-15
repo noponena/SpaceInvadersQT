@@ -60,7 +60,7 @@ protected:
   virtual void initializeDestructionAnimation() override;
   void initializeDestructionEffects() override;
   virtual void playOnHitAnimation();
-  void regenerateEnergy();
+  void regenerateEnergy(float deltaTimeInSeconds);
 protected slots:
   void onProjectileFired(std::shared_ptr<Projectiles::Projectile> projectile);
 

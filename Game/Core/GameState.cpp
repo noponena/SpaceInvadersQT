@@ -152,7 +152,7 @@ void GameState::initPlayerShip() {
   m_playerShip->setMaxHealth(50);
   m_playerShip->fullyRestoreEnergy();
   m_playerShip->fullyRestoreHealth();
-  m_playerShip->setEnergyRegenerationRate(1);
+  m_playerShip->setEnergyRegenerationRate(100);
 
   addGameObject(m_playerShip);
 }

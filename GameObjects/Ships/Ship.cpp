@@ -163,8 +163,8 @@ void Ship::playOnHitAnimation() {
   m_onHitTimerId = startTimer(100);
 }
 
-void Ship::regenerateEnergy() {
-  m_currentEnergy += m_energyRegenerationRate;
+void Ship::regenerateEnergy(float deltaTimeInSeconds) {
+  m_currentEnergy += m_energyRegenerationRate * deltaTimeInSeconds;
   if (m_currentEnergy > m_maxEnergy)
     m_currentEnergy = m_maxEnergy;
   else if (m_currentEnergy < 0)

@@ -14,7 +14,7 @@ PlayerShip::PlayerShip(const float speed, const Position &position)
 
 void PlayerShip::update(const UpdateContext &context) {
   Ship::update(context);
-  regenerateEnergy();
+  regenerateEnergy(context.deltaTimeInSeconds);
   emit playerEnergyUpdated(m_currentEnergy);
 }
 
