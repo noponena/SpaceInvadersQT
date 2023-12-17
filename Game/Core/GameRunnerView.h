@@ -23,9 +23,10 @@ namespace Core {
 class GameRunnerView : public QGraphicsView {
   Q_OBJECT
 public:
-  explicit GameRunnerView(QWidget *parent = nullptr);
+  explicit GameRunnerView(QRect screenGeometry, QWidget *parent = nullptr);
   ~GameRunnerView();
   void startGame();
+  void resumeGame();
 
   GameObjects::Ships::PlayerShip *playerShip() const;
 
@@ -79,7 +80,11 @@ private:
   using GameAction = std::function<void(float)>;
 
   const std::unordered_map<int, MenuAction> m_menuActions{
-      {Qt::Key_Escape, [&]() { quit(); }},
+      {Qt::Key_Escape,
+       [&]() {
+         m_pressedKeys.remove(Qt::Key_Escape);
+         pause();
+       }},
   };
   const std::unordered_map<int, GameAction> m_gameActions{
       {Qt::Key_Left, [&](float dt) { m_playerShip->accelerateLeft(dt); }},
@@ -148,7 +153,7 @@ private:
   inline void checkGameOver();
 signals:
   void fpsUpdated(int fps);
-  void windowClosed();
+  void gamePaused();
 
 private slots:
   void onObjectAdded(QGraphicsItem *object) {
@@ -163,9 +168,9 @@ private slots:
     m_gameOver = true;
     m_playerShip = nullptr;
   }
-  void quit() {
+  void pause() {
     m_gameTimer.stop();
-    emit windowClosed();
+    emit gamePaused();
   }
 };
 } // namespace Core

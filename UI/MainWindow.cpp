@@ -8,43 +8,49 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
   ui->setupUi(this);
 
-  // Central widget that will hold the layout
-  QWidget *centralWidget = new QWidget(this);
-  QVBoxLayout *layout = new QVBoxLayout(centralWidget);
-  layout->setSpacing(0); // No space between the widgets in the layout
-  layout->setContentsMargins(0, 0, 0, 0); // No margins around the layout
   setContentsMargins(0, 0, 0, 0);
   statusBar()->hide();
 
+  QScreen *screen = QGuiApplication::primaryScreen();
+  QRect screenGeometry = screen->geometry();
+
   // Create the game runner scene and view
-  m_gameRunnerView = new Game::Core::GameRunnerView(centralWidget);
+  m_gameRunnerView = new Game::Core::GameRunnerView(screenGeometry);
   m_gameRunnerView->setSizePolicy(QSizePolicy::Expanding,
                                   QSizePolicy::Expanding);
 
-  m_mainMenuView = new Game::Core::MainMenuView(centralWidget);
+  m_mainMenuView = new Game::Core::MainMenuView(screenGeometry);
   m_mainMenuView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-  // Add the views to the layout
-  // layout->addWidget(m_gameRunnerView);
-  layout->addWidget(m_mainMenuView);
+  m_pauseMenuView = new Game::Core::PauseMenuView(screenGeometry);
+  m_pauseMenuView->setSizePolicy(QSizePolicy::Expanding,
+                                 QSizePolicy::Expanding);
+
+  m_stackedWidget = new QStackedWidget(this);
+  m_stackedWidget->addWidget(m_mainMenuView);
+  m_stackedWidget->addWidget(m_pauseMenuView);
+  m_stackedWidget->addWidget(m_gameRunnerView);
 
   // Set central widget of the main window
-  setCentralWidget(centralWidget);
+  setCentralWidget(m_stackedWidget);
 
   setStyleSheet("border:0px");
 
-  // QTimer::singleShot(0, m_gameRunnerView,
-  //                    [this]() { m_gameRunnerView->startGame(); });
-  // QTimer::singleShot(0, this, SLOT(bringToForeground()));
-  // connect(m_gameRunnerView, &Game::Core::GameRunnerView::windowClosed, this,
-  //         &MainWindow::onWindowClosed);
+  connect(m_gameRunnerView, &Game::Core::GameRunnerView::gamePaused, this,
+          &MainWindow::onGamePaused);
   connect(m_mainMenuView, &Game::Core::MainMenuView::windowClosed, this,
           &MainWindow::onWindowClosed);
+  connect(m_mainMenuView, &Game::Core::MainMenuView::newGameSelected, this,
+          &MainWindow::newGame);
 
-  QScreen *screen = QGuiApplication::primaryScreen();
-  QRect screenGeometry = screen->geometry();
+  connect(m_pauseMenuView, &Game::Core::PauseMenuView::resumeGameSelected, this,
+          &MainWindow::resumeGame);
+  connect(m_pauseMenuView, &Game::Core::PauseMenuView::windowClosed, this,
+          &MainWindow::onWindowClosed);
+
+  m_stackedWidget->setCurrentWidget(m_mainMenuView);
+
   resize(screenGeometry.width(), screenGeometry.height());
-  // QApplication::setOverrideCursor(Qt::BlankCursor);
 
   setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
   showFullScreen();
@@ -52,10 +58,21 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow() { delete ui; }
 
-void MainWindow::resizeEvent(QResizeEvent *event) {
-  QMainWindow::resizeEvent(event); // Call base class handler
-  // adjustGameRunnerSize();
-  adjustMainMenuSize();
+void MainWindow::newGame() {
+  QApplication::setOverrideCursor(Qt::BlankCursor);
+  m_stackedWidget->setCurrentWidget(m_gameRunnerView);
+  m_gameRunnerView->startGame();
+}
+
+void MainWindow::resumeGame() {
+  QApplication::setOverrideCursor(Qt::BlankCursor);
+  m_stackedWidget->setCurrentWidget(m_gameRunnerView);
+  m_gameRunnerView->resumeGame();
+}
+
+void MainWindow::onGamePaused() {
+  QApplication::restoreOverrideCursor();
+  m_stackedWidget->setCurrentWidget(m_pauseMenuView);
 }
 
 void MainWindow::adjustGameRunnerSize() {

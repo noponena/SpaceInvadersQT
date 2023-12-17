@@ -4,11 +4,15 @@ HEADERS += \
     $$PWD/GameRunnerView.h \
     $$PWD/GameState.h \
     $$PWD/MainMenuView.h \
-    $$PWD/MenuTextItem.h
+    $$PWD/MenuTextItem.h \
+    $$PWD/MenuView.h \
+    $$PWD/PauseMenuView.h
 
 SOURCES += \
     $$PWD/GameHUD.cpp \
     $$PWD/GameRunnerView.cpp \
     $$PWD/GameState.cpp \
     $$PWD/MainMenuView.cpp \
+    $$PWD/MenuView.cpp \
+    $$PWD/PauseMenuView.cpp \
     $$PWD/MenuTextItem.cpp

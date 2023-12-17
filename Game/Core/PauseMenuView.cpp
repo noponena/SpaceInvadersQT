@@ -1,14 +1,12 @@
-#include "MainMenuView.h"
-#include <QGraphicsSceneMouseEvent>
-#include <QGraphicsTextItem>
+#include "PauseMenuView.h"
 
 namespace Game {
 namespace Core {
 
-MainMenuView::MainMenuView(QRect screenGeometry, QWidget *parent)
+PauseMenuView::PauseMenuView(QRect screenGeometry, QWidget *parent)
     : MenuView(screenGeometry, parent) {
   QColor color = QColor(255, 255, 255);
-  createMenuItem("New Game", MenuAction::NEW_GAME, color, 100,
+  createMenuItem("Resume Game", MenuAction::RESUME_GAME, color, 100,
                  QPointF(100, 150));
   createMenuItem("Level Selector", MenuAction::LEVEL_SELECTOR, color, 100,
                  QPointF(100, 300));

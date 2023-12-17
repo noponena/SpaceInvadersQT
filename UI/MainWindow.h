@@ -3,7 +3,9 @@
 
 #include "Game/Core/GameRunnerView.h"
 #include "Game/Core/MainMenuView.h"
+#include "Game/Core/PauseMenuView.h"
 #include <QMainWindow>
+#include <QStackedWidget>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -18,15 +20,17 @@ public:
   MainWindow(QWidget *parent = nullptr);
   ~MainWindow();
 
-protected:
-  void resizeEvent(QResizeEvent *event) override;
-
 private:
   Ui::MainWindow *ui;
   Game::Core::MainMenuView *m_mainMenuView;
+  Game::Core::PauseMenuView *m_pauseMenuView;
   Game::Core::GameRunnerView *m_gameRunnerView;
+  QStackedWidget *m_stackedWidget;
 
 private slots:
+  void newGame();
+  void resumeGame();
+  void onGamePaused();
   void onWindowClosed();
   void bringToForeground();
   void adjustMainMenuSize();

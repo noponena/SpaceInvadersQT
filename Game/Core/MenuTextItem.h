@@ -7,7 +7,7 @@
 namespace Game {
 namespace Core {
 
-enum class MenuAction { NEW_GAME, LEVEL_SELECTOR, OPTIONS, QUIT };
+enum class MenuAction { NEW_GAME, RESUME_GAME, LEVEL_SELECTOR, OPTIONS, QUIT };
 
 class MenuTextItem : public QGraphicsTextItem {
   Q_OBJECT

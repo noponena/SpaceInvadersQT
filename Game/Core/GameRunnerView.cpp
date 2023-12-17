@@ -6,17 +6,30 @@
 
 namespace Game {
 namespace Core {
-GameRunnerView::GameRunnerView(QWidget *parent)
+GameRunnerView::GameRunnerView(QRect screenGeometry, QWidget *parent)
     : QGraphicsView(parent), m_scene(this), m_continuousShoot(false),
       m_continuousEnemySpawn(true), m_gameOver(false),
       m_gameOverInfoDisplayed(false) {
   m_gameState = new GameState();
   m_playerShip = m_gameState->playerShip();
+  m_gameObjects = &(m_gameState->gameObjects());
+  m_collisionDetector = std::make_unique<CollisionDetection::CollisionDetector>(
+      m_gameState->gameObjects(), screenGeometry);
   setupView();
+  scene()->setSceneRect(screenGeometry);
   setupCounters();
-  setupConnections();
   m_elapsedTimer.start();
   m_fpsTimer.start();
+
+  m_gameHUD =
+      new Core::GameHUD(screenGeometry.width(), screenGeometry.height());
+  m_scene.addItem(m_gameHUD);
+  m_gameHUD->setPos(0, screenGeometry.height() * 0.9);
+
+  setupConnections();
+
+  m_gameState->setSize(screenGeometry.width(), screenGeometry.height());
+  m_gameState->initialize();
 }
 
 GameRunnerView::~GameRunnerView() {
@@ -97,16 +110,6 @@ void GameRunnerView::setupConnections() {
           &GameRunnerView::onObjectDeleted);
   connect(m_gameState, &GameState::playerShipDestroyed, this,
           &GameRunnerView::onPlayerShipDestroyed);
-}
-
-void GameRunnerView::startGame() {
-  // Initialize game state
-  qDebug() << "starting game..";
-  int width = scene()->sceneRect().width();
-  int height = scene()->sceneRect().height();
-  m_gameHUD = new Core::GameHUD(width, height);
-  m_scene.addItem(m_gameHUD);
-  m_gameHUD->setPos(0, height * 0.9);
 
   connect(m_playerShip,
           &GameObjects::Ships::PlayerShip::playerSecondaryWeaponsChanged,
@@ -128,16 +131,11 @@ void GameRunnerView::startGame() {
   connect(m_playerShip, &GameObjects::Ships::PlayerShip::playerMaxHealthSet,
           m_gameHUD, &Core::GameHUD::onPlayerMaxHealthSet);
 
-  m_gameState->setSize(scene()->sceneRect().width(),
-                       scene()->sceneRect().height());
-  m_gameState->initialize();
-  m_gameObjects = &(m_gameState->gameObjects());
-  m_collisionDetector = std::make_unique<CollisionDetection::CollisionDetector>(
-      m_gameState->gameObjects(), rect());
-
-  // Create and start game loop timer
-
   connect(&m_gameTimer, &QTimer::timeout, this, &GameRunnerView::gameLoop);
+}
+
+void GameRunnerView::startGame() {
+  qDebug() << "starting game..";
   bool perfTest = false;
 
 #ifdef PERFORMANCE_BENCHMARK
@@ -146,9 +144,12 @@ void GameRunnerView::startGame() {
 #endif
   m_levelManager = std::make_unique<LevelManager>(m_gameState, perfTest);
   m_gameTimer.start(0);
+}
 
-  // Hide menu and show game window
-  // ...
+void GameRunnerView::resumeGame() {
+  qDebug() << "resuming game..";
+  m_elapsedTimer.start();
+  m_gameTimer.start(0);
 }
 
 void GameRunnerView::gameLoop() {
@@ -258,7 +259,7 @@ void GameRunnerView::initializeBenchmark() {
   connect(&m_benchmarkTimer, &QTimer::timeout, this, ([]() {
     Utils::PerformanceBenchmark::getInstance().logPerformanceScore();
   }));
-  connect(&m_benchmarkTimer, &QTimer::timeout, this, &GameRunnerView::quit);
+  connect(&m_benchmarkTimer, &QTimer::timeout, this, &GameRunnerView::pause);
   m_benchmarkTimer.start(30000);
 }
 
