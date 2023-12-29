@@ -16,7 +16,7 @@ public:
 
   // Projectile interface
 public:
-  std::unique_ptr<Projectile> clone() const override;
+  std::unique_ptr<GameObject> clone() const override;
 };
 
 } // namespace Projectiles

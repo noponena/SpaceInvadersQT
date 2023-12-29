@@ -16,7 +16,7 @@ bool WaveOfDestruction::shouldBeDeleted() {
          m_position.isBeyondScreenTopLimit(50);
 }
 
-std::unique_ptr<Projectile> WaveOfDestruction::clone() const {
+std::unique_ptr<GameObject> WaveOfDestruction::clone() const {
   std::unique_ptr<WaveOfDestruction> projectile =
       std::make_unique<WaveOfDestruction>();
   projectile->m_objectTypes = m_objectTypes;

@@ -8,7 +8,9 @@ std::unique_ptr<Weapon> SecondaryWeapon::clone() const {
   weapon->setEnergyConsuption(energyConsuption());
   weapon->m_projectilePrototype =
       std::unique_ptr<GameObjects::Projectiles::Projectile>(
-          m_projectilePrototype->clone());
+          std::unique_ptr<GameObjects::Projectiles::Projectile>(
+              static_cast<GameObjects::Projectiles::Projectile *>(
+                  m_projectilePrototype->clone().release())));
   weapon->m_soundEnabled = m_soundEnabled;
   weapon->m_cooldownMs = m_cooldownMs;
   return weapon;

@@ -63,6 +63,10 @@ signals:
 protected:
   void initializeObjectType() override;
   void initializeSounds() override;
+
+  // GameObject interface
+public:
+  std::unique_ptr<GameObject> clone() const override;
 };
 } // namespace Ships
 

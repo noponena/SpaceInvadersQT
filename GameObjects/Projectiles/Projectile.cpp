@@ -7,7 +7,7 @@ namespace Projectiles {
 Projectile::Projectile()
     : GameObject(Position(0, 0)), m_damage(1), m_properties({}) {}
 
-std::unique_ptr<Projectile> Projectile::clone() const {
+std::unique_ptr<GameObject> Projectile::clone() const {
   std::unique_ptr<Projectile> projectile = std::make_unique<Projectile>();
   projectile->m_objectTypes = m_objectTypes;
   projectile->m_magnetism = m_magnetism;

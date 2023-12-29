@@ -18,5 +18,13 @@ void Stellar::initializeObjectType() {
   m_objectTypes.insert(ObjectType::STELLAR_COIN);
 }
 
+std::unique_ptr<GameObject> Stellar::clone() const {
+  std::unique_ptr<Stellar> stellar = std::make_unique<Stellar>(m_position);
+  stellar->m_pixmapData = m_pixmapData;
+  stellar->m_destructionSoundInfo = m_destructionSoundInfo;
+  stellar->m_objectTypes = m_objectTypes;
+  return stellar;
+}
+
 } // namespace Collectables
 } // namespace GameObjects

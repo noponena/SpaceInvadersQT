@@ -85,6 +85,34 @@ void EnemyShip::clampHealthSpawnProbability() {
     m_healthSpawnProbability = 1;
 }
 
+std::unique_ptr<GameObject> EnemyShip::clone() const {
+  std::unique_ptr<EnemyShip> enemyShip =
+      std::make_unique<EnemyShip>(m_maxHealth, m_position);
+  enemyShip->m_pixmapData = m_pixmapData;
+  enemyShip->m_destructionSoundInfo = m_destructionSoundInfo;
+  enemyShip->m_objectTypes = m_objectTypes;
+  enemyShip->m_healthSpawnProbability = m_healthSpawnProbability;
+  enemyShip->m_stellarCoinSpawnRange = m_stellarCoinSpawnRange;
+  enemyShip->m_magneticTargets = m_magneticTargets;
+  enemyShip->m_fireCooldownMs = m_fireCooldownMs;
+  enemyShip->setMovementStrategy(movementStrategy());
+
+  enemyShip->m_energyRegenerationRate = m_energyRegenerationRate;
+  enemyShip->m_currentHealth = m_currentHealth;
+  enemyShip->m_currentEnergy = m_currentEnergy;
+  enemyShip->m_currentHealth = m_currentHealth;
+  enemyShip->m_maxEnergy = m_maxEnergy;
+  enemyShip->m_originalColor = m_originalColor;
+  enemyShip->m_autoFire = m_autoFire;
+
+  for (auto &weapon : m_primaryWeapons) {
+    enemyShip->addPrimaryWeapon(weapon->clone());
+  }
+
+  enemyShip->initialize();
+  return enemyShip;
+}
+
 void EnemyShip::collideWith(GameObject &other) {
   other.collideWithEnemyShip(*this);
 }

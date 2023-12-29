@@ -46,7 +46,7 @@ public:
 
 protected:
   bool m_immortal;
-  unsigned m_fireRate, m_fireCooldownMs, m_pixelWidth, m_pixelHeight,
+  unsigned m_fireCooldownMs, m_pixelWidth, m_pixelHeight,
       m_destructionParticleCount;
   float m_currentHealth, m_maxHealth, m_speed, m_maxEnergy, m_currentEnergy,
       m_energyRegenerationRate;

@@ -18,7 +18,7 @@ public:
   void update(const UpdateContext &context) override;
   void collideWithEnemyShip(Ships::EnemyShip &enemyShip) override;
   bool shouldBeDeleted() override;
-  std::unique_ptr<Projectile> clone() const override;
+  std::unique_ptr<GameObject> clone() const override;
 };
 
 } // namespace Projectiles

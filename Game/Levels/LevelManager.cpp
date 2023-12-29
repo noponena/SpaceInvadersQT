@@ -2,6 +2,7 @@
 #include "GameObjects/Ships/EnemyShip.h"
 #include "Utils/Utils.h"
 #include "Weapons/PrimaryWeapon.h"
+#include <yaml-cpp/yaml.h>
 
 namespace Game {
 namespace Core {
@@ -35,6 +36,19 @@ LevelManager::LevelManager(GameState *gameState, bool performanceTest)
   m_weaponBuilder.createWeapon(std::make_unique<Weapons::PrimaryWeapon>())
       .withProjectile(std::move(projectile))
       .withWeaponCooldownMs(m_enemyWeaponCooldownMs);
+}
+
+LevelManager::LevelManager(GameState *gameState, int screenWidth,
+                           int screenHeight)
+    : m_gameState(gameState) {
+  m_levelLoader = std::make_unique<Levels::LevelLoader>(
+      m_gameState, screenWidth, screenHeight);
+  m_levels = m_levelLoader->loadLevels();
+}
+
+void LevelManager::startLevel(int levelNumber) {
+  m_currentLevel = m_levels[levelNumber];
+  m_elapsedTimer.start();
 }
 
 void LevelManager::update() {
@@ -96,5 +110,25 @@ void LevelManager::update() {
     m_lastSpawnTime = 0;
   }
 }
+
+void LevelManager::progressLevel() {
+  auto &spawnEvents = m_currentLevel.spawnEvents;
+  for (auto it = spawnEvents.begin(); it != spawnEvents.end();) {
+    it->execute(m_elapsedTimer.elapsed());
+
+    if (it->isFinished()) {
+      it = spawnEvents.erase(it);
+      qDebug() << "deleted spawn event";
+    } else {
+      ++it;
+    }
+  }
+}
+
+void LevelManager::setLevel(int levelNumber) {
+  m_currentLevel = m_levels.at(levelNumber);
+}
+
+void LevelManager::start() { m_levelTimer.start(); }
 } // namespace Core
 } // namespace Game

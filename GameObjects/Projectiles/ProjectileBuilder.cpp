@@ -8,7 +8,8 @@ ProjectileBuilder::ProjectileBuilder() {}
 ProjectileBuilder ProjectileBuilder::clone() const {
   ProjectileBuilder builder;
   if (m_projectile)
-    builder.m_projectile = this->m_projectile->clone();
+    builder.m_projectile = std::unique_ptr<Projectile>(
+        static_cast<Projectile *>(this->m_projectile->clone().release()));
   else
     logNullPointerWarning();
   return builder;
@@ -79,7 +80,8 @@ ProjectileBuilder::withGrahpics(const PixmapData pixmapData) {
 
 std::unique_ptr<GameObjects::Projectiles::Projectile>
 ProjectileBuilder::build() {
-  return m_projectile->clone();
+  return std::unique_ptr<Projectile>(
+      static_cast<Projectile *>(this->m_projectile->clone().release()));
 }
 
 void ProjectileBuilder::logNullPointerWarning() const {

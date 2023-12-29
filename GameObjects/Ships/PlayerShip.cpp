@@ -28,6 +28,23 @@ void PlayerShip::initializeSounds() {
       {m_soundEnabled, Game::Audio::SoundEffect::PLAYER_DESTROYED});
 }
 
+std::unique_ptr<GameObject> PlayerShip::clone() const {
+  std::unique_ptr<PlayerShip> playerShip =
+      std::make_unique<PlayerShip>(m_speed, m_position);
+  playerShip->m_pixmapData = m_pixmapData;
+  playerShip->m_destructionSoundInfo = m_destructionSoundInfo;
+  playerShip->m_objectTypes = m_objectTypes;
+  playerShip->m_magnetism = m_magnetism;
+  playerShip->m_maxHealth = m_maxHealth;
+  playerShip->m_maxEnergy = m_maxEnergy;
+  playerShip->m_currentEnergy = m_currentEnergy;
+  playerShip->m_currentHealth = m_currentHealth;
+  playerShip->m_currentSpeedX = m_currentSpeedX;
+  playerShip->m_currentSpeedY = m_currentSpeedY;
+  playerShip->m_acceleration = m_acceleration;
+  return playerShip;
+}
+
 void PlayerShip::moveHorizontal(float deltaTimeInSeconds) {
   moveX(m_currentSpeedX * deltaTimeInSeconds);
 }
@@ -104,6 +121,7 @@ float PlayerShip::maxHealth() const { return m_maxHealth; }
 void PlayerShip::setMaxHealth(float newMaxHealth) {
   m_maxHealth = newMaxHealth;
   emit playerMaxHealthSet(newMaxHealth);
+  emit playerHealthUpdated(newMaxHealth);
 }
 
 void PlayerShip::setSecondaryWeapon(std::unique_ptr<Weapons::Weapon> newWeapon,

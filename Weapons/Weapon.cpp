@@ -62,7 +62,11 @@ void Weapon::setEnergyConsuption(unsigned int newEnergyConsuption) {
 
 std::unique_ptr<GameObjects::Projectiles::Projectile>
 Weapon::createProjectile() {
-  auto projectile = m_projectilePrototype->clone();
+  std::unique_ptr<GameObjects::Projectiles::Projectile> projectile =
+      std::unique_ptr<GameObjects::Projectiles::Projectile>(
+          static_cast<GameObjects::Projectiles::Projectile *>(
+              m_projectilePrototype->clone().release()));
+
   projectile->setPosition(m_owner->getPosition());
   projectile->setSoundEnabled(m_soundEnabled);
   return projectile;

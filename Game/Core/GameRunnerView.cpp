@@ -142,7 +142,10 @@ void GameRunnerView::startGame() {
   perfTest = true;
   initializeBenchmark();
 #endif
-  m_levelManager = std::make_unique<LevelManager>(m_gameState, perfTest);
+  // m_levelManager = std::make_unique<LevelManager>(m_gameState, perfTest);
+  m_levelManager = std::make_unique<LevelManager>(m_gameState, scene()->width(),
+                                                  scene()->height());
+  m_levelManager->startLevel(1);
   m_gameTimer.start(0);
 }
 
@@ -201,7 +204,7 @@ void GameRunnerView::manageEnemySpawn(float deltaTimeInSeconds) {
                         : 5 - static_cast<int>(deltaTimeInSeconds * 1000);
   std::this_thread::sleep_for(std::chrono::milliseconds(timeToSleep));
   if (m_continuousEnemySpawn) {
-    m_levelManager->update();
+    m_levelManager->progressLevel();
   }
 }
 

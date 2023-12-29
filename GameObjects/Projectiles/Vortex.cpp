@@ -32,7 +32,7 @@ bool Vortex::shouldBeDeleted() {
          m_timeSinceSpawnSeconds >= m_timeToLiveSeconds;
 }
 
-std::unique_ptr<Projectile> Vortex::clone() const {
+std::unique_ptr<GameObject> Vortex::clone() const {
   std::unique_ptr<Vortex> projectile = std::make_unique<Vortex>();
   projectile->m_objectTypes = m_objectTypes;
   projectile->m_magnetism = m_magnetism;

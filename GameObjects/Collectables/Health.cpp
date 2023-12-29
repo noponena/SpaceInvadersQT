@@ -18,5 +18,13 @@ void Health::initializeObjectType() {
   m_objectTypes.insert(ObjectType::HEALTH);
 }
 
+std::unique_ptr<GameObject> Health::clone() const {
+  std::unique_ptr<Health> health = std::make_unique<Health>(m_position);
+  health->m_pixmapData = m_pixmapData;
+  health->m_destructionSoundInfo = m_destructionSoundInfo;
+  health->m_objectTypes = m_objectTypes;
+  return health;
+}
+
 } // namespace Collectables
 } // namespace GameObjects

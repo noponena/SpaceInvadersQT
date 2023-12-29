@@ -73,6 +73,7 @@ public:
   // Constructors & Destructor
   GameObject(const Position &position);
   virtual ~GameObject() = default;
+  virtual std::unique_ptr<GameObject> clone() const = 0;
 
   // Initialization & Lifecycle
   virtual void initialize();

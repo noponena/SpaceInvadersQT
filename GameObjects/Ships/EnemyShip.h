@@ -33,6 +33,10 @@ protected:
 
 private:
   void clampHealthSpawnProbability();
+
+  // GameObject interface
+public:
+  std::unique_ptr<GameObject> clone() const override;
 };
 } // namespace Ships
 

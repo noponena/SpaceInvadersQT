@@ -14,6 +14,10 @@ public:
 protected:
   void initializeSounds() override;
   void initializeObjectType() override;
+
+  // GameObject interface
+public:
+  std::unique_ptr<GameObject> clone() const override;
 };
 } // namespace Collectables
 

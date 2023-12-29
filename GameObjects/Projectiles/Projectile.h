@@ -18,7 +18,7 @@ class Projectile : public GameObject {
 public:
   Projectile();
   virtual ~Projectile() = default;
-  virtual std::unique_ptr<Projectile> clone() const;
+  virtual std::unique_ptr<GameObject> clone() const override;
 
   bool shouldBeDeleted() override;
   void collideWith(GameObject &other) override;
