@@ -44,6 +44,11 @@ public:
   unsigned int energyRegenerationRate() const;
   void setEnergyRegenerationRate(unsigned int newEnergyRegenerationRate);
 
+  void setMaxHealth(float newMaxHealth);
+  void setSpeed(float newSpeed);
+
+  void setMaxEnergy(float newMaxEnergy);
+
 protected:
   bool m_immortal;
   unsigned m_fireCooldownMs, m_pixelWidth, m_pixelHeight,

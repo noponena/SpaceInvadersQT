@@ -143,6 +143,12 @@ void Ship::setEnergyRegenerationRate(unsigned int newEnergyRegenerationRate) {
   m_energyRegenerationRate = newEnergyRegenerationRate;
 }
 
+void Ship::setMaxHealth(float newMaxHealth) { m_maxHealth = newMaxHealth; }
+
+void Ship::setSpeed(float newSpeed) { m_speed = newSpeed; }
+
+void Ship::setMaxEnergy(float newMaxEnergy) { m_maxEnergy = newMaxEnergy; }
+
 int Ship::currentHp() const { return m_currentHealth; }
 
 bool Ship::shouldBeDeleted() {

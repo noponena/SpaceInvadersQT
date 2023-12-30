@@ -10,7 +10,10 @@ class WeaponBuilder {
 public:
   WeaponBuilder();
   WeaponBuilder clone() const;
-  WeaponBuilder &createWeapon(std::unique_ptr<Weapon> weapon);
+  template <typename WeaponType> WeaponBuilder &createWeapon() {
+    m_weapon = std::make_unique<WeaponType>();
+    return *this;
+  }
   WeaponBuilder &withSound(bool soundEnabled);
   WeaponBuilder &withWeaponCooldownMs(const unsigned cooldownMs);
   WeaponBuilder &withEnergyConsuption(const unsigned energyConsuption);

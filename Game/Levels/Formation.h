@@ -10,7 +10,7 @@ namespace Levels {
 class Formation {
 public:
   enum class Type {
-    RECTAGLE,
+    RECTANGLE,
     TRIANGLE,
     CIRCLE,
   };
@@ -18,6 +18,7 @@ public:
   Formation();
   Formation &withType(Type type);
   Formation &withSize(int width, int height);
+  Formation &withSolidity(bool solidity);
   Formation &withSpacing(const QPoint spacing);
 
   std::vector<QPoint> getPoints(QPoint referencePosition) const;
@@ -26,6 +27,7 @@ private:
   Type m_type;
   int m_width;
   int m_height;
+  bool m_solid;
   QPoint m_spacing;
 
   std::vector<QPoint> getRectPoints(QPoint referencePosition) const;

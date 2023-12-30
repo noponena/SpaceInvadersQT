@@ -10,7 +10,15 @@ class ProjectileBuilder {
 public:
   ProjectileBuilder();
   ProjectileBuilder clone() const;
-  ProjectileBuilder &createProjectile(std::unique_ptr<Projectile> projectile);
+
+  template <typename ProjectileType> ProjectileBuilder &createProjectile() {
+    m_projectile = std::make_unique<ProjectileType>();
+    m_projectile->setMovementStrategy(
+        Game::Movement::StationaryMovementStrategy());
+    m_projectile->setDamage(1);
+    return *this;
+  }
+
   ProjectileBuilder &withObjectType(const ObjectType objectType);
   ProjectileBuilder &withDamage(const int damage);
   ProjectileBuilder &
@@ -20,7 +28,7 @@ public:
   ProjectileBuilder &
   withDestructionSound(const Game::Audio::SoundInfo destructionSound);
   ProjectileBuilder &withGrahpics(const GameObjects::PixmapData pixmapData);
-  std::unique_ptr<GameObjects::Projectiles::Projectile> build();
+  std::unique_ptr<Projectile> build();
 
 private:
   std::unique_ptr<Projectile> m_projectile;

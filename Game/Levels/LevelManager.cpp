@@ -22,8 +22,7 @@ LevelManager::LevelManager(GameState *gameState, bool performanceTest)
 
   std::unique_ptr<GameObjects::Projectiles::Projectile> projectile =
       m_projectileBuilder
-          .createProjectile(
-              std::make_unique<GameObjects::Projectiles::Projectile>())
+          .createProjectile<GameObjects::Projectiles::Projectile>()
           .withDamage(1)
           .withMovementStrategy(
               Game::Movement::VerticalMovementStrategy(500, 1))
@@ -33,7 +32,7 @@ LevelManager::LevelManager(GameState *gameState, bool performanceTest)
           .withObjectType(GameObjects::ObjectType::ENEMY_PROJECTILE)
           .build();
 
-  m_weaponBuilder.createWeapon(std::make_unique<Weapons::PrimaryWeapon>())
+  m_weaponBuilder.createWeapon<Weapons::PrimaryWeapon>()
       .withProjectile(std::move(projectile))
       .withWeaponCooldownMs(m_enemyWeaponCooldownMs);
 }

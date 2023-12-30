@@ -13,11 +13,6 @@ WeaponBuilder WeaponBuilder::clone() const {
   return builder;
 }
 
-WeaponBuilder &WeaponBuilder::createWeapon(std::unique_ptr<Weapon> weapon) {
-  m_weapon = std::move(weapon);
-  return *this;
-}
-
 WeaponBuilder &WeaponBuilder::withSound(bool soundEnabled) {
   if (m_weapon) {
     if (soundEnabled)

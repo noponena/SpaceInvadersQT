@@ -67,9 +67,7 @@ void GameState::initPlayerShip() {
           &GameState::onPlayerShipDestroyed);
 
   std::unique_ptr<GameObjects::Projectiles::Projectile> vortexProjectile =
-      m_projectileBuilder
-          .createProjectile(
-              std::make_unique<GameObjects::Projectiles::Vortex>())
+      m_projectileBuilder.createProjectile<GameObjects::Projectiles::Vortex>()
           .withObjectType(GameObjects::ObjectType::PLAYER_PROJECTILE)
           .withDamage(0)
           .withMovementStrategy(
@@ -79,8 +77,7 @@ void GameState::initPlayerShip() {
   std::unique_ptr<GameObjects::Projectiles::Projectile>
       waveOfDestructionProjectile =
           m_projectileBuilder
-              .createProjectile(std::make_unique<
-                                GameObjects::Projectiles::WaveOfDestruction>())
+              .createProjectile<GameObjects::Projectiles::WaveOfDestruction>()
               .withObjectType(GameObjects::ObjectType::PLAYER_PROJECTILE)
               .withDamage(1000)
               .withMovementStrategy(
@@ -88,14 +85,14 @@ void GameState::initPlayerShip() {
               .build();
 
   std::unique_ptr<Weapons::Weapon> waveOfDestruction =
-      m_weaponBuilder.createWeapon(std::make_unique<Weapons::SecondaryWeapon>())
+      m_weaponBuilder.createWeapon<Weapons::SecondaryWeapon>()
           .withProjectile(std::move(waveOfDestructionProjectile))
           .withWeaponCooldownMs(5000)
           .withEnergyConsuption(200)
           .build();
 
   std::unique_ptr<Weapons::Weapon> vortex =
-      m_weaponBuilder.createWeapon(std::make_unique<Weapons::SecondaryWeapon>())
+      m_weaponBuilder.createWeapon<Weapons::SecondaryWeapon>()
           .withProjectile(std::move(vortexProjectile))
           .withWeaponCooldownMs(5000)
           .withEnergyConsuption(300)
@@ -103,8 +100,7 @@ void GameState::initPlayerShip() {
 
   std::unique_ptr<GameObjects::Projectiles::Projectile> primaryProjectile =
       m_projectileBuilder
-          .createProjectile(
-              std::make_unique<GameObjects::Projectiles::Projectile>())
+          .createProjectile<GameObjects::Projectiles::Projectile>()
           .withObjectType(GameObjects::ObjectType::PLAYER_PROJECTILE)
           .withDamage(1)
           .withMovementStrategy(
@@ -118,7 +114,7 @@ void GameState::initPlayerShip() {
 
   // Create the primary weapon using WeaponBuilder
   std::unique_ptr<Weapons::Weapon> weapon =
-      m_weaponBuilder.createWeapon(std::make_unique<Weapons::PrimaryWeapon>())
+      m_weaponBuilder.createWeapon<Weapons::PrimaryWeapon>()
           .withProjectile(std::move(primaryProjectile))
           .withWeaponCooldownMs(0)
           .build();
@@ -172,8 +168,7 @@ void GameState::initEnemyShips() {
   int randomY = distr(eng);
   std::unique_ptr<GameObjects::Projectiles::Projectile> projectile =
       m_projectileBuilder
-          .createProjectile(
-              std::make_unique<GameObjects::Projectiles::Projectile>())
+          .createProjectile<GameObjects::Projectiles::Projectile>()
           .withDamage(1)
           .withMovementStrategy(
               Game::Movement::VerticalMovementStrategy(500, 1))
@@ -182,7 +177,7 @@ void GameState::initEnemyShips() {
 
   // Then, create the weapon using WeaponBuilder
   std::unique_ptr<Weapons::Weapon> weapon =
-      m_weaponBuilder.createWeapon(std::make_unique<Weapons::PrimaryWeapon>())
+      m_weaponBuilder.createWeapon<Weapons::PrimaryWeapon>()
           .withProjectile(std::move(projectile))
           .withWeaponCooldownMs(0)
           .build();

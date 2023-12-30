@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <filesystem>
 #include <regex>
+#include <stdexcept>
 #include <yaml-cpp/yaml.h>
 
 namespace Game {
@@ -12,21 +13,20 @@ LevelLoader::LevelLoader(Core::GameState *gameState, int screenWidth,
                          int screenHeight)
     : m_gameState(gameState), m_screenWidth(screenWidth),
       m_screenHeight(screenHeight) {
-  int minX = m_gameState->m_minX;
-  int maxX = m_gameState->m_maxX;
-  int minY = m_gameState->m_minY;
-  int maxY = m_gameState->m_maxY;
+  m_minX = m_gameState->m_minX;
+  m_maxX = m_gameState->m_maxX;
+  m_minY = m_gameState->m_minY;
+  m_maxY = m_gameState->m_maxY;
 
   // 2. Create a new enemy ship
-  GameObjects::Position pos(0, 0, minX, maxX, minY, maxY);
+  GameObjects::Position pos(0, 0, m_minX, m_maxX, m_minY, m_maxY);
 
   GameObjects::PixmapData pixmapData{
       QPointF(30, 30), ":/Images/enemy_laser_projectile.png", "", ""};
 
   std::unique_ptr<GameObjects::Projectiles::Projectile> projectile =
       m_projectileBuilder
-          .createProjectile(
-              std::make_unique<GameObjects::Projectiles::Projectile>())
+          .createProjectile<GameObjects::Projectiles::Projectile>()
           .withDamage(1)
           .withMovementStrategy(
               Game::Movement::VerticalMovementStrategy(500, 1))
@@ -36,7 +36,7 @@ LevelLoader::LevelLoader(Core::GameState *gameState, int screenWidth,
           .withObjectType(GameObjects::ObjectType::ENEMY_PROJECTILE)
           .build();
 
-  m_weaponBuilder.createWeapon(std::make_unique<Weapons::PrimaryWeapon>())
+  m_weaponBuilder.createWeapon<Weapons::PrimaryWeapon>()
       .withProjectile(std::move(projectile))
       .withWeaponCooldownMs(2500);
 
@@ -88,6 +88,19 @@ Level LevelLoader::loadLevel(const std::string &filepath) {
   // For each spawn event in the YAML file:
   for (const auto &eventNode : config["SpawnEvents"]) {
     auto formationNode = eventNode["Formation"];
+    Formation::Type formationType =
+        stringToFormationType(formationNode["Type"].as<std::string>());
+    int formationWidth = formationNode["Width"].as<int>();
+    int formationHeight = formationNode["Height"].as<int>();
+    bool formationSolidity = formationNode["Solid"].as<bool>();
+    auto formationSpacingNode = formationNode["Spacing"];
+    int formationSpacingX = formationSpacingNode["X"].as<int>();
+    int formationSpacingY = formationSpacingNode["Y"].as<int>();
+    Formation formation;
+    formation = formation.withType(formationType)
+                    .withSize(formationWidth, formationHeight)
+                    .withSolidity(formationSolidity)
+                    .withSpacing(QPoint(formationSpacingX, formationSpacingY));
     auto positionNode = eventNode["Position"];
     float xRatio = positionNode["X"].as<float>(-1);
     float yRatio = positionNode["Y"].as<float>(-1);
@@ -99,6 +112,7 @@ Level LevelLoader::loadLevel(const std::string &filepath) {
                 .withTriggerTime(eventNode["Time"].as<int>())
                 .withInterval(eventNode["IntervalMs"].as<int>())
                 .withPosition(QPoint(x, y))
+                .withFormation(formation)
                 .withGameObject(m_enemyShip->clone());
 
     qDebug() << "adding spawn event...";
@@ -135,6 +149,23 @@ std::unordered_map<int, Level> LevelLoader::loadLevels() {
   }
 
   return levels;
+}
+
+Formation::Type
+LevelLoader::stringToFormationType(std::string formationTypeStr) {
+  std::string upperStr = formationTypeStr;
+  std::transform(upperStr.begin(), upperStr.end(), upperStr.begin(),
+                 [](unsigned char c) { return std::toupper(c); });
+
+  if (upperStr == "RECTANGLE")
+    return Formation::Type::RECTANGLE;
+  if (upperStr == "TRIANGLE")
+    return Formation::Type::TRIANGLE;
+  if (upperStr == "CIRCLE")
+    return Formation::Type::CIRCLE;
+
+  throw std::invalid_argument("Unrecognized formation type: '" +
+                              formationTypeStr + "'");
 }
 
 } // namespace Levels

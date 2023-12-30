@@ -16,15 +16,6 @@ ProjectileBuilder ProjectileBuilder::clone() const {
 }
 
 ProjectileBuilder &
-ProjectileBuilder::createProjectile(std::unique_ptr<Projectile> projectile) {
-  m_projectile = std::move(projectile);
-  m_projectile->setMovementStrategy(
-      Game::Movement::StationaryMovementStrategy());
-  m_projectile->setDamage(1);
-  return *this;
-}
-
-ProjectileBuilder &
 ProjectileBuilder::withObjectType(const ObjectType objectType) {
   if (m_projectile)
     m_projectile->addObjectType(objectType);
@@ -78,8 +69,7 @@ ProjectileBuilder::withGrahpics(const PixmapData pixmapData) {
   return *this;
 }
 
-std::unique_ptr<GameObjects::Projectiles::Projectile>
-ProjectileBuilder::build() {
+std::unique_ptr<Projectile> ProjectileBuilder::build() {
   return std::unique_ptr<Projectile>(
       static_cast<Projectile *>(this->m_projectile->clone().release()));
 }

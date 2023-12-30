@@ -11,10 +11,6 @@ SpawnEvent::SpawnEvent(
       m_spawnCounter(0) {}
 
 void SpawnEvent::execute(int elapsedTimeMs) {
-  // qDebug() << "executing spawn event at" << elapsedTimeMs;
-  // qDebug() << "count:" << m_count;
-  // qDebug() << "spawn counter:" << m_spawnCounter;
-  // qDebug() << "interval:" << m_intervalMs;
   if (m_finished)
     return;
 
@@ -23,10 +19,13 @@ void SpawnEvent::execute(int elapsedTimeMs) {
 
   if (m_triggered && m_count > m_spawnCounter &&
       (elapsedTimeMs - m_lastSpawnTimeMs) >= m_intervalMs) {
-    std::unique_ptr<GameObjects::GameObject> clonedObject =
-        m_gameObject->clone();
-    clonedObject->setPosition(m_position);
-    m_addGameObjectFunc(std::move(clonedObject));
+    std::vector<QPoint> coordinates = m_formation.getPoints(m_position);
+    for (QPoint &point : coordinates) {
+      std::unique_ptr<GameObjects::GameObject> clonedObject =
+          m_gameObject->clone();
+      clonedObject->setPosition(point);
+      m_addGameObjectFunc(std::move(clonedObject));
+    }
     m_lastSpawnTimeMs = elapsedTimeMs;
     m_spawnCounter++;
   }

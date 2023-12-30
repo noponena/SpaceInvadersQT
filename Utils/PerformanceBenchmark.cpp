@@ -57,9 +57,7 @@ void PerformanceBenchmark::initializeBenchmark(
   GameObjects::Projectiles::ProjectileBuilder projectileBuilder;
 
   std::unique_ptr<GameObjects::Projectiles::Projectile> primaryProjectile =
-      projectileBuilder
-          .createProjectile(
-              std::make_unique<GameObjects::Projectiles::Projectile>())
+      projectileBuilder.createProjectile<GameObjects::Projectiles::Projectile>()
           .withDamage(1)
           .withObjectType(GameObjects::ObjectType::PLAYER_PROJECTILE)
           .withGrahpics(GameObjects::PixmapData{
@@ -72,7 +70,7 @@ void PerformanceBenchmark::initializeBenchmark(
 
   // Create the primary weapon using WeaponBuilder
   std::unique_ptr<Weapons::Weapon> weapon =
-      weaponBuilder.createWeapon(std::make_unique<Weapons::PrimaryWeapon>())
+      weaponBuilder.createWeapon<Weapons::PrimaryWeapon>()
           .withProjectile(std::move(primaryProjectile))
           .withWeaponCooldownMs(0)
           .build();
