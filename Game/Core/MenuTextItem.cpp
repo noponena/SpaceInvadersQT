@@ -12,6 +12,8 @@ MenuTextItem::MenuTextItem(QString text, QColor color, MenuAction menuAction,
   m_textColor = color;
 }
 
+void MenuTextItem::setPayload(const QVariant &payload) { m_payload = payload; }
+
 void MenuTextItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
   Q_UNUSED(event);
   emit clicked();
@@ -28,6 +30,8 @@ void MenuTextItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event) {
 }
 
 MenuAction MenuTextItem::menuAction() const { return m_menuAction; }
+
+QVariant MenuTextItem::payload() const { return m_payload; }
 
 } // namespace Core
 } // namespace Game

@@ -2,7 +2,6 @@
 #define GAME_LEVELS_LEVELLOADER_H
 
 #include "Formation.h"
-#include "Game/Core/GameState.h"
 #include "GameObjects/Projectiles/ProjectileBuilder.h"
 #include "GameObjects/Ships/EnemyShip.h"
 #include "GameObjects/Ships/ShipBuilder.h"
@@ -15,13 +14,16 @@ namespace Levels {
 
 class LevelLoader {
 public:
-  LevelLoader(Core::GameState *gameState, int screenWidth, int screenHeight);
+  LevelLoader();
+  void initialize();
   Level loadLevel(const std::string &filepath);
   std::unordered_map<int, Level> loadLevels();
+  void setScreenSize(QPoint screenSize);
+  void setPositionConstraints(QPoint positionConstraintMin,
+                              QPoint positionConstraintMax);
 
 private:
   std::unique_ptr<GameObjects::Ships::EnemyShip> m_enemyShip;
-  Core::GameState *m_gameState;
   Weapons::WeaponBuilder m_weaponBuilder;
   GameObjects::Projectiles::ProjectileBuilder m_projectileBuilder;
   GameObjects::Ships::ShipBuilder m_shipBuilder;

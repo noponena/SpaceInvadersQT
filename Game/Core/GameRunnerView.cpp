@@ -134,7 +134,7 @@ void GameRunnerView::setupConnections() {
   connect(&m_gameTimer, &QTimer::timeout, this, &GameRunnerView::gameLoop);
 }
 
-void GameRunnerView::startGame() {
+void GameRunnerView::startGame(const Levels::Level &level) {
   qDebug() << "starting game..";
   bool perfTest = false;
 
@@ -143,9 +143,9 @@ void GameRunnerView::startGame() {
   initializeBenchmark();
 #endif
   // m_levelManager = std::make_unique<LevelManager>(m_gameState, perfTest);
-  m_levelManager = std::make_unique<LevelManager>(m_gameState, scene()->width(),
-                                                  scene()->height());
-  m_levelManager->startLevel(1);
+  m_levelManager = std::make_unique<LevelManager>(m_gameState);
+  m_levelManager->setLevel(level);
+  m_levelManager->startLevel();
   m_gameTimer.start(0);
 }
 

@@ -9,8 +9,10 @@ MenuView::MenuView(QRect screenGeometry, QWidget *parent)
 }
 
 void MenuView::createMenuItem(const QString &text, MenuAction menuAction,
-                              QColor color, int fontSize, const QPointF &pos) {
+                              QColor color, int fontSize, const QPointF &pos,
+                              QVariant payload) {
   MenuTextItem *item = new MenuTextItem(text, color, menuAction);
+  item->setPayload(payload);
   QFont font;
   font.setPointSize(fontSize);
   item->setFont(font);
@@ -41,8 +43,15 @@ void MenuView::onMenuItemClicked() {
     emit resumeGameSelected();
     break;
   case MenuAction::LEVEL_SELECTOR:
+    emit levelSelectorSelected();
     break;
   case MenuAction::OPTIONS:
+    break;
+  case MenuAction::SELECT_LEVEL:
+    if (!item->payload().isNull()) {
+      LevelInfo levelInfo = qvariant_cast<LevelInfo>(item->payload());
+      emit levelSelected(levelInfo);
+    }
     break;
   case MenuAction::QUIT:
     emit windowClosed();

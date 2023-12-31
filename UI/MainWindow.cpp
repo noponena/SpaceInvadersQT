@@ -5,7 +5,7 @@
 #include <QVBoxLayout>
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::MainWindow) {
+    : QMainWindow(parent), ui(new Ui::MainWindow), m_currentLevelNumber(-1) {
   ui->setupUi(this);
 
   setContentsMargins(0, 0, 0, 0);
@@ -22,12 +22,17 @@ MainWindow::MainWindow(QWidget *parent)
   m_mainMenuView = new Game::Core::MainMenuView(screenGeometry);
   m_mainMenuView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
+  m_levelSelectorView = new Game::Core::LevelSelectorView(screenGeometry);
+  m_levelSelectorView->setSizePolicy(QSizePolicy::Expanding,
+                                     QSizePolicy::Expanding);
+
   m_pauseMenuView = new Game::Core::PauseMenuView(screenGeometry);
   m_pauseMenuView->setSizePolicy(QSizePolicy::Expanding,
                                  QSizePolicy::Expanding);
 
   m_stackedWidget = new QStackedWidget(this);
   m_stackedWidget->addWidget(m_mainMenuView);
+  m_stackedWidget->addWidget(m_levelSelectorView);
   m_stackedWidget->addWidget(m_pauseMenuView);
   m_stackedWidget->addWidget(m_gameRunnerView);
 
@@ -42,6 +47,10 @@ MainWindow::MainWindow(QWidget *parent)
           &MainWindow::onWindowClosed);
   connect(m_mainMenuView, &Game::Core::MainMenuView::newGameSelected, this,
           &MainWindow::newGame);
+  connect(m_mainMenuView, &Game::Core::MainMenuView::levelSelectorSelected,
+          this, &MainWindow::levelSelector);
+  connect(m_levelSelectorView, &Game::Core::LevelSelectorView::levelSelected,
+          this, &MainWindow::onLevelSelected);
 
   connect(m_pauseMenuView, &Game::Core::PauseMenuView::resumeGameSelected, this,
           &MainWindow::resumeGame);
@@ -50,6 +59,14 @@ MainWindow::MainWindow(QWidget *parent)
 
   m_stackedWidget->setCurrentWidget(m_mainMenuView);
 
+  m_levelLoader.setScreenSize(
+      QPoint(screenGeometry.width(), screenGeometry.height()));
+  m_levelLoader.setPositionConstraints(
+      QPoint(0, 0),
+      QPoint(screenGeometry.width() * 0.98, screenGeometry.height() * 0.865));
+  m_levelLoader.initialize();
+  m_levels = m_levelLoader.loadLevels();
+  m_levelSelectorView->setLevelData(m_levels);
   resize(screenGeometry.width(), screenGeometry.height());
 
   setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
@@ -61,13 +78,17 @@ MainWindow::~MainWindow() { delete ui; }
 void MainWindow::newGame() {
   QApplication::setOverrideCursor(Qt::BlankCursor);
   m_stackedWidget->setCurrentWidget(m_gameRunnerView);
-  m_gameRunnerView->startGame();
+  m_gameRunnerView->startGame(m_levels[1]);
 }
 
 void MainWindow::resumeGame() {
   QApplication::setOverrideCursor(Qt::BlankCursor);
   m_stackedWidget->setCurrentWidget(m_gameRunnerView);
   m_gameRunnerView->resumeGame();
+}
+
+void MainWindow::levelSelector() {
+  m_stackedWidget->setCurrentWidget(m_levelSelectorView);
 }
 
 void MainWindow::onGamePaused() {
@@ -96,3 +117,8 @@ void MainWindow::adjustMainMenuSize() {
 }
 
 void MainWindow::onWindowClosed() { QCoreApplication::quit(); }
+
+void MainWindow::onLevelSelected(Game::Core::LevelInfo levelInfo) {
+  m_currentLevelNumber = levelInfo.levelNumber;
+  qDebug() << "m_currentLevelNumber:" << m_currentLevelNumber;
+}

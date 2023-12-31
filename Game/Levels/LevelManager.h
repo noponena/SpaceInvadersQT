@@ -3,7 +3,6 @@
 
 #include "Game/Core/GameState.h"
 #include "Game/Levels/Level.h"
-#include "Game/Levels/LevelLoader.h"
 #include "GameObjects/Projectiles/ProjectileBuilder.h"
 
 namespace Game {
@@ -11,17 +10,17 @@ namespace Core {
 class LevelManager : public QObject {
   Q_OBJECT
 public:
-  LevelManager(GameState *gameState, bool performanceTest = false);
-  LevelManager(GameState *gameState, int screenWidth, int screenHeight);
-  void startLevel(int levelNumber);
-  void update();
+  LevelManager(GameState *gameState, bool performanceTest);
+  LevelManager(GameState *gameState);
+  void startLevel();
+  void stopLevel();
   void progressLevel();
-  void setLevel(int levelNumber);
+  void setLevel(const Levels::Level &level);
   void start();
 
 private:
-  std::unique_ptr<Levels::LevelLoader> m_levelLoader;
-  std::unordered_map<int, Game::Levels::Level> m_levels;
+  std::function<void(std::shared_ptr<GameObjects::GameObject>)>
+      m_addGameObjectFunc;
   Game::Levels::Level m_currentLevel;
   Weapons::WeaponBuilder m_weaponBuilder;
   GameObjects::Projectiles::ProjectileBuilder m_projectileBuilder;
@@ -34,6 +33,7 @@ private:
   int m_enemyShipHp = 5;
   int m_enemyShipDestructionParticleCount = 250;
   bool m_performanceTest;
+  bool m_levelInProgress;
 };
 } // namespace Core
 } // namespace Game

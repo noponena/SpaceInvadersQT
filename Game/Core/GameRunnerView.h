@@ -25,7 +25,7 @@ class GameRunnerView : public QGraphicsView {
 public:
   explicit GameRunnerView(QRect screenGeometry, QWidget *parent = nullptr);
   ~GameRunnerView();
-  void startGame();
+  void startGame(const Levels::Level &level);
   void resumeGame();
 
   GameObjects::Ships::PlayerShip *playerShip() const;
@@ -159,10 +159,12 @@ private slots:
   void onObjectAdded(QGraphicsItem *object) {
     m_scene.addItem(object);
     m_gameObjectCounter->updateObjectCount(1);
+    qDebug() << "object added";
   }
   void onObjectDeleted(QGraphicsItem *object) {
     m_scene.removeItem(object);
     m_gameObjectCounter->updateObjectCount(-1);
+    qDebug() << "object deleted";
   }
   void onPlayerShipDestroyed() {
     m_gameOver = true;

@@ -11,13 +11,15 @@ namespace Levels {
 
 class SpawnEvent {
 public:
-  SpawnEvent(std::function<void(std::shared_ptr<GameObjects::GameObject>)>
-                 addGameObjectFunction);
-  void execute(int elapsedTimeMs);
+  SpawnEvent();
+  void execute(int elapsedTimeMs,
+               std::function<void(std::shared_ptr<GameObjects::GameObject>)>
+                   addGameObjectFunc);
   bool isFinished() const;
 
   SpawnEvent &withTriggerTime(int triggerTimeMs);
   SpawnEvent &withPosition(QPoint position);
+  SpawnEvent &withPositionRange(QPoint minPosition, QPoint maxPosition);
   SpawnEvent &withCount(int count);
   SpawnEvent &withInterval(int intervalMs);
   SpawnEvent &withFormation(const Formation formation);
@@ -25,11 +27,9 @@ public:
   withGameObject(std::shared_ptr<GameObjects::GameObject> gameObject);
 
 private:
-  std::function<void(std::shared_ptr<GameObjects::GameObject>)>
-      m_addGameObjectFunc;
   std::shared_ptr<GameObjects::GameObject> m_gameObject;
   Formation m_formation;
-  QPoint m_position;
+  std::pair<QPoint, QPoint> m_positionRange;
   int m_triggerTimeMs;
   int m_count;
   int m_intervalMs;

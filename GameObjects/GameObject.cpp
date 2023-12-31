@@ -26,7 +26,13 @@ void GameObject::initialize() {
 }
 
 bool GameObject::shouldBeDeleted() {
-  return m_position.isBeyondLimits(25, 25, 50, 30);
+  bool shouldBeDeleted = m_position.isBeyondLimits(25, 25, 50, 30);
+  if (shouldBeDeleted) {
+    qDebug() << "object marked for deletion";
+    qDebug() << "bounds:" << m_position.bounds;
+    qDebug() << "position:" << m_position.pos;
+  }
+  return shouldBeDeleted;
 }
 
 void GameObject::update(const UpdateContext &context) {

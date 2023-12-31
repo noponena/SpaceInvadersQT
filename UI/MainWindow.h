@@ -2,8 +2,10 @@
 #define MAINWINDOW_H
 
 #include "Game/Core/GameRunnerView.h"
+#include "Game/Core/LevelSelectorView.h"
 #include "Game/Core/MainMenuView.h"
 #include "Game/Core/PauseMenuView.h"
+#include "Game/Levels/LevelLoader.h"
 #include <QMainWindow>
 #include <QStackedWidget>
 
@@ -22,16 +24,22 @@ public:
 
 private:
   Ui::MainWindow *ui;
+  Game::Levels::LevelLoader m_levelLoader;
+  std::unordered_map<int, Game::Levels::Level> m_levels;
   Game::Core::MainMenuView *m_mainMenuView;
+  Game::Core::LevelSelectorView *m_levelSelectorView;
   Game::Core::PauseMenuView *m_pauseMenuView;
   Game::Core::GameRunnerView *m_gameRunnerView;
   QStackedWidget *m_stackedWidget;
+  int m_currentLevelNumber;
 
 private slots:
   void newGame();
   void resumeGame();
+  void levelSelector();
   void onGamePaused();
   void onWindowClosed();
+  void onLevelSelected(Game::Core::LevelInfo levelInfo);
   void bringToForeground();
   void adjustMainMenuSize();
   void adjustGameRunnerSize();

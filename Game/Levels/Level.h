@@ -10,6 +10,7 @@ class Level {
 public:
   Level();
   int levelNumber;
+  int enemyLimit;
   std::string name;
   std::string description;
   std::vector<SpawnEvent> spawnEvents;

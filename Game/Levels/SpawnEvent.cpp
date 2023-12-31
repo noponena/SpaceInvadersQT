@@ -1,16 +1,17 @@
 #include "SpawnEvent.h"
+#include "Utils/Utils.h"
 
 namespace Game {
 namespace Levels {
 
-SpawnEvent::SpawnEvent(
-    std::function<void(std::shared_ptr<GameObjects::GameObject>)>
-        addGameObjectFunction)
-    : m_addGameObjectFunc(addGameObjectFunction), m_count(1),
-      m_triggered(false), m_finished(false), m_lastSpawnTimeMs(0),
+SpawnEvent::SpawnEvent()
+    : m_count(1), m_triggered(false), m_finished(false), m_lastSpawnTimeMs(0),
       m_spawnCounter(0) {}
 
-void SpawnEvent::execute(int elapsedTimeMs) {
+void SpawnEvent::execute(
+    int elapsedTimeMs,
+    std::function<void(std::shared_ptr<GameObjects::GameObject>)>
+        addGameObjectFunc) {
   if (m_finished)
     return;
 
@@ -19,12 +20,15 @@ void SpawnEvent::execute(int elapsedTimeMs) {
 
   if (m_triggered && m_count > m_spawnCounter &&
       (elapsedTimeMs - m_lastSpawnTimeMs) >= m_intervalMs) {
-    std::vector<QPoint> coordinates = m_formation.getPoints(m_position);
+
+    int x = Utils::randi(m_positionRange.first.x(), m_positionRange.second.x());
+    int y = Utils::randi(m_positionRange.first.y(), m_positionRange.second.y());
+    std::vector<QPoint> coordinates = m_formation.getPoints(QPoint(x, y));
     for (QPoint &point : coordinates) {
       std::unique_ptr<GameObjects::GameObject> clonedObject =
           m_gameObject->clone();
       clonedObject->setPosition(point);
-      m_addGameObjectFunc(std::move(clonedObject));
+      addGameObjectFunc(std::move(clonedObject));
     }
     m_lastSpawnTimeMs = elapsedTimeMs;
     m_spawnCounter++;
@@ -41,7 +45,13 @@ SpawnEvent &SpawnEvent::withTriggerTime(int triggerTimeMs) {
 }
 
 SpawnEvent &SpawnEvent::withPosition(QPoint position) {
-  m_position = position;
+  m_positionRange = {position, position};
+  return *this;
+}
+
+SpawnEvent &SpawnEvent::withPositionRange(QPoint minPosition,
+                                          QPoint maxPosition) {
+  m_positionRange = {minPosition, maxPosition};
   return *this;
 }
 

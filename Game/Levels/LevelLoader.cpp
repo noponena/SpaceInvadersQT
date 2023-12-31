@@ -9,16 +9,9 @@
 namespace Game {
 namespace Levels {
 
-LevelLoader::LevelLoader(Core::GameState *gameState, int screenWidth,
-                         int screenHeight)
-    : m_gameState(gameState), m_screenWidth(screenWidth),
-      m_screenHeight(screenHeight) {
-  m_minX = m_gameState->m_minX;
-  m_maxX = m_gameState->m_maxX;
-  m_minY = m_gameState->m_minY;
-  m_maxY = m_gameState->m_maxY;
+LevelLoader::LevelLoader() {}
 
-  // 2. Create a new enemy ship
+void LevelLoader::initialize() {
   GameObjects::Position pos(0, 0, m_minX, m_maxX, m_minY, m_maxY);
 
   GameObjects::PixmapData pixmapData{
@@ -69,9 +62,6 @@ LevelLoader::LevelLoader(Core::GameState *gameState, int screenWidth,
   Game::Movement::MovementStrategy combined =
       horizontalIntervalStrategy + verticalIntervalStrategy;
 
-  //    enemyShip->setMovementStrategy(
-  //        Game::Movement::VerticalMovementStrategy(100, 1));
-
   m_enemyShip->setMovementStrategy(combined);
 }
 
@@ -83,10 +73,14 @@ Level LevelLoader::loadLevel(const std::string &filepath) {
   level.levelNumber = config["Level"].as<int>();
   level.name = config["Name"].as<std::string>();
   level.description = config["Description"].as<std::string>();
+  level.enemyLimit = config["EnemyLimit"].as<int>(1);
 
   // Parse and populate spawn events and other properties
   // For each spawn event in the YAML file:
   for (const auto &eventNode : config["SpawnEvents"]) {
+    if (!eventNode["Enabled"].as<bool>(true)) {
+      continue;
+    }
     auto formationNode = eventNode["Formation"];
     Formation::Type formationType =
         stringToFormationType(formationNode["Type"].as<std::string>());
@@ -102,16 +96,36 @@ Level LevelLoader::loadLevel(const std::string &filepath) {
                     .withSolidity(formationSolidity)
                     .withSpacing(QPoint(formationSpacingX, formationSpacingY));
     auto positionNode = eventNode["Position"];
-    float xRatio = positionNode["X"].as<float>(-1);
-    float yRatio = positionNode["Y"].as<float>(-1);
-    int x = static_cast<int>(xRatio * m_screenWidth);
-    int y = static_cast<int>(yRatio * m_screenHeight);
-    SpawnEvent event(
-        [this](auto object) { m_gameState->addGameObject(object); });
+    QPoint lowerLimit, upperLimit;
+
+    if (positionNode["Min"] && positionNode["Max"]) {
+      // Position range is specified
+      auto minNode = positionNode["Min"];
+      auto maxNode = positionNode["Max"];
+
+      float minXRatio = minNode["X"].as<float>();
+      float minYRatio = minNode["Y"].as<float>();
+      float maxXRatio = maxNode["X"].as<float>();
+      float maxYRatio = maxNode["Y"].as<float>();
+
+      lowerLimit = QPoint(static_cast<int>(minXRatio * m_screenWidth),
+                          static_cast<int>(minYRatio * m_screenHeight));
+      upperLimit = QPoint(static_cast<int>(maxXRatio * m_screenWidth),
+                          static_cast<int>(maxYRatio * m_screenHeight));
+    } else {
+      // Single position is specified
+      float xRatio = positionNode["X"].as<float>();
+      float yRatio = positionNode["Y"].as<float>();
+
+      lowerLimit = QPoint(static_cast<int>(xRatio * m_screenWidth),
+                          static_cast<int>(yRatio * m_screenHeight));
+      upperLimit = lowerLimit; // Use the same point for both limits
+    }
+    SpawnEvent event;
     event = event.withCount(eventNode["Count"].as<int>())
                 .withTriggerTime(eventNode["Time"].as<int>())
                 .withInterval(eventNode["IntervalMs"].as<int>())
-                .withPosition(QPoint(x, y))
+                .withPositionRange(lowerLimit, upperLimit)
                 .withFormation(formation)
                 .withGameObject(m_enemyShip->clone());
 
@@ -149,6 +163,19 @@ std::unordered_map<int, Level> LevelLoader::loadLevels() {
   }
 
   return levels;
+}
+
+void LevelLoader::setScreenSize(QPoint screenSize) {
+  m_screenWidth = screenSize.x();
+  m_screenHeight = screenSize.y();
+}
+
+void LevelLoader::setPositionConstraints(QPoint positionConstraintMin,
+                                         QPoint positionConstraintMax) {
+  m_minX = positionConstraintMin.x();
+  m_maxX = positionConstraintMax.x();
+  m_minY = positionConstraintMin.y();
+  m_maxY = positionConstraintMax.y();
 }
 
 Formation::Type
