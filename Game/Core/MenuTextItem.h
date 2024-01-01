@@ -14,7 +14,9 @@ enum class MenuAction {
   LEVEL_SELECTOR,
   OPTIONS,
   QUIT,
-  SELECT_LEVEL
+  SELECT_LEVEL,
+  START_LEVEL,
+  BACK_TO_MAIN_MENU
 };
 
 class MenuTextItem : public QGraphicsTextItem {
@@ -31,7 +33,6 @@ protected:
   void hoverEnterEvent(QGraphicsSceneHoverEvent *event) override;
   void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) override;
 
-private:
   MenuAction m_menuAction;
   QColor m_textColor;
   QColor m_textHoverColor;

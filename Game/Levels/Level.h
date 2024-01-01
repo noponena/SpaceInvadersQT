@@ -19,4 +19,6 @@ public:
 } // namespace Levels
 } // namespace Game
 
+Q_DECLARE_METATYPE(Game::Levels::Level)
+
 #endif // GAME_LEVELS_LEVEL_H

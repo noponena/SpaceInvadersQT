@@ -7,7 +7,6 @@
 #include "GameObjects/Ships/ShipBuilder.h"
 #include "Level.h"
 #include "Weapons/WeaponBuilder.h"
-#include <unordered_map>
 
 namespace Game {
 namespace Levels {
@@ -17,7 +16,7 @@ public:
   LevelLoader();
   void initialize();
   Level loadLevel(const std::string &filepath);
-  std::unordered_map<int, Level> loadLevels();
+  std::map<int, Level> loadLevels();
   void setScreenSize(QPoint screenSize);
   void setPositionConstraints(QPoint positionConstraintMin,
                               QPoint positionConstraintMax);

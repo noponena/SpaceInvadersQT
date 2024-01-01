@@ -1,4 +1,5 @@
 #include "MenuView.h"
+#include "Game/Levels/Level.h"
 
 namespace Game {
 namespace Core {
@@ -49,9 +50,16 @@ void MenuView::onMenuItemClicked() {
     break;
   case MenuAction::SELECT_LEVEL:
     if (!item->payload().isNull()) {
-      LevelInfo levelInfo = qvariant_cast<LevelInfo>(item->payload());
-      emit levelSelected(levelInfo);
+      Game::Levels::Level level =
+          qvariant_cast<Game::Levels::Level>(item->payload());
+      emit levelSelected(level);
     }
+    break;
+  case MenuAction::START_LEVEL:
+    emit startLevelSelected();
+    break;
+  case MenuAction::BACK_TO_MAIN_MENU:
+    emit backToMainMenuSelected();
     break;
   case MenuAction::QUIT:
     emit windowClosed();

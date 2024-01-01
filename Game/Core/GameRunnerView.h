@@ -38,7 +38,7 @@ protected:
 private:
   GameState *m_gameState;
   Core::GameHUD *m_gameHUD;
-  std::unique_ptr<LevelManager> m_levelManager;
+  std::unique_ptr<Levels::LevelManager> m_levelManager;
   QTimer m_gameTimer;
   QTimer m_benchmarkTimer;
   GameObjects::Ships::PlayerShip *m_playerShip;
@@ -54,8 +54,8 @@ private:
   QGraphicsTextItem *m_sceneItemCounter;
   bool m_continuousShoot;
   bool m_continuousEnemySpawn;
-  bool m_gameOver;
-  bool m_gameOverInfoDisplayed;
+  bool m_levelFailed;
+  bool m_levelFailedInfoDisplayed;
   std::chrono::high_resolution_clock::time_point m_lastFrameEndTime;
 
   UI::FPSCounter *m_fpsCounter;
@@ -72,7 +72,7 @@ private:
   inline void processMenuAction();
   inline void updateGameState(float deltaTime);
   inline void updateFps();
-  inline void displayGameOverInfo();
+  inline void displayLevelFailedInfo();
 
   const std::vector<std::shared_ptr<GameObjects::GameObject>> *m_gameObjects;
 
@@ -159,15 +159,17 @@ private slots:
   void onObjectAdded(QGraphicsItem *object) {
     m_scene.addItem(object);
     m_gameObjectCounter->updateObjectCount(1);
-    qDebug() << "object added";
   }
   void onObjectDeleted(QGraphicsItem *object) {
     m_scene.removeItem(object);
     m_gameObjectCounter->updateObjectCount(-1);
-    qDebug() << "object deleted";
   }
   void onPlayerShipDestroyed() {
-    m_gameOver = true;
+    m_levelFailed = true;
+    m_playerShip = nullptr;
+  }
+  void onEnemyLimitReached() {
+    m_levelFailed = true;
     m_playerShip = nullptr;
   }
   void pause() {

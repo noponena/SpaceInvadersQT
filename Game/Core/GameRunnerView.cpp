@@ -8,10 +8,11 @@ namespace Game {
 namespace Core {
 GameRunnerView::GameRunnerView(QRect screenGeometry, QWidget *parent)
     : QGraphicsView(parent), m_scene(this), m_continuousShoot(false),
-      m_continuousEnemySpawn(true), m_gameOver(false),
-      m_gameOverInfoDisplayed(false) {
+      m_continuousEnemySpawn(true), m_levelFailed(false),
+      m_levelFailedInfoDisplayed(false) {
   m_gameState = new GameState();
   m_playerShip = m_gameState->playerShip();
+  m_levelManager = std::make_unique<Levels::LevelManager>(m_gameState);
   m_gameObjects = &(m_gameState->gameObjects());
   m_collisionDetector = std::make_unique<CollisionDetection::CollisionDetector>(
       m_gameState->gameObjects(), screenGeometry);
@@ -132,6 +133,8 @@ void GameRunnerView::setupConnections() {
           m_gameHUD, &Core::GameHUD::onPlayerMaxHealthSet);
 
   connect(&m_gameTimer, &QTimer::timeout, this, &GameRunnerView::gameLoop);
+  connect(m_levelManager.get(), &Levels::LevelManager::enemyLimitReached, this,
+          &GameRunnerView::onEnemyLimitReached);
 }
 
 void GameRunnerView::startGame(const Levels::Level &level) {
@@ -143,7 +146,6 @@ void GameRunnerView::startGame(const Levels::Level &level) {
   initializeBenchmark();
 #endif
   // m_levelManager = std::make_unique<LevelManager>(m_gameState, perfTest);
-  m_levelManager = std::make_unique<LevelManager>(m_gameState);
   m_levelManager->setLevel(level);
   m_levelManager->startLevel();
   m_gameTimer.start(0);
@@ -243,7 +245,7 @@ void GameRunnerView::updateGameCounters() {
                                    QString::number(sceneItemCount));
   m_gameObjectCounter->setObjectCount(gameObjectCount);
 
-  if (!m_gameOver) {
+  if (!m_levelFailed) {
     int playerHp = m_playerShip->currentHp();
     m_stellarTokens->setPlainText(
         "Stellar tokens: " + QString::number(m_gameState->stellarTokens()));
@@ -252,8 +254,8 @@ void GameRunnerView::updateGameCounters() {
 }
 
 void GameRunnerView::checkGameOver() {
-  if (m_gameOver && !m_gameOverInfoDisplayed) {
-    displayGameOverInfo();
+  if (m_levelFailed && !m_levelFailedInfoDisplayed) {
+    displayLevelFailedInfo();
   }
 }
 
@@ -268,7 +270,7 @@ void GameRunnerView::initializeBenchmark() {
 
 void GameRunnerView::processInput(float deltaTimeInSeconds) {
 
-  if (!m_gameOver) {
+  if (!m_levelFailed) {
     processGameAction(deltaTimeInSeconds);
   }
 
@@ -319,15 +321,15 @@ void GameRunnerView::updateFps() {
   }
 }
 
-void GameRunnerView::displayGameOverInfo() {
-  m_gameOverInfo->setPlainText("GAME OVER");
+void GameRunnerView::displayLevelFailedInfo() {
+  m_gameOverInfo->setPlainText("LEVEL FAILED");
   QRectF textBoundingRect = m_gameOverInfo->boundingRect();
   QRectF sceneRect = scene()->sceneRect();
   QPointF centerPosition =
       QPointF((sceneRect.width() - textBoundingRect.width()) / 2.0,
               (sceneRect.height() - textBoundingRect.height()) / 2.0);
   m_gameOverInfo->setPos(centerPosition);
-  m_gameOverInfoDisplayed = true;
+  m_levelFailedInfoDisplayed = true;
 }
 
 void GameRunnerView::keyPressEvent(QKeyEvent *event) {

@@ -7,7 +7,8 @@ HEADERS += \
     $$PWD/MainMenuView.h \
     $$PWD/MenuTextItem.h \
     $$PWD/MenuView.h \
-    $$PWD/PauseMenuView.h
+    $$PWD/PauseMenuView.h \
+    $$PWD/TogglableMenuTextItem.h
 
 SOURCES += \
     $$PWD/GameHUD.cpp \
@@ -17,4 +18,5 @@ SOURCES += \
     $$PWD/MainMenuView.cpp \
     $$PWD/MenuView.cpp \
     $$PWD/PauseMenuView.cpp \
-    $$PWD/MenuTextItem.cpp
+    $$PWD/MenuTextItem.cpp \
+    $$PWD/TogglableMenuTextItem.cpp

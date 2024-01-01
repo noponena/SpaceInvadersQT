@@ -3,8 +3,8 @@
 #include <yaml-cpp/yaml.h>
 
 namespace Game {
-namespace Core {
-LevelManager::LevelManager(GameState *gameState, bool performanceTest)
+namespace Levels {
+LevelManager::LevelManager(Core::GameState *gameState, bool performanceTest)
     : m_gameState(gameState), m_lastSpawnTime(0), m_levelInProgress(false) {
   m_elapsedTimer.start();
   if (performanceTest) {
@@ -35,7 +35,7 @@ LevelManager::LevelManager(GameState *gameState, bool performanceTest)
       .withWeaponCooldownMs(m_enemyWeaponCooldownMs);
 }
 
-LevelManager::LevelManager(GameState *gameState)
+LevelManager::LevelManager(Core::GameState *gameState)
     : m_addGameObjectFunc(
           [this](auto object) { m_gameState->addGameObject(object); }),
       m_gameState(gameState), m_levelInProgress(false) {}
@@ -60,6 +60,8 @@ void LevelManager::progressLevel() {
         ++it;
       }
     }
+    if (m_gameState->enemyShipsReachedBottomLimit() > m_currentLevel.enemyLimit)
+      emit enemyLimitReached();
   }
 }
 
@@ -68,5 +70,5 @@ void LevelManager::setLevel(const Levels::Level &level) {
 }
 
 void LevelManager::start() { m_levelTimer.start(); }
-} // namespace Core
+} // namespace Levels
 } // namespace Game

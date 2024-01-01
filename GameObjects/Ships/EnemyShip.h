@@ -37,6 +37,10 @@ private:
   // GameObject interface
 public:
   std::unique_ptr<GameObject> clone() const override;
+
+  // GameObject interface
+public:
+  bool shouldBeDeleted() override;
 };
 } // namespace Ships
 

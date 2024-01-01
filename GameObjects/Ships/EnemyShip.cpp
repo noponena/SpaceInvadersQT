@@ -113,6 +113,13 @@ std::unique_ptr<GameObject> EnemyShip::clone() const {
   return enemyShip;
 }
 
+bool EnemyShip::shouldBeDeleted() {
+  if (m_position.isBeyondScreenBottomLimit())
+    emit bottomEdgeReached();
+
+  return ShipWithHealthBar::shouldBeDeleted();
+}
+
 void EnemyShip::collideWith(GameObject &other) {
   other.collideWithEnemyShip(*this);
 }

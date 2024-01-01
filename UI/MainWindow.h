@@ -25,7 +25,7 @@ public:
 private:
   Ui::MainWindow *ui;
   Game::Levels::LevelLoader m_levelLoader;
-  std::unordered_map<int, Game::Levels::Level> m_levels;
+  std::map<int, Game::Levels::Level> m_levels;
   Game::Core::MainMenuView *m_mainMenuView;
   Game::Core::LevelSelectorView *m_levelSelectorView;
   Game::Core::PauseMenuView *m_pauseMenuView;
@@ -39,7 +39,8 @@ private slots:
   void levelSelector();
   void onGamePaused();
   void onWindowClosed();
-  void onLevelSelected(Game::Core::LevelInfo levelInfo);
+  void onLevelStarted(Game::Levels::Level level);
+  void onBackToMainMenuSelected();
   void bringToForeground();
   void adjustMainMenuSize();
   void adjustGameRunnerSize();

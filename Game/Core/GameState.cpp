@@ -22,11 +22,22 @@ void GameState::initialize() {
   initPlayerShip();
   m_stellarTokens = 0;
   m_collidingPairs.clear();
+  m_enemyShipsReachedBottomLimit = 0;
 }
 
 void GameState::addGameObject(std::shared_ptr<GameObjects::GameObject> object) {
   connect(object.get(), &GameObjects::GameObject::objectCreated, this,
           &GameState::onObjectCreated);
+  std::unordered_set<GameObjects::ObjectType> types = object->objectTypes();
+
+  if (types.find(GameObjects::ObjectType::ENEMY_SHIP) != types.end()) {
+    std::shared_ptr<GameObjects::Ships::EnemyShip> enemyShip =
+        std::static_pointer_cast<GameObjects::Ships::EnemyShip>(object);
+
+    connect(enemyShip.get(), &GameObjects::Ships::EnemyShip::bottomEdgeReached,
+            this, &GameState::onEnemyReachedBottomEdge);
+  }
+
   m_gameObjects.emplace_back(object);
   if (object->magnetism().isMagnetic)
     m_magneticGameObjectMap[object->id()] = object;
@@ -211,6 +222,8 @@ GameObjects::Ships::PlayerShip *GameState::playerShip() const {
 
 const unsigned &GameState::stellarTokens() const { return m_stellarTokens; }
 
-std::mutex &GameState::mutex() { return m_mutex; }
+int GameState::enemyShipsReachedBottomLimit() const {
+  return m_enemyShipsReachedBottomLimit;
+}
 } // namespace Core
 } // namespace Game

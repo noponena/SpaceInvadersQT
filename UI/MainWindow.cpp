@@ -49,8 +49,11 @@ MainWindow::MainWindow(QWidget *parent)
           &MainWindow::newGame);
   connect(m_mainMenuView, &Game::Core::MainMenuView::levelSelectorSelected,
           this, &MainWindow::levelSelector);
-  connect(m_levelSelectorView, &Game::Core::LevelSelectorView::levelSelected,
-          this, &MainWindow::onLevelSelected);
+  connect(m_levelSelectorView, &Game::Core::LevelSelectorView::levelStarted,
+          this, &MainWindow::onLevelStarted);
+  connect(m_levelSelectorView,
+          &Game::Core::LevelSelectorView::backToMainMenuSelected, this,
+          &MainWindow::onBackToMainMenuSelected);
 
   connect(m_pauseMenuView, &Game::Core::PauseMenuView::resumeGameSelected, this,
           &MainWindow::resumeGame);
@@ -118,7 +121,12 @@ void MainWindow::adjustMainMenuSize() {
 
 void MainWindow::onWindowClosed() { QCoreApplication::quit(); }
 
-void MainWindow::onLevelSelected(Game::Core::LevelInfo levelInfo) {
-  m_currentLevelNumber = levelInfo.levelNumber;
-  qDebug() << "m_currentLevelNumber:" << m_currentLevelNumber;
+void MainWindow::onLevelStarted(Game::Levels::Level level) {
+  QApplication::setOverrideCursor(Qt::BlankCursor);
+  m_stackedWidget->setCurrentWidget(m_gameRunnerView);
+  m_gameRunnerView->startGame(level);
+}
+
+void MainWindow::onBackToMainMenuSelected() {
+  m_stackedWidget->setCurrentWidget(m_mainMenuView);
 }

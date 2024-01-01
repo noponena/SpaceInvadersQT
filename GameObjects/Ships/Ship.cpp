@@ -152,8 +152,6 @@ void Ship::setMaxEnergy(float newMaxEnergy) { m_maxEnergy = newMaxEnergy; }
 int Ship::currentHp() const { return m_currentHealth; }
 
 bool Ship::shouldBeDeleted() {
-  if (m_position.isBeyondScreenBottomLimit())
-    emit bottomEdgeReached();
   return GameObject::shouldBeDeleted() ||
          (isDead() && m_destructionAnimation.animationFinished() &&
           m_destructionEffect.effectFinished());

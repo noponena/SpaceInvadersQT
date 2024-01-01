@@ -28,10 +28,9 @@ public:
   int m_minX, m_minY, m_maxX, m_maxY, m_windowWidth, m_windowHeight;
 
   const unsigned &stellarTokens() const;
-  std::mutex &mutex();
+  int enemyShipsReachedBottomLimit() const;
 
 private:
-  mutable std::mutex m_mutex;
   std::vector<std::pair<uint64_t, uint64_t>> m_collidingPairs;
   std::vector<std::shared_ptr<GameObjects::GameObject>> m_gameObjects;
   std::unordered_map<uint64_t, std::shared_ptr<GameObjects::GameObject>>
@@ -39,6 +38,7 @@ private:
   bool m_playerShipDeletedFromScene;
   unsigned m_stellarTokens;
   float m_playersShipStartSpeed;
+  int m_enemyShipsReachedBottomLimit;
   void initPlayerShip();
   void initMovementConstrains();
   std::shared_ptr<GameObjects::Ships::PlayerShip> m_playerShip;
@@ -55,6 +55,7 @@ private slots:
     addGameObject(std::move(object));
   }
   void onStellarTokenCollected() { m_stellarTokens++; }
+  void onEnemyReachedBottomEdge() { m_enemyShipsReachedBottomLimit++; };
   void onPlayerShipDestroyed() {
     m_playerShip = nullptr;
     emit playerShipDestroyed();

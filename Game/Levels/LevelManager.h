@@ -6,12 +6,12 @@
 #include "GameObjects/Projectiles/ProjectileBuilder.h"
 
 namespace Game {
-namespace Core {
+namespace Levels {
 class LevelManager : public QObject {
   Q_OBJECT
 public:
-  LevelManager(GameState *gameState, bool performanceTest);
-  LevelManager(GameState *gameState);
+  LevelManager(Core::GameState *gameState, bool performanceTest);
+  LevelManager(Core::GameState *gameState);
   void startLevel();
   void stopLevel();
   void progressLevel();
@@ -26,7 +26,7 @@ private:
   GameObjects::Projectiles::ProjectileBuilder m_projectileBuilder;
   QElapsedTimer m_elapsedTimer;
   QElapsedTimer m_levelTimer;
-  GameState *m_gameState;
+  Core::GameState *m_gameState;
   float m_lastSpawnTime = 0.0f;
   int m_spawnIntervalMs = 1000;
   int m_enemyWeaponCooldownMs = 2500;
@@ -34,8 +34,10 @@ private:
   int m_enemyShipDestructionParticleCount = 250;
   bool m_performanceTest;
   bool m_levelInProgress;
+signals:
+  void enemyLimitReached();
 };
-} // namespace Core
+} // namespace Levels
 } // namespace Game
 
 #endif // LEVELMANAGER_H

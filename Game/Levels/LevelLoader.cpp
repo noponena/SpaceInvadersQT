@@ -136,8 +136,8 @@ Level LevelLoader::loadLevel(const std::string &filepath) {
   return level;
 }
 
-std::unordered_map<int, Level> LevelLoader::loadLevels() {
-  std::unordered_map<int, Level> levels;
+std::map<int, Level> LevelLoader::loadLevels() {
+  std::map<int, Level> levels;
 
   // Define the path to the levels directory
   std::filesystem::path levelsPath = std::filesystem::current_path() / "levels";
