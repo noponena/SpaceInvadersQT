@@ -21,16 +21,16 @@ LevelSelectorView::LevelSelectorView(QRect screenGeometry, QWidget *parent)
 
 void LevelSelectorView::setLevelData(
     std::map<int, Game::Levels::Level> levels) {
-  int yOffset = 0;
+  int yOffset = 50;
   for (const auto &level : levels) {
     QString levelNumber = QString::number(level.second.levelNumber);
     QString levelName = QString::fromStdString(level.second.name);
     QString displayText =
         QString("Level %1: %2").arg(levelNumber).arg(levelName);
     QVariant payload = QVariant::fromValue(level.second);
-    createMenuItem(displayText, MenuAction::SELECT_LEVEL, Qt::white, 16,
+    createMenuItem(displayText, MenuAction::SELECT_LEVEL, Qt::white, 22,
                    QPointF(m_screenGeometry.width() / 2, yOffset), payload);
-    yOffset += 50;
+    yOffset += 35;
   }
 }
 

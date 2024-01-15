@@ -58,6 +58,9 @@ void MenuView::onMenuItemClicked() {
   case MenuAction::START_LEVEL:
     emit startLevelSelected();
     break;
+  case MenuAction::QUIT_LEVEL:
+    emit quitLevelSelected();
+    break;
   case MenuAction::BACK_TO_MAIN_MENU:
     emit backToMainMenuSelected();
     break;

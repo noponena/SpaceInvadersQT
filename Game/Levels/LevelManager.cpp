@@ -60,8 +60,12 @@ void LevelManager::progressLevel() {
         ++it;
       }
     }
+
     if (m_gameState->enemyShipsReachedBottomLimit() > m_currentLevel.enemyLimit)
       emit enemyLimitReached();
+
+    if (spawnEvents.empty())
+      emit spawnEventsFinished();
   }
 }
 

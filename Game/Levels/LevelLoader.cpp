@@ -74,6 +74,9 @@ Level LevelLoader::loadLevel(const std::string &filepath) {
   level.name = config["Name"].as<std::string>();
   level.description = config["Description"].as<std::string>();
   level.enemyLimit = config["EnemyLimit"].as<int>(1);
+  qDebug() << "name:" << level.name;
+  qDebug() << "enemyLimit:" << level.enemyLimit;
+  qDebug();
 
   // Parse and populate spawn events and other properties
   // For each spawn event in the YAML file:

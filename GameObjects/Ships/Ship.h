@@ -42,11 +42,10 @@ public:
   void fullyRestoreHealth();
 
   unsigned int energyRegenerationRate() const;
-  void setEnergyRegenerationRate(unsigned int newEnergyRegenerationRate);
 
+  void setEnergyRegenerationRate(unsigned int newEnergyRegenerationRate);
   void setMaxHealth(float newMaxHealth);
   void setSpeed(float newSpeed);
-
   void setMaxEnergy(float newMaxEnergy);
 
 protected:

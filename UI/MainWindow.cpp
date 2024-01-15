@@ -57,6 +57,8 @@ MainWindow::MainWindow(QWidget *parent)
 
   connect(m_pauseMenuView, &Game::Core::PauseMenuView::resumeGameSelected, this,
           &MainWindow::resumeGame);
+  connect(m_pauseMenuView, &Game::Core::PauseMenuView::quitLevelSelected, this,
+          &MainWindow::onLevelQuit);
   connect(m_pauseMenuView, &Game::Core::PauseMenuView::windowClosed, this,
           &MainWindow::onWindowClosed);
 
@@ -81,7 +83,7 @@ MainWindow::~MainWindow() { delete ui; }
 void MainWindow::newGame() {
   QApplication::setOverrideCursor(Qt::BlankCursor);
   m_stackedWidget->setCurrentWidget(m_gameRunnerView);
-  m_gameRunnerView->startGame(m_levels[1]);
+  m_gameRunnerView->startLevel(m_levels[1]);
 }
 
 void MainWindow::resumeGame() {
@@ -97,6 +99,12 @@ void MainWindow::levelSelector() {
 void MainWindow::onGamePaused() {
   QApplication::restoreOverrideCursor();
   m_stackedWidget->setCurrentWidget(m_pauseMenuView);
+}
+
+void MainWindow::onLevelQuit() {
+  m_gameRunnerView->quitLevel();
+  QApplication::restoreOverrideCursor();
+  m_stackedWidget->setCurrentWidget(m_mainMenuView);
 }
 
 void MainWindow::adjustGameRunnerSize() {
@@ -124,7 +132,7 @@ void MainWindow::onWindowClosed() { QCoreApplication::quit(); }
 void MainWindow::onLevelStarted(Game::Levels::Level level) {
   QApplication::setOverrideCursor(Qt::BlankCursor);
   m_stackedWidget->setCurrentWidget(m_gameRunnerView);
-  m_gameRunnerView->startGame(level);
+  m_gameRunnerView->startLevel(level);
 }
 
 void MainWindow::onBackToMainMenuSelected() {

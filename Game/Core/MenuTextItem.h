@@ -16,7 +16,8 @@ enum class MenuAction {
   QUIT,
   SELECT_LEVEL,
   START_LEVEL,
-  BACK_TO_MAIN_MENU
+  BACK_TO_MAIN_MENU,
+  QUIT_LEVEL
 };
 
 class MenuTextItem : public QGraphicsTextItem {

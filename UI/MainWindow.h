@@ -38,6 +38,7 @@ private slots:
   void resumeGame();
   void levelSelector();
   void onGamePaused();
+  void onLevelQuit();
   void onWindowClosed();
   void onLevelStarted(Game::Levels::Level level);
   void onBackToMainMenuSelected();

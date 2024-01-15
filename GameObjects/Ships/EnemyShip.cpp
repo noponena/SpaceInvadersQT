@@ -12,7 +12,7 @@
 namespace GameObjects {
 namespace Ships {
 EnemyShip::EnemyShip(const unsigned int maxHp, const Position &position)
-    : ShipWithHealthBar(maxHp, 0, position) {
+    : ShipWithHealthBar(maxHp, 0, position), m_bottomEdgeSignalEmitted(false) {
   m_stellarCoinSpawnRange = QPoint(2, 5);
   m_healthSpawnProbability = 0.10;
   m_pixmapData.pixmapResourcePath = ":/Images/alien.png";
@@ -114,10 +114,15 @@ std::unique_ptr<GameObject> EnemyShip::clone() const {
 }
 
 bool EnemyShip::shouldBeDeleted() {
-  if (m_position.isBeyondScreenBottomLimit())
+  if (m_position.isBeyondScreenBottomLimit() && !m_bottomEdgeSignalEmitted) {
     emit bottomEdgeReached();
+    m_bottomEdgeSignalEmitted = true;
+  }
 
-  return ShipWithHealthBar::shouldBeDeleted();
+  bool shouldBeDeleted = ShipWithHealthBar::shouldBeDeleted();
+  if (shouldBeDeleted)
+    emit enemyShipDeleted();
+  return shouldBeDeleted;
 }
 
 void EnemyShip::collideWith(GameObject &other) {

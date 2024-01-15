@@ -34,6 +34,8 @@ GameHUD::GameHUD(int width, int height)
 
   m_healthBar->setPos(width / 4, 80);
   m_energyBar->setPos(width / 4, 100);
+
+  this->setZValue(100);
 }
 
 void GameHUD::onPlayerSecondaryWeaponsChanged(

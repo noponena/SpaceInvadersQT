@@ -32,15 +32,16 @@ protected:
   void initializeSounds() override;
 
 private:
+  bool m_bottomEdgeSignalEmitted;
   void clampHealthSpawnProbability();
 
   // GameObject interface
 public:
   std::unique_ptr<GameObject> clone() const override;
-
-  // GameObject interface
-public:
   bool shouldBeDeleted() override;
+
+signals:
+  void enemyShipDeleted();
 };
 } // namespace Ships
 

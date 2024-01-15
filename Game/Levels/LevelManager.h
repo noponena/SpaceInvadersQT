@@ -36,6 +36,7 @@ private:
   bool m_levelInProgress;
 signals:
   void enemyLimitReached();
+  void spawnEventsFinished();
 };
 } // namespace Levels
 } // namespace Game

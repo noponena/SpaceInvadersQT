@@ -8,10 +8,9 @@ PauseMenuView::PauseMenuView(QRect screenGeometry, QWidget *parent)
   QColor color = QColor(255, 255, 255);
   createMenuItem("Resume Game", MenuAction::RESUME_GAME, color, 100,
                  QPointF(100, 150));
-  createMenuItem("Level Selector", MenuAction::LEVEL_SELECTOR, color, 100,
-                 QPointF(100, 300));
-  createMenuItem("Options", MenuAction::OPTIONS, color, 100, QPointF(100, 450));
-  createMenuItem("Quit", MenuAction::QUIT, color, 100, QPointF(100, 600));
+  createMenuItem("Options", MenuAction::OPTIONS, color, 100, QPointF(100, 300));
+  createMenuItem("Quit to Main Menu", MenuAction::QUIT_LEVEL, color, 100,
+                 QPointF(100, 450));
 }
 
 } // namespace Core

@@ -25,7 +25,8 @@ class GameRunnerView : public QGraphicsView {
 public:
   explicit GameRunnerView(QRect screenGeometry, QWidget *parent = nullptr);
   ~GameRunnerView();
-  void startGame(const Levels::Level &level);
+  void startLevel(const Levels::Level &level);
+  void quitLevel();
   void resumeGame();
 
   GameObjects::Ships::PlayerShip *playerShip() const;
@@ -50,12 +51,13 @@ private:
   int m_frameCount = 0;
   QGraphicsTextItem *m_stellarTokens;
   QGraphicsTextItem *m_playerHp;
-  QGraphicsTextItem *m_gameOverInfo;
+  QGraphicsTextItem *m_levelEndedInfo;
   QGraphicsTextItem *m_sceneItemCounter;
   bool m_continuousShoot;
   bool m_continuousEnemySpawn;
   bool m_levelFailed;
-  bool m_levelFailedInfoDisplayed;
+  bool m_levelFailedOrPassedInfoDisplayed;
+  bool m_spawnEventsFinished;
   std::chrono::high_resolution_clock::time_point m_lastFrameEndTime;
 
   UI::FPSCounter *m_fpsCounter;
@@ -73,6 +75,7 @@ private:
   inline void updateGameState(float deltaTime);
   inline void updateFps();
   inline void displayLevelFailedInfo();
+  inline void displayLevelPassedInfo();
 
   const std::vector<std::shared_ptr<GameObjects::GameObject>> *m_gameObjects;
 
@@ -111,12 +114,6 @@ private:
          Q_UNUSED(dt);
          m_playerShip->takeDamage(1);
        }},
-      {Qt::Key_Q,
-       [&](float dt) {
-         Q_UNUSED(dt);
-         m_gameState->initEnemyShips();
-         m_pressedKeys.remove(Qt::Key_Q);
-       }},
       {Qt::Key_U,
        [&](float dt) {
          Q_UNUSED(dt);
@@ -150,10 +147,11 @@ private:
   inline void logFrameStatistics(float renderTimeUs, float updateTimeUs,
                                  float collisionDetectionTimeUs);
   inline void updateGameCounters();
-  inline void checkGameOver();
+  inline void checkLevelFailedOrPassed();
 signals:
   void fpsUpdated(int fps);
   void gamePaused();
+  void levelQuit();
 
 private slots:
   void onObjectAdded(QGraphicsItem *object) {
@@ -172,6 +170,7 @@ private slots:
     m_levelFailed = true;
     m_playerShip = nullptr;
   }
+  void onSpawnEventsFinished() { m_spawnEventsFinished = true; }
   void pause() {
     m_gameTimer.stop();
     emit gamePaused();

@@ -9,9 +9,8 @@ namespace Core {
 GameRunnerView::GameRunnerView(QRect screenGeometry, QWidget *parent)
     : QGraphicsView(parent), m_scene(this), m_continuousShoot(false),
       m_continuousEnemySpawn(true), m_levelFailed(false),
-      m_levelFailedInfoDisplayed(false) {
+      m_levelFailedOrPassedInfoDisplayed(false), m_spawnEventsFinished(false) {
   m_gameState = new GameState();
-  m_playerShip = m_gameState->playerShip();
   m_levelManager = std::make_unique<Levels::LevelManager>(m_gameState);
   m_gameObjects = &(m_gameState->gameObjects());
   m_collisionDetector = std::make_unique<CollisionDetection::CollisionDetector>(
@@ -30,7 +29,6 @@ GameRunnerView::GameRunnerView(QRect screenGeometry, QWidget *parent)
   setupConnections();
 
   m_gameState->setSize(screenGeometry.width(), screenGeometry.height());
-  m_gameState->initialize();
 }
 
 GameRunnerView::~GameRunnerView() {
@@ -82,9 +80,9 @@ void GameRunnerView::setupCounters() {
   m_playerHp->setDefaultTextColor(Qt::white);
   m_playerHp->setFont(QFont("times", 12));
 
-  m_gameOverInfo = new QGraphicsTextItem();
-  m_gameOverInfo->setDefaultTextColor(Qt::white);
-  m_gameOverInfo->setFont(QFont("times", 64));
+  m_levelEndedInfo = new QGraphicsTextItem();
+  m_levelEndedInfo->setDefaultTextColor(Qt::white);
+  m_levelEndedInfo->setFont(QFont("times", 64));
 
   m_fpsCounter->setPos(0, 0);
   m_gameObjectCounter->setPos(0, m_fpsCounter->boundingRect().height() - 10);
@@ -99,7 +97,6 @@ void GameRunnerView::setupCounters() {
   scene()->addItem(m_sceneItemCounter);
   scene()->addItem(m_stellarTokens);
   scene()->addItem(m_playerHp);
-  scene()->addItem(m_gameOverInfo);
   connect(this, &GameRunnerView::fpsUpdated, m_fpsCounter,
           &UI::FPSCounter::updateFPS);
 }
@@ -111,6 +108,25 @@ void GameRunnerView::setupConnections() {
           &GameRunnerView::onObjectDeleted);
   connect(m_gameState, &GameState::playerShipDestroyed, this,
           &GameRunnerView::onPlayerShipDestroyed);
+
+  connect(&m_gameTimer, &QTimer::timeout, this, &GameRunnerView::gameLoop);
+  connect(m_levelManager.get(), &Levels::LevelManager::enemyLimitReached, this,
+          &GameRunnerView::onEnemyLimitReached);
+  connect(m_levelManager.get(), &Levels::LevelManager::spawnEventsFinished,
+          this, &GameRunnerView::onSpawnEventsFinished);
+}
+
+void GameRunnerView::startLevel(const Levels::Level &level) {
+  qDebug() << "starting game..";
+  bool perfTest = false;
+
+#ifdef PERFORMANCE_BENCHMARK
+  perfTest = true;
+  initializeBenchmark();
+#endif
+  // m_levelManager = std::make_unique<LevelManager>(m_gameState, perfTest);
+  m_gameState->createPlayerShip();
+  m_playerShip = m_gameState->playerShip();
 
   connect(m_playerShip,
           &GameObjects::Ships::PlayerShip::playerSecondaryWeaponsChanged,
@@ -132,23 +148,21 @@ void GameRunnerView::setupConnections() {
   connect(m_playerShip, &GameObjects::Ships::PlayerShip::playerMaxHealthSet,
           m_gameHUD, &Core::GameHUD::onPlayerMaxHealthSet);
 
-  connect(&m_gameTimer, &QTimer::timeout, this, &GameRunnerView::gameLoop);
-  connect(m_levelManager.get(), &Levels::LevelManager::enemyLimitReached, this,
-          &GameRunnerView::onEnemyLimitReached);
-}
-
-void GameRunnerView::startGame(const Levels::Level &level) {
-  qDebug() << "starting game..";
-  bool perfTest = false;
-
-#ifdef PERFORMANCE_BENCHMARK
-  perfTest = true;
-  initializeBenchmark();
-#endif
-  // m_levelManager = std::make_unique<LevelManager>(m_gameState, perfTest);
+  m_gameState->initialize();
   m_levelManager->setLevel(level);
   m_levelManager->startLevel();
   m_gameTimer.start(0);
+}
+
+void GameRunnerView::quitLevel() {
+  m_gameTimer.stop();
+  m_levelFailed = false;
+  m_spawnEventsFinished = false;
+  if (m_levelFailedOrPassedInfoDisplayed) {
+    scene()->removeItem(m_levelEndedInfo);
+  }
+  m_levelFailedOrPassedInfoDisplayed = false;
+  m_gameState->deinitialize();
 }
 
 void GameRunnerView::resumeGame() {
@@ -177,7 +191,7 @@ void GameRunnerView::gameLoop() {
   // logFrameStatistics(renderTimeUs, updateTimeUs, collisionDetectionTimeUs);
 
   updateGameCounters();
-  checkGameOver();
+  checkLevelFailedOrPassed();
   m_lastFrameEndTime = std::chrono::high_resolution_clock::now();
 }
 
@@ -253,9 +267,12 @@ void GameRunnerView::updateGameCounters() {
   }
 }
 
-void GameRunnerView::checkGameOver() {
-  if (m_levelFailed && !m_levelFailedInfoDisplayed) {
-    displayLevelFailedInfo();
+void GameRunnerView::checkLevelFailedOrPassed() {
+  if (!m_levelFailedOrPassedInfoDisplayed) {
+    if (m_levelFailed)
+      displayLevelFailedInfo();
+    else if (m_spawnEventsFinished && m_gameState->enemyShipCount() <= 0)
+      displayLevelPassedInfo();
   }
 }
 
@@ -322,14 +339,27 @@ void GameRunnerView::updateFps() {
 }
 
 void GameRunnerView::displayLevelFailedInfo() {
-  m_gameOverInfo->setPlainText("LEVEL FAILED");
-  QRectF textBoundingRect = m_gameOverInfo->boundingRect();
+  m_levelEndedInfo->setPlainText("LEVEL FAILED");
+  QRectF textBoundingRect = m_levelEndedInfo->boundingRect();
   QRectF sceneRect = scene()->sceneRect();
   QPointF centerPosition =
       QPointF((sceneRect.width() - textBoundingRect.width()) / 2.0,
               (sceneRect.height() - textBoundingRect.height()) / 2.0);
-  m_gameOverInfo->setPos(centerPosition);
-  m_levelFailedInfoDisplayed = true;
+  m_levelEndedInfo->setPos(centerPosition);
+  m_levelFailedOrPassedInfoDisplayed = true;
+  scene()->addItem(m_levelEndedInfo);
+}
+
+void GameRunnerView::displayLevelPassedInfo() {
+  m_levelEndedInfo->setPlainText("LEVEL SUCCESSFUL");
+  QRectF textBoundingRect = m_levelEndedInfo->boundingRect();
+  QRectF sceneRect = scene()->sceneRect();
+  QPointF centerPosition =
+      QPointF((sceneRect.width() - textBoundingRect.width()) / 2.0,
+              (sceneRect.height() - textBoundingRect.height()) / 2.0);
+  m_levelEndedInfo->setPos(centerPosition);
+  m_levelFailedOrPassedInfoDisplayed = true;
+  scene()->addItem(m_levelEndedInfo);
 }
 
 void GameRunnerView::keyPressEvent(QKeyEvent *event) {

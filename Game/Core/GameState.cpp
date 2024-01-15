@@ -10,19 +10,29 @@ namespace Core {
 GameState::GameState(QObject *parent)
     : QObject(parent), m_playerShipDeletedFromScene(false) {
   m_playersShipStartSpeed = 500;
-  m_playerShip = std::make_shared<GameObjects::Ships::PlayerShip>(
+}
+
+void GameState::createPlayerShip() {
+  m_playerShip = std::make_unique<GameObjects::Ships::PlayerShip>(
       m_playersShipStartSpeed, GameObjects::Position(0, 0));
-  connect(m_playerShip.get(),
-          &GameObjects::Ships::PlayerShip::stellarTokenCollected, this,
-          &GameState::onStellarTokenCollected);
 }
 
 void GameState::initialize() {
   initMovementConstrains();
   initPlayerShip();
   m_stellarTokens = 0;
-  m_collidingPairs.clear();
   m_enemyShipsReachedBottomLimit = 0;
+  m_enemyShipCount = 0;
+}
+
+void GameState::deinitialize() {
+  m_playerShip = nullptr;
+  m_gameObjects.clear();
+  m_magneticGameObjectMap.clear();
+
+  // disconnect(m_playerShip.get(), &GameObjects::GameObject::objectCreated,
+  // this,
+  //         &GameState::onObjectCreated);
 }
 
 void GameState::addGameObject(std::shared_ptr<GameObjects::GameObject> object) {
@@ -36,6 +46,11 @@ void GameState::addGameObject(std::shared_ptr<GameObjects::GameObject> object) {
 
     connect(enemyShip.get(), &GameObjects::Ships::EnemyShip::bottomEdgeReached,
             this, &GameState::onEnemyReachedBottomEdge);
+
+    connect(enemyShip.get(), &GameObjects::Ships::EnemyShip::enemyShipDeleted,
+            this, &GameState::onEnemyShipDeleted);
+
+    m_enemyShipCount++;
   }
 
   m_gameObjects.emplace_back(object);
@@ -69,13 +84,16 @@ GameState::gameObjects() const {
 }
 
 void GameState::initPlayerShip() {
+  connect(m_playerShip.get(),
+          &GameObjects::Ships::PlayerShip::stellarTokenCollected, this,
+          &GameState::onStellarTokenCollected);
+  connect(m_playerShip.get(), &GameObjects::GameObject::objectDestroyed, this,
+          &GameState::onPlayerShipDestroyed);
 
+  m_playerShip->initialize();
   GameObjects::Position pos(m_windowWidth / 2, m_maxY, m_minX, m_maxX, m_minY,
                             m_maxY);
   m_playerShip->setPosition(pos);
-  m_playerShip->initialize();
-  connect(m_playerShip.get(), &GameObjects::GameObject::objectDestroyed, this,
-          &GameState::onPlayerShipDestroyed);
 
   std::unique_ptr<GameObjects::Projectiles::Projectile> vortexProjectile =
       m_projectileBuilder.createProjectile<GameObjects::Projectiles::Vortex>()
@@ -164,51 +182,6 @@ void GameState::initPlayerShip() {
   addGameObject(m_playerShip);
 }
 
-void GameState::initEnemyShips() {
-  int rows = 1;
-  int cols = 1;
-  // int width = m_maxX - m_minX;
-  // int height = m_maxY - m_minY - 300;
-  // int xSpacing = width / (cols + 1);
-  // int ySpacing = height / (rows + 1);
-  std::random_device rd;  // obtain a random number from hardware
-  std::mt19937 eng(rd()); // seed the generator
-  std::uniform_int_distribution<> distr(100, 1500);
-
-  int randomX = distr(eng);
-  int randomY = distr(eng);
-  std::unique_ptr<GameObjects::Projectiles::Projectile> projectile =
-      m_projectileBuilder
-          .createProjectile<GameObjects::Projectiles::Projectile>()
-          .withDamage(1)
-          .withMovementStrategy(
-              Game::Movement::VerticalMovementStrategy(500, 1))
-          .withObjectType(GameObjects::ObjectType::ENEMY_PROJECTILE)
-          .build();
-
-  // Then, create the weapon using WeaponBuilder
-  std::unique_ptr<Weapons::Weapon> weapon =
-      m_weaponBuilder.createWeapon<Weapons::PrimaryWeapon>()
-          .withProjectile(std::move(projectile))
-          .withWeaponCooldownMs(0)
-          .build();
-
-  // qDebug() << "Initializing" << rows * cols << "enemy ships.";
-  for (int j = 1; j <= rows; j++) {
-    for (int i = 1; i <= cols; i++) {
-      GameObjects::Position pos(randomX, randomY, m_minX, m_maxX, m_minY,
-                                m_maxY);
-      std::unique_ptr<GameObjects::Ships::EnemyShip> enemyShip =
-          std::make_unique<GameObjects::Ships::EnemyShip>(1, pos);
-      enemyShip->initialize();
-      // enemyShip->addWeapon(weapon->clone());
-      //        enemyShip->setMovementStrategy(Game::Movement::CircularMovementStrategy(100,
-      //        1));
-      addGameObject(std::move(enemyShip));
-    }
-  }
-}
-
 void GameState::initMovementConstrains() {
   m_minX = 0;
   m_maxX = m_windowWidth * 0.98;
@@ -225,5 +198,7 @@ const unsigned &GameState::stellarTokens() const { return m_stellarTokens; }
 int GameState::enemyShipsReachedBottomLimit() const {
   return m_enemyShipsReachedBottomLimit;
 }
+
+int GameState::enemyShipCount() const { return m_enemyShipCount; }
 } // namespace Core
 } // namespace Game

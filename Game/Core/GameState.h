@@ -5,7 +5,6 @@
 #include "GameObjects/Projectiles/ProjectileBuilder.h"
 #include "GameObjects/Ships/PlayerShip.h"
 #include "Weapons/WeaponBuilder.h"
-#include <mutex>
 
 namespace Game {
 namespace Core {
@@ -15,11 +14,12 @@ class GameState : public QObject {
 public:
   GameState(QObject *parent = nullptr);
 
+  void createPlayerShip();
   void initialize();
+  void deinitialize();
   void addGameObject(std::shared_ptr<GameObjects::GameObject> object);
   void setSize(int width, int height);
   void update(float deltaTimeInSeconds);
-  void initEnemyShips();
 
   const std::vector<std::shared_ptr<GameObjects::GameObject>> &
   gameObjects() const;
@@ -30,8 +30,9 @@ public:
   const unsigned &stellarTokens() const;
   int enemyShipsReachedBottomLimit() const;
 
+  int enemyShipCount() const;
+
 private:
-  std::vector<std::pair<uint64_t, uint64_t>> m_collidingPairs;
   std::vector<std::shared_ptr<GameObjects::GameObject>> m_gameObjects;
   std::unordered_map<uint64_t, std::shared_ptr<GameObjects::GameObject>>
       m_magneticGameObjectMap;
@@ -39,6 +40,7 @@ private:
   unsigned m_stellarTokens;
   float m_playersShipStartSpeed;
   int m_enemyShipsReachedBottomLimit;
+  int m_enemyShipCount;
   void initPlayerShip();
   void initMovementConstrains();
   std::shared_ptr<GameObjects::Ships::PlayerShip> m_playerShip;
@@ -56,6 +58,7 @@ private slots:
   }
   void onStellarTokenCollected() { m_stellarTokens++; }
   void onEnemyReachedBottomEdge() { m_enemyShipsReachedBottomLimit++; };
+  void onEnemyShipDeleted() { m_enemyShipCount--; }
   void onPlayerShipDestroyed() {
     m_playerShip = nullptr;
     emit playerShipDestroyed();

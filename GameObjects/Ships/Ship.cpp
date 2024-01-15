@@ -84,9 +84,17 @@ void Ship::setSecondaryWeapon(std::unique_ptr<Weapons::Weapon> newWeapon,
 }
 
 void Ship::clearWeapons() {
+  for (auto &weapon : m_primaryWeapons) {
+    disconnect(weapon.get(), &Weapons::Weapon::projectileFired, this,
+               &Ship::onProjectileFired);
+  }
   m_primaryWeapons.clear();
   for (unsigned i = 0; i < 4; i++) {
-    m_secondaryWeapons[i] = nullptr;
+    if (m_secondaryWeapons[i]) {
+      disconnect(m_secondaryWeapons[i].get(), &Weapons::Weapon::projectileFired,
+                 this, &Ship::onProjectileFired);
+      m_secondaryWeapons[i] = nullptr;
+    }
   }
 }
 
