@@ -22,14 +22,16 @@ include(Graphics/Graphics.pri)
 
 DEFINES += YAML_CPP_STATIC_DEFINE
 
-INCLUDEPATH += "C:/Users/aaron/OneDrive/Tiedostot/Aaro/Personal/Projects/QT/SpaceInvadersQT/Thirdparty/OpenAL/include"
-LIBS += -L"C:/Users/aaron/OneDrive/Tiedostot/Aaro/Personal/Projects/QT/SpaceInvadersQT/Thirdparty/OpenAL/libs/Win64" -lOpenAL32
+win32 {
+    INCLUDEPATH += $$PWD/Thirdparty/OpenAL/include
+    LIBS += -L$$PWD/Thirdparty/OpenAL/libs/Win64 -lOpenAL32
 
-INCLUDEPATH += "C:/Users/aaron/OneDrive/Tiedostot/Aaro/Personal/Projects/QT/SpaceInvadersQT/Thirdparty/libsndfile/include"
-LIBS += -L"C:/Users/aaron/OneDrive/Tiedostot/Aaro/Personal/Projects/QT/SpaceInvadersQT/Thirdparty/libsndfile/lib" -llibsndfile-1
+    INCLUDEPATH += $$PWD/Thirdparty/libsndfile/include
+    LIBS += -L$$PWD/Thirdparty/libsndfile/lib -llibsndfile-1
+}
 
-INCLUDEPATH += "C:/Users/aaron/OneDrive/Tiedostot/Aaro/Personal/Projects/QT/SpaceInvadersQT/Thirdparty/yaml-cpp/include/"
-LIBS += -L"C:/Users/aaron/OneDrive/Tiedostot/Aaro/Personal/Projects/QT/SpaceInvadersQT/Thirdparty/yaml-cpp" -lyaml-cpp
+INCLUDEPATH += $$PWD/Thirdparty/yaml-cpp/include
+LIBS += -L$$PWD/Thirdparty/yaml-cpp -lyaml-cpp
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
