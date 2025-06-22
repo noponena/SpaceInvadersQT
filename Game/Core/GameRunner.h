@@ -15,7 +15,6 @@
 #include <QWheelEvent>
 #include <algorithm>
 
-#define PERFORMANCE_BENCHMARK
 
 namespace Game {
 namespace Core {
