@@ -11,6 +11,29 @@ Space Invaders QT is a simple shooter game implemented in C++ using the Qt frame
 
 All third party libraries are provided in the `Thirdparty/` directory.
 
+
+## Installing Dependencies
+
+### Linux (Ubuntu/Debian)
+Install the required packages:
+```bash
+sudo apt update
+sudo apt install build-essential qtbase5-dev qt5-qmake libopenal-dev libsndfile1-dev libyaml-cpp-dev
+```
+
+### macOS
+Install via Homebrew:
+```bash
+brew install qt openal-soft libsndfile yaml-cpp
+```
+Ensure `qmake` is on your `PATH`, e.g. `export PATH="$(brew --prefix qt)/bin:$PATH"`.
+
+### Windows
+1. Download and run the [Qt Online Installer](https://www.qt.io/download).
+2. Install the desktop Qt components which include `qmake`.
+3. Use the pre-built OpenAL and libsndfile libraries in `Thirdparty/`.
+   Build `yaml-cpp` from `Thirdparty/yaml-cpp` with CMake if needed.
+
 ## Building
 
 Run the following commands from the project root:
