@@ -22,7 +22,13 @@ make
 
 The built binary will be placed in the current directory.
 
-To enable the optional performance benchmark mode, define `PERFORMANCE_BENCHMARK` before building. This can be done by uncommenting the macro in `Game/Core/GameRunnerView.h` (and `Game/Core/GameRunner.h`) or by passing `DEFINES+=PERFORMANCE_BENCHMARK` to `qmake`.
+To enable the optional performance benchmark mode, build using the
+`performance_benchmark` configuration:
+
+```bash
+qmake CONFIG+=performance_benchmark SpaceInvaders.pro
+make
+```
 
 ## Gameplay
 
