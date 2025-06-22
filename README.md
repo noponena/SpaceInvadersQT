@@ -31,7 +31,9 @@ Ensure `qmake` is on your `PATH`, e.g. `export PATH="$(brew --prefix qt)/bin:$PA
 ### Windows
 1. Download and run the [Qt Online Installer](https://www.qt.io/download).
 2. Install the desktop Qt components which include `qmake`.
-3. Use the pre-built OpenAL and libsndfile libraries in `Thirdparty/`.
+3. Use the pre-built libraries in `Thirdparty/`.
+   Run `oalinst.exe` from `Thirdparty/OpenAL/redist` to install the OpenAL runtime.
+   `libsndfile` requires the official Windows installer (or copy `libsndfile-1.dll` into the executable directory).
    Build `yaml-cpp` from `Thirdparty/yaml-cpp` with CMake if needed.
 
 ## Building
