@@ -14,8 +14,9 @@ BVHTree::build(std::vector<GameObjects::GameObject *> &objects) {
     return nullptr;
   }
 
+  m_objects = objects;
   m_processedPairs.clear();
-
+  m_leafMap.clear();
   m_intersectionCounter = 0;
 
   // Decide on the splitting axis before splitting
@@ -24,20 +25,19 @@ BVHTree::build(std::vector<GameObjects::GameObject *> &objects) {
   std::shared_ptr<BVHNode> node = std::make_shared<BVHNode>();
 
   if (objects.size() == 1) {
-    // Handle leaf node with a single object
     node->objects = objects;
     node->bbox = calculateBoundingBox(objects);
     node->leftChild = nullptr;
     node->rightChild = nullptr;
+    m_leafMap[objects[0]] = node;
   } else {
-    // Split objects into two groups
     auto [leftObjects, rightObjects] = splitObjects(objects, m_splitX);
-
-    // Recursively build child nodes
     node->leftChild = build(leftObjects);
+    if (node->leftChild)
+      node->leftChild->parent = node;
     node->rightChild = build(rightObjects);
-
-    // Calculate bounding box for this node
+    if (node->rightChild)
+      node->rightChild->parent = node;
     node->bbox =
         combineBoundingBoxes(node->leftChild->bbox, node->rightChild->bbox);
   }
@@ -94,6 +94,31 @@ BVHTree::query(std::shared_ptr<BVHNode> node,
       }
     }
     return result;
+  }
+}
+
+void BVHTree::insert(GameObjects::GameObject *object) {
+  m_objects.push_back(object);
+  root = build(m_objects);
+}
+
+void BVHTree::remove(GameObjects::GameObject *object) {
+  m_objects.erase(std::remove(m_objects.begin(), m_objects.end(), object),
+                  m_objects.end());
+  root = build(m_objects);
+}
+
+void BVHTree::update(GameObjects::GameObject *object) {
+  auto it = m_leafMap.find(object);
+  if (it == m_leafMap.end())
+    return;
+  std::shared_ptr<BVHNode> node = it->second;
+  node->bbox = object->getBoundingBox();
+  auto parent = node->parent.lock();
+  while (parent) {
+    parent->bbox = combineBoundingBoxes(parent->leftChild->bbox,
+                                        parent->rightChild->bbox);
+    parent = parent->parent.lock();
   }
 }
 

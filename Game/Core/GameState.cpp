@@ -57,6 +57,7 @@ void GameState::addGameObject(std::shared_ptr<GameObjects::GameObject> object) {
   if (object->magnetism().isMagnetic)
     m_magneticGameObjectMap[object->id()] = object;
   emit objectAdded(object->getGraphicsItem());
+  emit gameObjectAdded(object.get());
 }
 
 void GameState::setSize(int width, int height) {
@@ -71,6 +72,7 @@ void GameState::update(float deltaTimeInSeconds) {
     m_gameObjects[i]->update(ctx);
     if (m_gameObjects[i]->shouldBeDeleted()) {
       m_magneticGameObjectMap.erase(m_gameObjects[i]->id());
+      emit gameObjectRemoved(m_gameObjects[i].get());
       std::swap(m_gameObjects[i], m_gameObjects.back());
       m_gameObjects.pop_back();
     } else {

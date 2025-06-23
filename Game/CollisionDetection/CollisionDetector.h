@@ -21,6 +21,9 @@ public:
 
   void detectBVH();
 
+  void onGameObjectAdded(GameObjects::GameObject *object);
+  void onGameObjectRemoved(GameObjects::GameObject *object);
+
 private:
   using ObjectType = GameObjects::ObjectType;
   const std::vector<std::shared_ptr<GameObjects::GameObject>> &m_gameObjects;

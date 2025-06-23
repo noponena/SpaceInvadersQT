@@ -107,6 +107,10 @@ void GameRunner::startGame() {
   m_gameObjects = &(m_gameState->gameObjects());
   m_collisionDetector = std::make_unique<CollisionDetection::CollisionDetector>(
       m_gameState->gameObjects(), rect());
+  connect(m_gameState, &GameState::gameObjectAdded, m_collisionDetector.get(),
+          &CollisionDetection::CollisionDetector::onGameObjectAdded);
+  connect(m_gameState, &GameState::gameObjectRemoved, m_collisionDetector.get(),
+          &CollisionDetection::CollisionDetector::onGameObjectRemoved);
 
   // Create and start game loop timer
 

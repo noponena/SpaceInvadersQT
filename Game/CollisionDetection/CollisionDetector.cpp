@@ -9,6 +9,12 @@ CollisionDetector::CollisionDetector(
     QRectF screenRect)
     : m_gameObjects(gameObjects) {
   m_quadtree = std::make_unique<Quadtree>(0, screenRect);
+  std::vector<GameObjects::GameObject *> objs;
+  objs.reserve(m_gameObjects.size());
+  for (auto const &obj : m_gameObjects) {
+    objs.push_back(obj.get());
+  }
+  m_bvhTree.root = m_bvhTree.build(objs);
 }
 
 void CollisionDetector::detectQuadTree() {
@@ -45,19 +51,14 @@ void CollisionDetector::detectQuadTree() {
 }
 
 void CollisionDetector::detectBVH() {
-  std::vector<GameObjects::GameObject *> vec;
-  vec.reserve(m_gameObjects.size());
+  m_bvhTree.clearProcessedPairs();
+
   for (auto const &object : m_gameObjects) {
-    vec.push_back(object.get());
+    m_bvhTree.update(object.get());
   }
 
-  std::set<std::pair<std::uint64_t, std::uint64_t>> checkedPairs;
-  std::shared_ptr<BVHNode> node = m_bvhTree.build(vec);
-
   for (auto const &object : m_gameObjects) {
-    m_bvhTree.clearProcessedPairs();
-    std::vector<GameObjects::GameObject *> collisionObjects =
-        m_bvhTree.query(node, object.get());
+    auto collisionObjects = m_bvhTree.query(m_bvhTree.root, object.get());
     for (auto const &collisionObject : collisionObjects) {
       object->collide(*collisionObject);
     }
@@ -66,6 +67,14 @@ void CollisionDetector::detectBVH() {
 
 void CollisionDetector::detectBruteForce() {
   m_bruteForce.detect(m_gameObjects);
+}
+
+void CollisionDetector::onGameObjectAdded(GameObjects::GameObject *object) {
+  m_bvhTree.insert(object);
+}
+
+void CollisionDetector::onGameObjectRemoved(GameObjects::GameObject *object) {
+  m_bvhTree.remove(object);
 }
 
 } // namespace CollisionDetection
