@@ -68,7 +68,8 @@ void LevelLoader::initialize() {
 Level LevelLoader::loadLevel(const std::string &filepath) {
   try {
     qDebug() << "loading level:"
-             << std::filesystem::path(filepath).filename().string();
+             << QString::fromStdString(
+                    std::filesystem::path(filepath).filename().string());
     Level level;
     YAML::Node config = YAML::LoadFile(filepath);
 

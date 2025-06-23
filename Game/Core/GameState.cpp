@@ -66,8 +66,9 @@ void GameState::setSize(int width, int height) {
 
 void GameState::update(float deltaTimeInSeconds) {
   for (size_t i = 0; i < m_gameObjects.size();) {
-    m_gameObjects[i]->update(
-        {deltaTimeInSeconds, m_playerShip.get(), m_magneticGameObjectMap});
+    GameObjects::UpdateContext ctx{deltaTimeInSeconds, m_playerShip.get(),
+                                   m_magneticGameObjectMap};
+    m_gameObjects[i]->update(ctx);
     if (m_gameObjects[i]->shouldBeDeleted()) {
       m_magneticGameObjectMap.erase(m_gameObjects[i]->id());
       std::swap(m_gameObjects[i], m_gameObjects.back());
