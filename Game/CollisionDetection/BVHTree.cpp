@@ -80,17 +80,15 @@ BVHTree::query(std::shared_ptr<BVHNode> node,
               : std::make_pair(node->objects[i]->id(), queryObject->id());
 
       if (m_processedPairs.find(sortedPair) == m_processedPairs.end()) {
-
-        if (queryObject->isCollidable() && node->objects[i]->isCollidable()) {
-          if (canCollide(queryObject->objectTypes(),
-                         node->objects[i]->objectTypes())) {
-            if (node->objects[i]->getBoundingBox().intersects(
-                    queryObject->getBoundingBox())) {
-              result.push_back(node->objects[i]);
-            }
+        if (queryObject->isCollidable() && node->objects[i]->isCollidable() &&
+            canCollide(queryObject->objectTypes(),
+                       node->objects[i]->objectTypes())) {
+          if (node->objects[i]->getBoundingBox().intersects(
+                  queryObject->getBoundingBox())) {
+            result.push_back(node->objects[i]);
           }
+          m_processedPairs.insert(sortedPair);
         }
-        m_processedPairs.insert(sortedPair);
       }
     }
     return result;
