@@ -25,8 +25,9 @@ public:
   ~BVHTree();
   std::shared_ptr<BVHNode>
   build(std::vector<GameObjects::GameObject *> &objects);
-  std::vector<GameObjects::GameObject *>
-  query(std::shared_ptr<BVHNode> node, GameObjects::GameObject *queryObject);
+  void query(std::shared_ptr<BVHNode> node,
+             GameObjects::GameObject *queryObject,
+             std::vector<GameObjects::GameObject *> &outResults);
   void clearProcessedPairs();
 
 private:

@@ -194,9 +194,7 @@ GameObjects::Ships::PlayerShip *GameState::playerShip() const {
   return m_playerShip.get();
 }
 
-const std::uint32_t &
-GameState::stellarTokens () const
-{
+const std::uint32_t &GameState::stellarTokens() const {
   return m_stellarTokens;
 }
 

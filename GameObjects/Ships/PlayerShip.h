@@ -52,7 +52,8 @@ signals:
   void stellarTokenCollected();
   void
   playerSecondaryWeaponsChanged(std::unique_ptr<Weapons::Weapon> weapons[]);
-  void playerSecondaryWeaponFired(std::uint32_t weaponIndex, std::uint32_t cooldownMs);
+  void playerSecondaryWeaponFired(std::uint32_t weaponIndex,
+                                  std::uint32_t cooldownMs);
   void healthUpdated(int amount);
   void playerEnergyUpdated(float updatedEnergy);
   void playerMaxEnergySet(float maxEnergy);

@@ -61,12 +61,13 @@ private slots:
 
 signals:
 
-  void
-  collisionsDetected(std::vector<std::pair<std::uint64_t, std::uint64_t>> collidingPairs);
+  void collisionsDetected(
+      std::vector<std::pair<std::uint64_t, std::uint64_t>> collidingPairs);
 
 private:
   std::unordered_map<
-      std::uint64_t, std::pair<QRectF, std::unordered_set<GameObjects::ObjectType>>>
+      std::uint64_t,
+      std::pair<QRectF, std::unordered_set<GameObjects::ObjectType>>>
       m_data;
   QTimer *m_timer;
   std::mutex &m_mutex;

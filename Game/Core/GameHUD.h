@@ -19,7 +19,8 @@ public:
 public slots:
   void
   onPlayerSecondaryWeaponsChanged(std::unique_ptr<Weapons::Weapon> weapons[]);
-  void onPlayerSecondaryWeaponFired(std::uint32_t weaponIndex, std::uint32_t cooldownMs);
+  void onPlayerSecondaryWeaponFired(std::uint32_t weaponIndex,
+                                    std::uint32_t cooldownMs);
   void onPlayerEnergyUpdated(float updatedEnergy);
   void onPlayerMaxEnergySet(float maxEnergy);
   void onPlayerHealthUpdated(float updatedHealth);

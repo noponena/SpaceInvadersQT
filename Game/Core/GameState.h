@@ -27,7 +27,7 @@ public:
 
   int m_minX, m_minY, m_maxX, m_maxY, m_windowWidth, m_windowHeight;
 
-  const std::uint32_t &stellarTokens () const;
+  const std::uint32_t &stellarTokens() const;
   int enemyShipsReachedBottomLimit() const;
 
   int enemyShipCount() const;

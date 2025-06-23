@@ -4,6 +4,8 @@
 namespace Game {
 namespace CollisionDetection {
 
+static constexpr int LEAF_SIZE = 4;
+
 BVHTree::BVHTree() : m_splitX(true) {}
 
 BVHTree::~BVHTree() {}
@@ -19,11 +21,11 @@ BVHTree::build(std::vector<GameObjects::GameObject *> &objects) {
   m_intersectionCounter = 0;
 
   // Decide on the splitting axis before splitting
-  m_splitX = !m_splitX; // shouldSplitX(objects);
+  m_splitX = shouldSplitX(objects); // !m_splitX;
 
   std::shared_ptr<BVHNode> node = std::make_shared<BVHNode>();
 
-  if (objects.size() == 1) {
+  if (objects.size() <= LEAF_SIZE) {
     // Handle leaf node with a single object
     node->objects = objects;
     node->bbox = calculateBoundingBox(objects);
@@ -45,33 +47,24 @@ BVHTree::build(std::vector<GameObjects::GameObject *> &objects) {
   return node;
 }
 
-std::vector<GameObjects::GameObject *>
-BVHTree::query(std::shared_ptr<BVHNode> node,
-               GameObjects::GameObject *queryObject) {
+void BVHTree::query(std::shared_ptr<BVHNode> node,
+                    GameObjects::GameObject *queryObject,
+                    std::vector<GameObjects::GameObject *> &outResults) {
   QRectF queryBbox = queryObject->getBoundingBox();
   if (!node || !node->bbox.intersects(queryBbox))
-    return {};
+    return;
 
   // If this is an internal node, check collisions between left and right
   // children
   if (node->leftChild && node->rightChild) {
-    std::vector<GameObjects::GameObject *> leftResults;
-    std::vector<GameObjects::GameObject *> rightResults;
-
     if (node->leftChild->bbox.intersects(queryBbox)) {
-      leftResults = query(node->leftChild, queryObject);
+      query(node->leftChild, queryObject, outResults);
     }
     if (node->rightChild->bbox.intersects(queryBbox)) {
-      rightResults = query(node->rightChild, queryObject);
+      query(node->rightChild, queryObject, outResults);
     }
-
-    // Combine the results from left and right children
-    leftResults.insert(leftResults.end(), rightResults.begin(),
-                       rightResults.end());
-    return leftResults;
   } else {
     // Leaf node processing
-    std::vector<GameObjects::GameObject *> result;
     for (size_t i = 0; i < node->objects.size(); i++) {
 
       auto sortedPair =
@@ -86,14 +79,13 @@ BVHTree::query(std::shared_ptr<BVHNode> node,
                          node->objects[i]->objectTypes())) {
             if (node->objects[i]->getBoundingBox().intersects(
                     queryObject->getBoundingBox())) {
-              result.push_back(node->objects[i]);
+              outResults.push_back(node->objects[i]);
             }
           }
         }
         m_processedPairs.insert(sortedPair);
       }
     }
-    return result;
   }
 }
 

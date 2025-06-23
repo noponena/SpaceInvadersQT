@@ -51,13 +51,12 @@ void CollisionDetector::detectBVH() {
     vec.push_back(object.get());
   }
 
-  std::set<std::pair<std::uint64_t, std::uint64_t>> checkedPairs;
   std::shared_ptr<BVHNode> node = m_bvhTree.build(vec);
 
   for (auto const &object : m_gameObjects) {
     m_bvhTree.clearProcessedPairs();
-    std::vector<GameObjects::GameObject *> collisionObjects =
-        m_bvhTree.query(node, object.get());
+    std::vector<GameObjects::GameObject *> collisionObjects;
+    m_bvhTree.query(node, object.get(), collisionObjects);
     for (auto const &collisionObject : collisionObjects) {
       object->collide(*collisionObject);
     }

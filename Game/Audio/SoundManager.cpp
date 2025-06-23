@@ -40,13 +40,15 @@ void SoundManager::loadSounds() {
 
   std::uint32_t laser =
       SoundBuffer::get()->addSoundEffectFromResource(":/Sounds/laser.wav");
-  std::uint32_t lesserEnemyLaser = SoundBuffer::get()->addSoundEffectFromResource(
-      ":/Sounds/lesser_enemy_laser.wav");
+  std::uint32_t lesserEnemyLaser =
+      SoundBuffer::get()->addSoundEffectFromResource(
+          ":/Sounds/lesser_enemy_laser.wav");
   std::uint32_t vortexCannon = SoundBuffer::get()->addSoundEffectFromResource(
       ":/Sounds/vortex_cannon.wav");
 
-  std::uint32_t playerDestroyed = SoundBuffer::get()->addSoundEffectFromResource(
-      ":/Sounds/player_explosion.wav");
+  std::uint32_t playerDestroyed =
+      SoundBuffer::get()->addSoundEffectFromResource(
+          ":/Sounds/player_explosion.wav");
 
   std::uint32_t lesserEnemyDestroyed =
       SoundBuffer::get()->addSoundEffectFromResource(":/Sounds/explosion.wav");
