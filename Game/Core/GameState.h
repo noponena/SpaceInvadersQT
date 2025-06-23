@@ -50,6 +50,8 @@ private:
 signals:
   void objectDeleted(QGraphicsItem *object);
   void objectAdded(QGraphicsItem *object);
+  void gameObjectAdded(GameObjects::GameObject *object);
+  void gameObjectRemoved(GameObjects::GameObject *object);
   void playerShipDestroyed();
 
 private slots:

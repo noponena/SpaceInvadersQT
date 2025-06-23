@@ -3,6 +3,8 @@
 
 #include "GameObjects/GameObject.h"
 #include <set>
+#include <unordered_map>
+#include <vector>
 
 namespace Game {
 namespace CollisionDetection {
@@ -11,20 +13,24 @@ struct BVHNode {
   QRectF bbox;
   std::shared_ptr<BVHNode> leftChild;
   std::shared_ptr<BVHNode> rightChild;
-  std::vector<GameObjects::GameObject *>
-      objects; // Leaf nodes hold game objects
+  std::weak_ptr<BVHNode> parent;
+  std::vector<GameObjects::GameObject *> objects; // Leaf nodes hold game
+                                                 // objects
 
-  // Constructor, methods, etc.
+  BVHNode() = default;
 };
 
 class BVHTree {
 public:
-  BVHNode *root;
+  std::shared_ptr<BVHNode> root;
 
   BVHTree();
   ~BVHTree();
   std::shared_ptr<BVHNode>
   build(std::vector<GameObjects::GameObject *> &objects);
+  void insert(GameObjects::GameObject *object);
+  void remove(GameObjects::GameObject *object);
+  void update(GameObjects::GameObject *object);
   std::vector<GameObjects::GameObject *>
   query(std::shared_ptr<BVHNode> node, GameObjects::GameObject *queryObject);
   void clearProcessedPairs();
@@ -40,6 +46,10 @@ private:
   bool m_splitX;
   int m_intersectionCounter;
   std::set<std::pair<std::uint64_t, std::uint64_t>> m_processedPairs;
+
+  std::vector<GameObjects::GameObject *> m_objects;
+  std::unordered_map<GameObjects::GameObject *, std::shared_ptr<BVHNode>>
+      m_leafMap;
   using ObjectType = GameObjects::ObjectType;
   std::unordered_map<GameObjects::ObjectType,
                      std::unordered_set<GameObjects::ObjectType>>

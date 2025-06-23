@@ -106,6 +106,10 @@ void GameRunnerView::setupConnections() {
           &GameRunnerView::onObjectAdded);
   connect(m_gameState, &GameState::objectDeleted, this,
           &GameRunnerView::onObjectDeleted);
+  connect(m_gameState, &GameState::gameObjectAdded, m_collisionDetector.get(),
+          &CollisionDetection::CollisionDetector::onGameObjectAdded);
+  connect(m_gameState, &GameState::gameObjectRemoved, m_collisionDetector.get(),
+          &CollisionDetection::CollisionDetector::onGameObjectRemoved);
   connect(m_gameState, &GameState::playerShipDestroyed, this,
           &GameRunnerView::onPlayerShipDestroyed);
 
