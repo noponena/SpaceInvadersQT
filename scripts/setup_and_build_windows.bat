@@ -16,7 +16,7 @@ echo Usage: %~nx0 [--clean] [core_count]
 echo.
 echo   --clean       Optional: Clean all build directories before building.
 echo   core_count    Optional: Number of CPU cores to use for parallel builds.
-echo                 If omitted, core count is auto-detected.
+echo                 If omitted, the default is 8.
 echo.
 echo Examples:
 echo   %~nx0
@@ -30,10 +30,10 @@ exit /b 0
 
 setlocal EnableDelayedExpansion
 
-REM === Argument Parsing and Core Detection ===
+REM === Argument Parsing ===
 
 set "CLEAN_BUILD=0"
-set "CORES="
+set "CORES=8"  REM Default to 8 if not specified
 
 REM Detect if first argument is --clean
 if /i "%~1"=="--clean" (
@@ -44,17 +44,6 @@ if /i "%~1"=="--clean" (
 ) else if not "%~1"=="" (
     set "CORES=%~1"
 )
-
-REM If CORES is not set, auto-detect it
-if "%CORES%"=="" (
-    for /f "skip=2 tokens=2 delims=," %%i in ('wmic cpu get NumberOfLogicalProcessors /format:csv') do (
-        if not "%%i"=="" (
-            set "CORES=%%i"
-            goto :after_core_detect
-        )
-    )
-)
-:after_core_detect
 
 echo Using %CORES% parallel jobs for builds.
 
@@ -67,9 +56,12 @@ if !CLEAN_BUILD! EQU 1 (
     if exist "%RESULT_DIR%" rmdir /s /q "%RESULT_DIR%"
 )
 
-REM ==== Install OpenAL runtime ====
-if exist "Thirdparty\OpenAL\redist\oalinst.exe" (
-    "Thirdparty\OpenAL\redist\oalinst.exe" /S
+REM ==== Warn about OpenAL runtime ====
+if not exist "%WINDIR%\System32\OpenAL32.dll" (
+    echo.
+    echo WARNING: OpenAL runtime may not be installed on your system.
+    echo Please run Thirdparty\OpenAL\redist\oalinst.exe manually if you encounter audio issues.
+    echo.
 )
 
 REM ==== Build yaml-cpp ====

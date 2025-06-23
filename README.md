@@ -1,87 +1,111 @@
 # Space Invaders QT
 
-Space Invaders QT is a simple shooter game implemented in C++ using the Qt framework. The project demonstrates sprite based rendering, basic physics and audio playback.
+Space Invaders QT is a simple 2D shooter game implemented in C++ using the Qt framework. The project demonstrates sprite-based rendering, basic physics, and audio playback.
+
+## Prerequisites
+
+- **C++ Compiler** supporting C++17 or newer (e.g. MinGW, MSVC, GCC, Clang)
+- **CMake** (for building on all platforms)
+- **Git** (to clone the repo, optional)
+- **Windows, Linux (Ubuntu/Debian), or macOS**
 
 ## Dependencies
 
-- **Qt** (Widgets, OpenGL, Multimedia)
+- **Qt** (widgets and graphics)
 - **OpenAL** – audio playback
 - **libsndfile** – loading sound assets
 - **yaml-cpp** – parsing level data
 
-All third party libraries are provided in the `Thirdparty/` directory.
+All third-party libraries are provided in the `Thirdparty/` directory (Windows), or can be installed via package managers (Linux/macOS).
 
+---
 
 ## Installing Dependencies
 
+### Windows
+
+#### 1. Install Qt Framework (with MinGW Toolchain)
+
+1. Download and run the [Qt Online Installer (Open Source)](https://www.qt.io/download-qt-installer).
+2. Log in to your Qt account (or create one if needed).
+3. Select **Developer and Designer Tools → Qt for desktop development**.
+    - For a minimal install, choose **Custom Installation** and select:
+        - **Qt > 6.9.1** (or newer) → `MinGW 13.1.0 64-bit`
+        - **Build Tools** → `MinGW 13.1.0 64-bit`
+    - *You do not need Qt Creator, documentation, or examples unless you want them.*
+
+#### 2. Install OpenAL Runtime
+
+- Go to `Thirdparty/OpenAL/redist/`.
+- Double-click `oalinst.exe` and follow the prompts.
+
+#### 3. Set Up Environment Variables
+
+1. Open the **Start Menu** → search for **Environment Variables** → **Edit the system environment variables**.
+2. In the dialog, click **Environment Variables…**.
+3. Under **User variables** or **System variables**, find `Path` and click **Edit**.
+4. Add the following (adjust for your installed versions):
+
+    ```
+    C:\Qt\<qt_version>\mingw_64\bin
+    C:\Qt\Tools\mingw<mingw_version>_64\bin
+    C:\Qt\Tools\CMake_64\bin
+    ```
+
+    *Example:* For Qt 6.9.1 and MinGW 13.1.0, use `<qt_version>=6.9.1`, `<mingw_version>=1310`.
+
+5. Click **OK** on all dialogs.
+6. Open a new Command Prompt or PowerShell and run:
+
+    ```cmd
+    qmake --version
+    cmake --version
+    mingw32-make --version
+    ```
+
+    *Each command should display a version number.*
+
 ### Linux (Ubuntu/Debian)
-Install the required packages:
+Install all dependencies via apt:
 ```bash
 sudo apt update
-sudo apt install build-essential qtbase5-dev qt5-qmake libopenal-dev libsndfile1-dev libyaml-cpp-dev
+sudo apt install build-essential qt6-base-dev libopenal-dev libsndfile1-dev libyaml-cpp-dev
 ```
 
 ### macOS
-Install via Homebrew:
+Install dependencies using Homebrew:
 ```bash
 brew install qt openal-soft libsndfile yaml-cpp
 ```
 Ensure `qmake` is on your `PATH`, e.g. `export PATH="$(brew --prefix qt)/bin:$PATH"`.
 
-### Windows
-
-1. **Install Qt Framework**
-   - Download and run the [Qt Online Installer](https://www.qt.io/download).
-   - During installation, make sure to select the **Desktop Qt components**, which include `qmake`.
-
-2. **Use Pre-Built Libraries**
-   - This project uses pre-built third-party libraries located in the `Thirdparty/` directory.
-
-3. **Install OpenAL Runtime**
-   - Navigate to `Thirdparty/OpenAL/redist/`
-   - Run `oalinst.exe` to install the OpenAL runtime required for sound playback.
-
-4. **Install libsndfile (for sound file decoding)**
-   - **Option A (Recommended):**  
-     Download and install the official Windows installer from the [libsndfile GitHub Releases](https://github.com/libsndfile/libsndfile/releases).  
-     This will register `libsndfile-1.dll` in your system so the game can find it automatically.
-   - **Option B (Manual):**  
-     Extract `libsndfile-1.dll` from a release package and **copy it to the same directory as your executable** (`.exe`) after build.
-
-5. **Build `yaml-cpp` (YAML parser)**
-   - Open a terminal and run the following commands:
-     ```bash
-     cd Thirdparty/yaml-cpp
-     mkdir build
-     cd build
-     cmake ..
-     cmake --build . --config Release
-     ```
-   - After build, make sure the resulting `.lib` and `.dll` files are available to your linker/runtime.
-
 
 ## Building
 
-Run the following commands from the project root:
+1. Run the build script for your OS (from the ```scripts``` folder):
+    - **Windows**: ```setup_and_build_windows.bat```
+    - **Linux**: ```setup_and_build_linux.sh```
+    - **macOS**: ```setup_and_build_macos.sh```
+2. Check the build log to verify a successful build.
 
-```bash
-qmake SpaceInvaders.pro
-make
-```
+## Running the game
 
-The built binary will be placed in the current directory.
-
-To enable the optional performance benchmark mode, build using the
-`performance_benchmark` configuration:
-
-```bash
-qmake CONFIG+=performance_benchmark SpaceInvaders.pro
-make
-```
+1. Go to the `script_build_result\release\` folder (created by the build script).
+2. Launch the game:
+    - **Windows**: Double-click `SpaceInvaders.exe`
+    - **Linux/macOS**: run 
+        ```cmd
+        chmod +x ./SpaceInvaders
+        ./SpaceInvaders
+         ```
+3. Select level using the **Level Selector**
 
 ## Gameplay
 
-Use the arrow keys to move your ship and press <kbd>Space</kbd> to fire the primary weapon. Hold <kbd>Shift</kbd> to trigger the equipped secondary weapon. Additional debug actions exist (such as toggling auto‑fire with <kbd>C</kbd>) but the basic gameplay is to destroy enemy waves while avoiding hits.
-
-Have fun!
+- Move your ship with the arrow keys.
+- Fire your primary weapon with <kbd>Space</kbd>.
+- Fire equipped secondary weapons with keys <kbd>1</kbd> – <kbd>4</kbd>.
+- Destroy all enemies before they reach the bottom of the screen and avoid their projectiles.
+- Collect in-game currency and health dropped by enemies (currency has no use yet; future updates will add an in-game shop).
+- Have fun! (optional)
 
