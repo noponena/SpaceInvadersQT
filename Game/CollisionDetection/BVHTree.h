@@ -39,7 +39,7 @@ private:
 
   bool m_splitX;
   int m_intersectionCounter;
-  std::set<std::pair<uint64_t, uint64_t>> m_processedPairs;
+  std::set<std::pair<std::uint64_t, std::uint64_t>> m_processedPairs;
   using ObjectType = GameObjects::ObjectType;
   std::unordered_map<GameObjects::ObjectType,
                      std::unordered_set<GameObjects::ObjectType>>

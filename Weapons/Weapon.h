@@ -39,8 +39,8 @@ public:
 
   float cooldownMs() const;
 
-  unsigned int energyConsuption() const;
-  void setEnergyConsuption(unsigned int newEnergyConsuption);
+  std::uint32_t energyConsuption() const;
+  void setEnergyConsuption(std::uint32_t newEnergyConsuption);
 
 protected:
   GameObjects::Ships::Ship *m_owner;
@@ -49,7 +49,7 @@ protected:
   std::unique_ptr<GameObjects::Projectiles::Projectile> m_projectilePrototype;
 
 private:
-  unsigned int m_energyConsuption;
+  std::uint32_t m_energyConsuption;
   float m_minCooldownMs;
   QElapsedTimer m_lastFiredTimer;
   bool m_firstShot;

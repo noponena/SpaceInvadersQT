@@ -54,9 +54,9 @@ GameObjects::Projectiles::Projectile *Weapon::projectilePrototype() const {
 
 float Weapon::cooldownMs() const { return m_cooldownMs; }
 
-unsigned int Weapon::energyConsuption() const { return m_energyConsuption; }
+std::uint32_t Weapon::energyConsuption() const { return m_energyConsuption; }
 
-void Weapon::setEnergyConsuption(unsigned int newEnergyConsuption) {
+void Weapon::setEnergyConsuption(std::uint32_t newEnergyConsuption) {
   m_energyConsuption = newEnergyConsuption;
 }
 

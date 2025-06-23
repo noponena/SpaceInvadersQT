@@ -40,7 +40,7 @@ GameHUD::GameHUD(int width, int height)
 
 void GameHUD::onPlayerSecondaryWeaponsChanged(
     std::unique_ptr<Weapons::Weapon> weapons[]) {
-  for (unsigned i = 0; i < 4; i++) {
+  for (std::uint32_t i = 0; i < 4; i++) {
     QString path;
     if (weapons[i]) {
       path = weapons[i]->getHudImagePath();
@@ -52,8 +52,8 @@ void GameHUD::onPlayerSecondaryWeaponsChanged(
   }
 }
 
-void GameHUD::onPlayerSecondaryWeaponFired(unsigned int weaponIndex,
-                                           unsigned int cooldownMs) {
+void GameHUD::onPlayerSecondaryWeaponFired(std::uint32_t weaponIndex,
+                                           std::uint32_t cooldownMs) {
   m_weaponCooldownItems[weaponIndex]->startCooldown(cooldownMs);
 }
 

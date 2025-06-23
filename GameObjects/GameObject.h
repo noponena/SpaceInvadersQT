@@ -53,7 +53,7 @@ struct Magnetism {
 struct UpdateContext {
   float deltaTimeInSeconds;
   const Ships::PlayerShip *playerShip;
-  const std::unordered_map<unsigned long long int,
+  const std::unordered_map<std::uint64_t,
                            std::shared_ptr<GameObjects::GameObject>>
       &magneticGameObjects;
 };
@@ -108,7 +108,7 @@ public:
   QString getHudPixmapPath() const;
   void setPosition(const Position &newPosition);
   bool isCollidable() const;
-  long long unsigned id();
+  std::uint64_t id();
   const Magnetism &magnetism() const;
 
   // Actions & Modifiers
@@ -173,10 +173,10 @@ protected:
 
 private:
   // Member Variables
-  long long unsigned m_id;
+  std::uint64_t m_id;
   bool m_destructionInitiated;
   Game::Movement::MovementStrategy m_movementStrategy;
-  static uint64_t counter;
+  static std::uint64_t counter;
 
   inline void applyMovementStrategy(float deltaTimeInSeconds);
   inline void playSpawnSound();

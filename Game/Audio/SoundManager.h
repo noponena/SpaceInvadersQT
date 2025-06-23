@@ -32,11 +32,11 @@ private:
 
   void loadSounds();
   void cleanup();
-  std::map<SoundEffect, std::pair<uint32_t, float>> m_sounds;
+  std::map<SoundEffect, std::pair<std::uint32_t, float>> m_sounds;
   std::list<std::shared_ptr<SoundSource>> m_activeSources;
   std::mutex m_activeSourcesMutex;
-  unsigned m_soundCounter;
-  unsigned m_maxSoundCount;
+  std::uint32_t m_soundCounter;
+  std::uint32_t m_maxSoundCount;
 };
 
 } // namespace Audio

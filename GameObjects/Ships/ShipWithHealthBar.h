@@ -9,7 +9,7 @@ namespace Ships {
 
 class ShipWithHealthBar : public Ship {
 public:
-  ShipWithHealthBar(const unsigned maxHp, const float speed,
+  ShipWithHealthBar(const std::uint32_t maxHp, const float speed,
                     const Position &position);
   void initialize() override;
 
@@ -18,8 +18,8 @@ protected:
 
   // Ship interface
 public:
-  void takeDamage(unsigned int amount) override;
-  void heal(unsigned int amount) override;
+  void takeDamage(std::uint32_t amount) override;
+  void heal(std::uint32_t amount) override;
   void kill() override;
   void restoreHealth() override;
 };

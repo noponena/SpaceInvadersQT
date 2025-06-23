@@ -125,15 +125,15 @@ void PlayerShip::setMaxHealth(float newMaxHealth) {
 }
 
 void PlayerShip::setSecondaryWeapon(std::unique_ptr<Weapons::Weapon> newWeapon,
-                                    unsigned weaponIndex) {
+                                    std::uint32_t weaponIndex) {
   Ship::setSecondaryWeapon(std::move(newWeapon), weaponIndex);
   emit playerSecondaryWeaponsChanged(m_secondaryWeapons);
 }
 
-bool PlayerShip::fireSecondaryWeapon(unsigned int weaponIndex) {
+bool PlayerShip::fireSecondaryWeapon(std::uint32_t weaponIndex) {
   bool success = Ship::fireSecondaryWeapon(weaponIndex);
   if (success) {
-    unsigned cooldownMs = m_secondaryWeapons[weaponIndex]->cooldownMs();
+    std::uint32_t cooldownMs = m_secondaryWeapons[weaponIndex]->cooldownMs();
     emit playerSecondaryWeaponFired(weaponIndex, cooldownMs);
     emit playerEnergyUpdated(m_currentEnergy);
   }

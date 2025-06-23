@@ -28,7 +28,7 @@ public slots:
 
   void onDataReadyForCollisionCheck(
       std::unordered_map<
-          uint64_t,
+          std::uint64_t,
           std::pair<QRectF, std::unordered_set<GameObjects::ObjectType>>>
           data) {
     // handleCollisions();
@@ -39,7 +39,7 @@ private slots:
   void handleCollisions() {
     std::lock_guard<std::mutex> lock(m_mutex);
     if (!m_data.empty()) {
-      std::vector<std::pair<uint64_t, uint64_t>> collidingPairs;
+      std::vector<std::pair<std::uint64_t, std::uint64_t>> collidingPairs;
       for (auto it1 = m_data.begin(); it1 != m_data.end(); ++it1) {
         auto it2 = it1;
         ++it2;
@@ -62,11 +62,11 @@ private slots:
 signals:
 
   void
-  collisionsDetected(std::vector<std::pair<uint64_t, uint64_t>> collidingPairs);
+  collisionsDetected(std::vector<std::pair<std::uint64_t, std::uint64_t>> collidingPairs);
 
 private:
   std::unordered_map<
-      uint64_t, std::pair<QRectF, std::unordered_set<GameObjects::ObjectType>>>
+      std::uint64_t, std::pair<QRectF, std::unordered_set<GameObjects::ObjectType>>>
       m_data;
   QTimer *m_timer;
   std::mutex &m_mutex;

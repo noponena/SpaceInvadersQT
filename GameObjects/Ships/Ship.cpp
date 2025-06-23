@@ -9,7 +9,7 @@
 namespace GameObjects {
 namespace Ships {
 
-Ship::Ship(const unsigned int maxHp, const float speed,
+Ship::Ship(const std::uint32_t maxHp, const float speed,
            const Position &position)
     : AttractableGameObject(position), m_immortal(false), m_pixelWidth(50),
       m_pixelHeight(50), m_destructionParticleCount(200),
@@ -24,10 +24,10 @@ void Ship::firePrimaryWeapons() {
   }
 }
 
-bool Ship::fireSecondaryWeapon(unsigned weaponIndex) {
+bool Ship::fireSecondaryWeapon(std::uint32_t weaponIndex) {
   if (weaponIndex < 4) {
     Weapons::Weapon *weapon = m_secondaryWeapons[weaponIndex].get();
-    unsigned int weaponEnergyConsuption = weapon->energyConsuption();
+    std::uint32_t weaponEnergyConsuption = weapon->energyConsuption();
     if (m_currentEnergy >= weaponEnergyConsuption) {
       if (!weapon->fire())
         return false;
@@ -38,7 +38,7 @@ bool Ship::fireSecondaryWeapon(unsigned weaponIndex) {
   return false;
 }
 
-void Ship::takeDamage(unsigned int amount) {
+void Ship::takeDamage(std::uint32_t amount) {
   if (!m_immortal) {
     if (amount > m_currentHealth)
       m_currentHealth = 0;
@@ -47,7 +47,7 @@ void Ship::takeDamage(unsigned int amount) {
   }
 }
 
-void Ship::heal(unsigned int amount) {
+void Ship::heal(std::uint32_t amount) {
   if (!isDead()) {
     m_currentHealth += amount;
     if (m_currentHealth > m_maxHealth) {
@@ -76,7 +76,7 @@ void Ship::addPrimaryWeapon(std::unique_ptr<Weapons::Weapon> newWeapon) {
 }
 
 void Ship::setSecondaryWeapon(std::unique_ptr<Weapons::Weapon> newWeapon,
-                              unsigned int weaponIndex) {
+                              std::uint32_t weaponIndex) {
   newWeapon->setOwner(this);
   connect(newWeapon.get(), &Weapons::Weapon::projectileFired, this,
           &Ship::onProjectileFired);
@@ -89,7 +89,7 @@ void Ship::clearWeapons() {
                &Ship::onProjectileFired);
   }
   m_primaryWeapons.clear();
-  for (unsigned i = 0; i < 4; i++) {
+  for (std::uint32_t i = 0; i < 4; i++) {
     if (m_secondaryWeapons[i]) {
       disconnect(m_secondaryWeapons[i].get(), &Weapons::Weapon::projectileFired,
                  this, &Ship::onProjectileFired);
@@ -143,11 +143,11 @@ void Ship::fullyRestoreEnergy() { m_currentEnergy = m_maxEnergy; }
 
 void Ship::fullyRestoreHealth() { m_currentHealth = m_maxHealth; }
 
-unsigned int Ship::energyRegenerationRate() const {
+std::uint32_t Ship::energyRegenerationRate() const {
   return m_energyRegenerationRate;
 }
 
-void Ship::setEnergyRegenerationRate(unsigned int newEnergyRegenerationRate) {
+void Ship::setEnergyRegenerationRate(std::uint32_t newEnergyRegenerationRate) {
   m_energyRegenerationRate = newEnergyRegenerationRate;
 }
 

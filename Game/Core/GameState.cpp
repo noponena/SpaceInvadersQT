@@ -194,7 +194,11 @@ GameObjects::Ships::PlayerShip *GameState::playerShip() const {
   return m_playerShip.get();
 }
 
-const unsigned &GameState::stellarTokens() const { return m_stellarTokens; }
+const std::uint32_t &
+GameState::stellarTokens () const
+{
+  return m_stellarTokens;
+}
 
 int GameState::enemyShipsReachedBottomLimit() const {
   return m_enemyShipsReachedBottomLimit;

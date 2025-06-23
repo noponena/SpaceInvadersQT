@@ -79,8 +79,8 @@ class IntervalMovement {
   std::vector<AxisMovementStrategy> m_underlyingStrategies;
   std::vector<float> m_intervalsInSeconds;
   float m_timeSinceLastChange;
-  unsigned long long m_strategyIndex;
-  unsigned long long m_intervalIndex;
+  std::uint64_t m_strategyIndex;
+  std::uint64_t m_intervalIndex;
 
 public:
   IntervalMovement(std::vector<AxisMovementStrategy> strategies,

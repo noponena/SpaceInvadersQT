@@ -16,21 +16,21 @@ namespace Ships {
 class Ship : public AttractableGameObject {
   Q_OBJECT
 public:
-  Ship(const unsigned maxHp, const float speed, const Position &position);
+  Ship(const std::uint32_t maxHp, const float speed, const Position &position);
   virtual ~Ship();
   virtual void update(const UpdateContext &context) override;
   virtual bool shouldBeDeleted() override;
   bool isDead() override;
-  virtual void takeDamage(unsigned int amount);
-  virtual void heal(unsigned int amount);
+  virtual void takeDamage(std::uint32_t amount);
+  virtual void heal(std::uint32_t amount);
   virtual void kill();
   virtual void restoreHealth();
   void firePrimaryWeapons();
-  virtual bool fireSecondaryWeapon(unsigned int weaponIndex);
+  virtual bool fireSecondaryWeapon(std::uint32_t weaponIndex);
   void updateFireRate(int amount = 1);
   void addPrimaryWeapon(std::unique_ptr<Weapons::Weapon> newWeapon);
   virtual void setSecondaryWeapon(std::unique_ptr<Weapons::Weapon> newWeapon,
-                                  unsigned weaponIndex);
+                                  std::uint32_t weaponIndex);
   void clearWeapons();
 
   int currentHp() const;
@@ -41,16 +41,16 @@ public:
   void fullyRestoreEnergy();
   void fullyRestoreHealth();
 
-  unsigned int energyRegenerationRate() const;
+  std::uint32_t energyRegenerationRate() const;
 
-  void setEnergyRegenerationRate(unsigned int newEnergyRegenerationRate);
+  void setEnergyRegenerationRate(std::uint32_t newEnergyRegenerationRate);
   void setMaxHealth(float newMaxHealth);
   void setSpeed(float newSpeed);
   void setMaxEnergy(float newMaxEnergy);
 
 protected:
   bool m_immortal;
-  unsigned m_fireCooldownMs, m_pixelWidth, m_pixelHeight,
+  std::uint32_t m_fireCooldownMs, m_pixelWidth, m_pixelHeight,
       m_destructionParticleCount;
   float m_currentHealth, m_maxHealth, m_speed, m_maxEnergy, m_currentEnergy,
       m_energyRegenerationRate;

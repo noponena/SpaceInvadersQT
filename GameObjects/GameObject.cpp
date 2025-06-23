@@ -6,7 +6,7 @@
 
 namespace GameObjects {
 
-uint64_t GameObject::counter = 0;
+std::uint64_t GameObject::counter = 0;
 
 GameObject::GameObject(const Position &position)
     : m_position(position), m_hasCollided(false), m_collidable(true),
@@ -154,7 +154,11 @@ void GameObject::addMovementStrategy(
   m_movementStrategy = m_movementStrategy + newMovementStrategy;
 }
 
-long long unsigned GameObject::id() { return m_id; }
+std::uint64_t
+GameObject::id ()
+{
+  return m_id;
+}
 
 const Magnetism &GameObject::magnetism() const { return m_magnetism; }
 

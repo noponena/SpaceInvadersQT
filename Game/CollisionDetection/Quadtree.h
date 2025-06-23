@@ -47,7 +47,7 @@ public:
       if (!m_nodes[0]) {
         split();
       }
-      uint64_t i = 0;
+      std::uint64_t i = 0;
       while (i < m_objects.size()) {
         int index = getIndex(m_objects[i]->getBoundingBox());
         if (index != -1) {

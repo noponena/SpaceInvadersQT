@@ -21,7 +21,7 @@ void CollisionDetector::detectQuadTree() {
   }
 
   // Check for potential collisions.
-  std::set<std::pair<uint64_t, uint64_t>> checkedPairs;
+  std::set<std::pair<std::uint64_t, std::uint64_t>> checkedPairs;
 
   for (const auto &object : m_gameObjects) {
     auto potentialCollisions = m_quadtree->query(object.get());
@@ -51,7 +51,7 @@ void CollisionDetector::detectBVH() {
     vec.push_back(object.get());
   }
 
-  std::set<std::pair<uint64_t, uint64_t>> checkedPairs;
+  std::set<std::pair<std::uint64_t, std::uint64_t>> checkedPairs;
   std::shared_ptr<BVHNode> node = m_bvhTree.build(vec);
 
   for (auto const &object : m_gameObjects) {

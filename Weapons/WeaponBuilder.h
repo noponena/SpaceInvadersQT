@@ -15,8 +15,8 @@ public:
     return *this;
   }
   WeaponBuilder &withSound(bool soundEnabled);
-  WeaponBuilder &withWeaponCooldownMs(const unsigned cooldownMs);
-  WeaponBuilder &withEnergyConsuption(const unsigned energyConsuption);
+  WeaponBuilder &withWeaponCooldownMs(const std::uint32_t cooldownMs);
+  WeaponBuilder &withEnergyConsuption(const std::uint32_t energyConsuption);
   WeaponBuilder &withProjectile(
       std::unique_ptr<GameObjects::Projectiles::Projectile> projectile);
   std::unique_ptr<Weapon> build();

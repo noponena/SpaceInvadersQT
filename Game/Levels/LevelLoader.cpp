@@ -188,8 +188,8 @@ void LevelLoader::setPositionConstraints(QPoint positionConstraintMin,
 Formation::Type
 LevelLoader::stringToFormationType(std::string formationTypeStr) {
   std::string upperStr = formationTypeStr;
-  std::transform(upperStr.begin(), upperStr.end(), upperStr.begin(),
-                 [](unsigned char c) { return std::toupper(c); });
+  std::transform (upperStr.begin (), upperStr.end (), upperStr.begin (),
+                  [] (unsigned char c) { return std::toupper (c); });
 
   if (upperStr == "RECTANGLE")
     return Formation::Type::RECTANGLE;

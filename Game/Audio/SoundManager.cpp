@@ -26,7 +26,7 @@ void SoundManager::playSoundEffect(SoundInfo soundInfo) {
     if (m_soundCounter >= m_maxSoundCount)
       cleanup();
     // qDebug() << "playing sound:" << m[soundInfo.soundEffect];
-    std::pair<uint32_t, float> sound = m_sounds[soundInfo.soundEffect];
+    std::pair<std::uint32_t, float> sound = m_sounds[soundInfo.soundEffect];
     float gain = Gain * sound.second * soundInfo.gain;
     std::shared_ptr<SoundSource> source = std::make_shared<SoundSource>(gain);
     m_activeSources.push_back(source);
@@ -38,21 +38,21 @@ void SoundManager::playSoundEffect(SoundInfo soundInfo) {
 void SoundManager::loadSounds() {
   SoundDevice::get();
 
-  uint32_t laser =
+  std::uint32_t laser =
       SoundBuffer::get()->addSoundEffectFromResource(":/Sounds/laser.wav");
-  uint32_t lesserEnemyLaser = SoundBuffer::get()->addSoundEffectFromResource(
+  std::uint32_t lesserEnemyLaser = SoundBuffer::get()->addSoundEffectFromResource(
       ":/Sounds/lesser_enemy_laser.wav");
-  uint32_t vortexCannon = SoundBuffer::get()->addSoundEffectFromResource(
+  std::uint32_t vortexCannon = SoundBuffer::get()->addSoundEffectFromResource(
       ":/Sounds/vortex_cannon.wav");
 
-  uint32_t playerDestroyed = SoundBuffer::get()->addSoundEffectFromResource(
+  std::uint32_t playerDestroyed = SoundBuffer::get()->addSoundEffectFromResource(
       ":/Sounds/player_explosion.wav");
 
-  uint32_t lesserEnemyDestroyed =
+  std::uint32_t lesserEnemyDestroyed =
       SoundBuffer::get()->addSoundEffectFromResource(":/Sounds/explosion.wav");
-  uint32_t stellarCoinCollected =
+  std::uint32_t stellarCoinCollected =
       SoundBuffer::get()->addSoundEffectFromResource(":/Sounds/collect.wav");
-  uint32_t healthCoinCollected =
+  std::uint32_t healthCoinCollected =
       SoundBuffer::get()->addSoundEffectFromResource(":/Sounds/health.wav");
 
   SoundSource src;

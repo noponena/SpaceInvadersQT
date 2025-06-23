@@ -28,8 +28,8 @@ public:
   void decelerateY(float deltaTimeInSeconds);
 
   void setSecondaryWeapon(std::unique_ptr<Weapons::Weapon> newWeapon,
-                          unsigned weaponIndex) override;
-  bool fireSecondaryWeapon(unsigned int weaponIndex) override;
+                          std::uint32_t weaponIndex) override;
+  bool fireSecondaryWeapon(std::uint32_t weaponIndex) override;
 
   inline void moveX(float amount);
   inline void moveY(float amount);
@@ -52,7 +52,7 @@ signals:
   void stellarTokenCollected();
   void
   playerSecondaryWeaponsChanged(std::unique_ptr<Weapons::Weapon> weapons[]);
-  void playerSecondaryWeaponFired(unsigned weaponIndex, unsigned cooldownMs);
+  void playerSecondaryWeaponFired(std::uint32_t weaponIndex, std::uint32_t cooldownMs);
   void healthUpdated(int amount);
   void playerEnergyUpdated(float updatedEnergy);
   void playerMaxEnergySet(float maxEnergy);

@@ -3,7 +3,7 @@
 namespace GameObjects {
 namespace Ships {
 
-ShipWithHealthBar::ShipWithHealthBar(const unsigned int maxHp,
+ShipWithHealthBar::ShipWithHealthBar(const std::uint32_t maxHp,
                                      const float speed,
                                      const Position &position)
     : Ship(maxHp, speed, position) {}
@@ -15,13 +15,13 @@ void ShipWithHealthBar::initialize() {
   m_healthBar->setPos(0, 45); // Position it below the ship
 }
 
-void ShipWithHealthBar::takeDamage(unsigned int amount) {
+void ShipWithHealthBar::takeDamage(std::uint32_t amount) {
   Ship::takeDamage(amount);
   if (!m_immortal)
     m_healthBar->updateProgress(-static_cast<float>(amount));
 }
 
-void ShipWithHealthBar::heal(unsigned int amount) {
+void ShipWithHealthBar::heal(std::uint32_t amount) {
   Ship::heal(amount);
   m_healthBar->updateProgress(amount);
 }

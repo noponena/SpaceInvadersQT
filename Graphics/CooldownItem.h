@@ -100,7 +100,7 @@ private:
   int m_elapsedTime;
   float m_cooldownAngle;
   bool m_cooldownInProgress;
-  unsigned m_updateItervalMs;
+  std::uint32_t m_updateItervalMs;
   QColor m_color;
 };
 

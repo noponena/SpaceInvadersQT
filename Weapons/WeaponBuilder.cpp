@@ -24,7 +24,7 @@ WeaponBuilder &WeaponBuilder::withSound(bool soundEnabled) {
   return *this;
 }
 
-WeaponBuilder &WeaponBuilder::withWeaponCooldownMs(const unsigned cooldownMs) {
+WeaponBuilder &WeaponBuilder::withWeaponCooldownMs(const std::uint32_t cooldownMs) {
   if (m_weapon)
     m_weapon->setCooldownMs(cooldownMs);
   else
@@ -33,7 +33,7 @@ WeaponBuilder &WeaponBuilder::withWeaponCooldownMs(const unsigned cooldownMs) {
 }
 
 WeaponBuilder &
-WeaponBuilder::withEnergyConsuption(const unsigned int energyConsuption) {
+WeaponBuilder::withEnergyConsuption(const std::uint32_t energyConsuption) {
   if (m_weapon)
     m_weapon->setEnergyConsuption(energyConsuption);
   return *this;

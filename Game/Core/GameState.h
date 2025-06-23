@@ -27,17 +27,17 @@ public:
 
   int m_minX, m_minY, m_maxX, m_maxY, m_windowWidth, m_windowHeight;
 
-  const unsigned &stellarTokens() const;
+  const std::uint32_t &stellarTokens () const;
   int enemyShipsReachedBottomLimit() const;
 
   int enemyShipCount() const;
 
 private:
   std::vector<std::shared_ptr<GameObjects::GameObject>> m_gameObjects;
-  std::unordered_map<uint64_t, std::shared_ptr<GameObjects::GameObject>>
+  std::unordered_map<std::uint64_t, std::shared_ptr<GameObjects::GameObject>>
       m_magneticGameObjectMap;
   bool m_playerShipDeletedFromScene;
-  unsigned m_stellarTokens;
+  std::uint32_t m_stellarTokens;
   float m_playersShipStartSpeed;
   int m_enemyShipsReachedBottomLimit;
   int m_enemyShipCount;
