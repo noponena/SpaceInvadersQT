@@ -1,6 +1,5 @@
 QT       += core gui
 QT       += openglwidgets
-QT       += multimedia
 QT       += concurrent
 
 
