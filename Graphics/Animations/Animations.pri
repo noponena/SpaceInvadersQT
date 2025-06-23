@@ -1,2 +1,0 @@
-HEADERS += \
-    $$PWD/AnimatedItem.h

@@ -32,7 +32,7 @@ protected:
 
 private:
   GameState *m_gameState;
-  std::unique_ptr<LevelManager> m_levelManager;
+  std::unique_ptr<Levels::LevelManager> m_levelManager;
   QTimer m_gameTimer;
   QTimer m_benchmarkTimer;
   GameObjects::Ships::PlayerShip *m_playerShip;

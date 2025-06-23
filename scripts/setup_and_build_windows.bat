@@ -83,19 +83,25 @@ cd ..\..\..
 REM ==== Prepare Result/Output Directory ====
 if not exist "%RESULT_DIR%" mkdir "%RESULT_DIR%"
 
-REM ==== Build Space Invaders ====
-qmake -o "%RESULT_DIR%\Makefile" SpaceInvaders.pro
+REM ==== Build Space Invaders with CMake ====
+cd "%RESULT_DIR%"
+
+if !CLEAN_BUILD! EQU 1 (
+    for /d %%i in (*) do rmdir /s /q "%%i"
+    for %%i in (*) do del /f /q "%%i"
+)
+
+cmake .. -G "MinGW Makefiles"
 if %ERRORLEVEL% NEQ 0 goto error
 
-cd "%RESULT_DIR%"
-mingw32-make -j!CORES!
+cmake --build . --config Release -- -j!CORES!
 if %ERRORLEVEL% NEQ 0 goto error
 cd ..
 
 REM ==== Copy levels directory to actual executable folder ====
 REM Prefer "release", fallback to just RESULT_DIR if no such folder exists
 
-set "TARGET_DIR=%RESULT_DIR%\release"
+set "TARGET_DIR=%RESULT_DIR%\Release"
 if not exist "%TARGET_DIR%" (
     set "TARGET_DIR=%RESULT_DIR%"
 )
@@ -112,7 +118,7 @@ if exist "levels" (
 )
 
 REM ==== Always remove the debug folder from build result ====
-set "DEBUG_DIR=%RESULT_DIR%\debug"
+set "DEBUG_DIR=%RESULT_DIR%\Debug"
 if exist "%DEBUG_DIR%" (
     rmdir /s /q "%DEBUG_DIR%"
     echo Removed debug folder: %DEBUG_DIR%
@@ -127,6 +133,5 @@ echo.
 echo ERROR: Build failed!
 pause
 exit /b 1
-
 
 endlocal
