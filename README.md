@@ -16,7 +16,7 @@ Space Invaders QT is a simple 2D shooter game implemented in C++ using the Qt fr
 - **libsndfile** – loading sound assets
 - **yaml-cpp** – parsing level data
 
-All third-party libraries are provided in the `Thirdparty/` directory (Windows), or can be installed via package managers (Linux/macOS).
+On Windows, all required third-party libraries are included in the `Thirdparty/` directory (for MinGW). On Linux and macOS, dependencies can be installed via your system package manager.
 
 ---
 
@@ -58,7 +58,6 @@ All third-party libraries are provided in the `Thirdparty/` directory (Windows),
 6. Open a new Command Prompt or PowerShell and run:
 
     ```cmd
-    qmake --version
     cmake --version
     mingw32-make --version
     ```
@@ -66,6 +65,7 @@ All third-party libraries are provided in the `Thirdparty/` directory (Windows),
     *Each command should display a version number.*
 
 ### Linux (Ubuntu/Debian)
+
 Install all dependencies via apt:
 ```bash
 sudo apt update
@@ -90,7 +90,7 @@ Ensure `qmake` is on your `PATH`, e.g. `export PATH="$(brew --prefix qt)/bin:$PA
 
 ## Running the game
 
-1. Go to the `script_build_result\release\` folder (created by the build script).
+1. Go to the `script_build_result\` folder (created by the build script).
 2. Launch the game:
     - **Windows**: Double-click `SpaceInvaders.exe`
     - **Linux/macOS**: run 
@@ -109,3 +109,7 @@ Ensure `qmake` is on your `PATH`, e.g. `export PATH="$(brew --prefix qt)/bin:$PA
 - Collect in-game currency and health dropped by enemies (currency has no use yet; future updates will add an in-game shop).
 - Have fun! (optional)
 
+## Notes
+- **Build system migrated from qmake to CMake** as of June 2025.
+- The old .pro and .pri files have been removed; only CMake is supported for building.
+- Resource files are handled automatically by CMake (no need for manual .qrc or .ui compilation).

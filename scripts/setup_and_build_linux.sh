@@ -41,13 +41,6 @@ if [[ -z "$CORES" ]]; then
     fi
 fi
 
-if ! ldconfig -p | grep -q openal; then
-    echo "ERROR: OpenAL development package not found."
-    echo "Please install it with: sudo apt install libopenal-dev"
-    read -p "Press Enter to exit..."
-    exit 1
-fi
-
 echo "Using $CORES parallel jobs for builds."
 
 RESULT_DIR="script_build_result"
@@ -66,24 +59,24 @@ if [[ -d Thirdparty/yaml-cpp ]]; then
     fi
     mkdir -p build
     cd build
-    cmake .. 
+    cmake ..
     make -j"$CORES"
     popd > /dev/null
 fi
 
 # ==== Prepare Result/Output Directory ====
 mkdir -p "$RESULT_DIR"
+cd "$RESULT_DIR"
 
-# ==== Build Space Invaders ====
-qmake -o "$RESULT_DIR/Makefile" SpaceInvaders.pro
+# ==== Configure and Build with CMake ====
+cmake ..
 if [[ $? -ne 0 ]]; then
-    echo "ERROR: qmake failed!"
+    echo "ERROR: cmake configuration failed!"
     read -p "Press Enter to exit..."
     exit 1
 fi
 
-cd "$RESULT_DIR"
-make -j"$CORES"
+cmake --build . -- -j"$CORES"
 if [[ $? -ne 0 ]]; then
     echo "ERROR: Build failed!"
     read -p "Press Enter to exit..."
@@ -115,4 +108,3 @@ fi
 
 echo "Build succeeded!"
 read -p "Press Enter to exit..."
-
