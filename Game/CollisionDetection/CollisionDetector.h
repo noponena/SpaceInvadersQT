@@ -11,7 +11,9 @@
 namespace Game {
 namespace CollisionDetection {
 
-class CollisionDetector {
+class CollisionDetector : public QObject
+{
+  Q_OBJECT
 public:
   CollisionDetector(
       const std::vector<std::shared_ptr<GameObjects::GameObject>> &gameObjects,
