@@ -77,8 +77,6 @@ Install dependencies using Homebrew:
 ```bash
 brew install qt openal-soft libsndfile yaml-cpp
 ```
-Ensure `qmake` is on your `PATH`, e.g. `export PATH="$(brew --prefix qt)/bin:$PATH"`.
-
 
 ## Building
 
@@ -88,17 +86,30 @@ Ensure `qmake` is on your `PATH`, e.g. `export PATH="$(brew --prefix qt)/bin:$PA
     - **macOS**: ```setup_and_build_macos.sh```
 2. Check the build log to verify a successful build.
 
+**Note**: On Linux/macOS make sure the scripts are executable:
+
+- Linux:
+    ```bash
+    chmod +x scripts/setup_and_build_linux.sh
+    ```
+- macOS:
+    ```bash
+    chmod +x scripts/setup_and_build_macos.sh
+    ```
+
 ## Running the game
 
 1. Go to the `script_build_result\` folder (created by the build script).
 2. Launch the game:
-    - **Windows**: Double-click `SpaceInvaders.exe`
+    - **Windows**: Double-click `SpaceInvadersQT.exe`
     - **Linux/macOS**: run 
         ```cmd
         chmod +x ./SpaceInvaders
         ./SpaceInvaders
          ```
 3. Select level using the **Level Selector**
+
+**Note**: The ```levels/``` folder must be present in the project root; the build script copies it to the output folder automatically.
 
 ## Gameplay
 
