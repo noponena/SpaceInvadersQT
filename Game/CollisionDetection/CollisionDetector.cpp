@@ -23,6 +23,7 @@ void CollisionDetector::detectQuadTree() {
 
   // Insert all game objects into the quadtree.
   for (const auto &object : m_gameObjects) {
+    object->clearCollisionCache();
     m_quadtree->insert(object.get());
   }
 
@@ -54,6 +55,7 @@ void CollisionDetector::detectBVH() {
   m_bvhTree.clearProcessedPairs();
 
   for (auto const &object : m_gameObjects) {
+    object->clearCollisionCache();
     m_bvhTree.update(object.get());
   }
 
@@ -66,6 +68,8 @@ void CollisionDetector::detectBVH() {
 }
 
 void CollisionDetector::detectBruteForce() {
+  for (auto const &object : m_gameObjects)
+    object->clearCollisionCache();
   m_bruteForce.detect(m_gameObjects);
 }
 

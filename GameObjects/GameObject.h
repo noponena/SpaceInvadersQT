@@ -120,6 +120,8 @@ public:
   void collide(GameObject &other);
   bool isCollidingWith(const GameObject &other) const;
 
+  inline void clearCollisionCache() { m_collisions.clear(); }
+
   void setPosition(const QPointF &newPosition);
   void setSoundEnabled(const bool newSoundEnabled);
   void addObjectType(const ObjectType objectType);
