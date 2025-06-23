@@ -15,6 +15,7 @@ Space Invaders QT is a simple 2D shooter game implemented in C++ using the Qt fr
 - **OpenAL** – audio playback
 - **libsndfile** – loading sound assets
 - **yaml-cpp** – parsing level data
+- **pkg-config** – required for finding system packages (sndfile, etc.) on Linux/macOS
 
 On Windows, all required third-party libraries are included in the `Thirdparty/` directory (for MinGW). On Linux and macOS, dependencies can be installed via your system package manager.
 
@@ -69,13 +70,13 @@ On Windows, all required third-party libraries are included in the `Thirdparty/`
 Install all dependencies via apt:
 ```bash
 sudo apt update
-sudo apt install build-essential qt6-base-dev libopenal-dev libsndfile1-dev libyaml-cpp-dev
+sudo apt install build-essential qt6-base-dev libopenal-dev libsndfile1-dev libyaml-cpp-dev pkg-config
 ```
 
 ### macOS
 Install dependencies using Homebrew:
 ```bash
-brew install qt openal-soft libsndfile yaml-cpp
+brew install qt openal-soft libsndfile yaml-cpp pkg-config
 ```
 
 ## Building
