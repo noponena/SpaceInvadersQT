@@ -27,16 +27,17 @@ include(Graphics/Graphics.pri)
 
 DEFINES += YAML_CPP_STATIC_DEFINE
 
-win32 {
+
+win32:mingw {
     INCLUDEPATH += $$PWD/Thirdparty/OpenAL/include
     LIBS += -L$$PWD/Thirdparty/OpenAL/libs/Win64 -lOpenAL32
 
-    INCLUDEPATH += $$PWD/Thirdparty/libsndfile/include
-    LIBS += -L$$PWD/Thirdparty/libsndfile/lib -llibsndfile-1
+    INCLUDEPATH += $$PWD/Thirdparty/libsndfile-1.2.2/include
+    LIBS += -L$$PWD/Thirdparty/libsndfile-1.2.2/build -lsndfile
 }
 
 INCLUDEPATH += $$PWD/Thirdparty/yaml-cpp/include
-LIBS += -L$$PWD/Thirdparty/yaml-cpp -lyaml-cpp
+LIBS += -L$$PWD/Thirdparty/yaml-cpp/build -lyaml-cpp
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

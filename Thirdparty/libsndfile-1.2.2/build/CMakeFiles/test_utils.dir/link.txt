@@ -1,0 +1,2 @@
+C:\Qt\Tools\mingw1310_64\bin\ar.exe qc libtest_utils.a CMakeFiles/test_utils.dir/tests/utils.c.obj
+C:\Qt\Tools\mingw1310_64\bin\ranlib.exe libtest_utils.a

@@ -8,7 +8,7 @@ namespace Effects {
 
 class Effect : public QObject, public QGraphicsItem {
 public:
-  Effect() : m_position(){};
+  Effect() : m_position() {};
   virtual ~Effect() = default;
 
   virtual void setPosition(QPointF newPosition);

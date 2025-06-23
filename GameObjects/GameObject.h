@@ -156,8 +156,8 @@ protected:
   virtual void initializeObjectType() = 0;
   virtual void initializeSounds() = 0;
 
-  virtual void initializeDestructionAnimation(){};
-  virtual void initializeDestructionEffects(){};
+  virtual void initializeDestructionAnimation() {};
+  virtual void initializeDestructionEffects() {};
 
   virtual void playDestructionAnimation();
   virtual void playDestructionEffects();

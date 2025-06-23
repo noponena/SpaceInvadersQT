@@ -66,101 +66,104 @@ void LevelLoader::initialize() {
 }
 
 Level LevelLoader::loadLevel(const std::string &filepath) {
-  qDebug() << "loading level:"
-           << std::filesystem::path(filepath).filename().string();
-  Level level;
-  YAML::Node config = YAML::LoadFile(filepath);
-  level.levelNumber = config["Level"].as<int>();
-  level.name = config["Name"].as<std::string>();
-  level.description = config["Description"].as<std::string>();
-  level.enemyLimit = config["EnemyLimit"].as<int>(1);
-  qDebug() << "name:" << level.name;
-  qDebug() << "enemyLimit:" << level.enemyLimit;
-  qDebug();
+  try {
+    qDebug() << "loading level:"
+             << std::filesystem::path(filepath).filename().string();
+    Level level;
+    YAML::Node config = YAML::LoadFile(filepath);
 
-  // Parse and populate spawn events and other properties
-  // For each spawn event in the YAML file:
-  for (const auto &eventNode : config["SpawnEvents"]) {
-    if (!eventNode["Enabled"].as<bool>(true)) {
-      continue;
+    level.levelNumber = config["Level"].as<int>();
+    level.name = config["Name"].as<std::string>();
+    level.description = config["Description"].as<std::string>();
+    level.enemyLimit = config["EnemyLimit"].as<int>(1);
+    qDebug() << "name:" << QString::fromStdString(level.name);
+    qDebug() << "enemyLimit:" << level.enemyLimit;
+    qDebug();
+
+    for (const auto &eventNode : config["SpawnEvents"]) {
+      if (!eventNode["Enabled"].as<bool>(true))
+        continue;
+      auto formationNode = eventNode["Formation"];
+      Formation::Type formationType =
+          stringToFormationType(formationNode["Type"].as<std::string>());
+      int formationWidth = formationNode["Width"].as<int>();
+      int formationHeight = formationNode["Height"].as<int>();
+      bool formationSolidity = formationNode["Solid"].as<bool>();
+      auto formationSpacingNode = formationNode["Spacing"];
+      int formationSpacingX = formationSpacingNode["X"].as<int>();
+      int formationSpacingY = formationSpacingNode["Y"].as<int>();
+      Formation formation;
+      formation =
+          formation.withType(formationType)
+              .withSize(formationWidth, formationHeight)
+              .withSolidity(formationSolidity)
+              .withSpacing(QPoint(formationSpacingX, formationSpacingY));
+      auto positionNode = eventNode["Position"];
+      QPoint lowerLimit, upperLimit;
+
+      if (positionNode["Min"] && positionNode["Max"]) {
+        auto minNode = positionNode["Min"];
+        auto maxNode = positionNode["Max"];
+
+        float minXRatio = minNode["X"].as<float>();
+        float minYRatio = minNode["Y"].as<float>();
+        float maxXRatio = maxNode["X"].as<float>();
+        float maxYRatio = maxNode["Y"].as<float>();
+
+        lowerLimit = QPoint(static_cast<int>(minXRatio * m_screenWidth),
+                            static_cast<int>(minYRatio * m_screenHeight));
+        upperLimit = QPoint(static_cast<int>(maxXRatio * m_screenWidth),
+                            static_cast<int>(maxYRatio * m_screenHeight));
+      } else {
+        float xRatio = positionNode["X"].as<float>();
+        float yRatio = positionNode["Y"].as<float>();
+
+        lowerLimit = QPoint(static_cast<int>(xRatio * m_screenWidth),
+                            static_cast<int>(yRatio * m_screenHeight));
+        upperLimit = lowerLimit;
+      }
+      SpawnEvent event;
+      event = event.withCount(eventNode["Count"].as<int>())
+                  .withTriggerTime(eventNode["Time"].as<int>())
+                  .withInterval(eventNode["IntervalMs"].as<int>())
+                  .withPositionRange(lowerLimit, upperLimit)
+                  .withFormation(formation)
+                  .withGameObject(m_enemyShip->clone());
+
+      qDebug() << "adding spawn event...";
+      level.spawnEvents.push_back(event);
     }
-    auto formationNode = eventNode["Formation"];
-    Formation::Type formationType =
-        stringToFormationType(formationNode["Type"].as<std::string>());
-    int formationWidth = formationNode["Width"].as<int>();
-    int formationHeight = formationNode["Height"].as<int>();
-    bool formationSolidity = formationNode["Solid"].as<bool>();
-    auto formationSpacingNode = formationNode["Spacing"];
-    int formationSpacingX = formationSpacingNode["X"].as<int>();
-    int formationSpacingY = formationSpacingNode["Y"].as<int>();
-    Formation formation;
-    formation = formation.withType(formationType)
-                    .withSize(formationWidth, formationHeight)
-                    .withSolidity(formationSolidity)
-                    .withSpacing(QPoint(formationSpacingX, formationSpacingY));
-    auto positionNode = eventNode["Position"];
-    QPoint lowerLimit, upperLimit;
 
-    if (positionNode["Min"] && positionNode["Max"]) {
-      // Position range is specified
-      auto minNode = positionNode["Min"];
-      auto maxNode = positionNode["Max"];
-
-      float minXRatio = minNode["X"].as<float>();
-      float minYRatio = minNode["Y"].as<float>();
-      float maxXRatio = maxNode["X"].as<float>();
-      float maxYRatio = maxNode["Y"].as<float>();
-
-      lowerLimit = QPoint(static_cast<int>(minXRatio * m_screenWidth),
-                          static_cast<int>(minYRatio * m_screenHeight));
-      upperLimit = QPoint(static_cast<int>(maxXRatio * m_screenWidth),
-                          static_cast<int>(maxYRatio * m_screenHeight));
-    } else {
-      // Single position is specified
-      float xRatio = positionNode["X"].as<float>();
-      float yRatio = positionNode["Y"].as<float>();
-
-      lowerLimit = QPoint(static_cast<int>(xRatio * m_screenWidth),
-                          static_cast<int>(yRatio * m_screenHeight));
-      upperLimit = lowerLimit; // Use the same point for both limits
-    }
-    SpawnEvent event;
-    event = event.withCount(eventNode["Count"].as<int>())
-                .withTriggerTime(eventNode["Time"].as<int>())
-                .withInterval(eventNode["IntervalMs"].as<int>())
-                .withPositionRange(lowerLimit, upperLimit)
-                .withFormation(formation)
-                .withGameObject(m_enemyShip->clone());
-
-    qDebug() << "adding spawn event...";
-    level.spawnEvents.push_back(event);
+    return level;
+  } catch (const std::exception &ex) {
+    qCritical() << "Failed to load level from file:"
+                << QString::fromStdString(filepath) << "\nReason:" << ex.what();
+    return Level{};
   }
-
-  return level;
 }
 
 std::map<int, Level> LevelLoader::loadLevels() {
   std::map<int, Level> levels;
 
-  // Define the path to the levels directory
   std::filesystem::path levelsPath = std::filesystem::current_path() / "levels";
+  qDebug() << "Attempting to load levels from path:"
+           << QString::fromStdString(levelsPath.string());
 
-  // Regular expression to match files named "level_n.yaml"
   std::regex levelFilePattern("level_(\\d+)\\.yaml");
 
-  // Check if the directory exists
   if (std::filesystem::exists(levelsPath) &&
       std::filesystem::is_directory(levelsPath)) {
-    // Iterate over the files in the directory
     for (const auto &entry : std::filesystem::directory_iterator(levelsPath)) {
       const auto &path = entry.path();
       std::string filename = path.filename().string();
 
-      // Check if the filename matches the pattern
       if (std::regex_match(filename, levelFilePattern)) {
-        // Load the level and add it to the vector
         Level level = loadLevel(path.string());
-        levels[level.levelNumber] = level;
+        if (level.levelNumber >= 0 && !level.name.empty())
+          levels[level.levelNumber] = level;
+        else
+          qWarning() << "Level file" << QString::fromStdString(filename)
+                     << "is invalid and was skipped.";
       }
     }
   }

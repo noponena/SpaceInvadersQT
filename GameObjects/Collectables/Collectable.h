@@ -14,7 +14,7 @@ enum class MovementState { Initial, Magnetic, Stopped };
 class Collectable : public AttractableGameObject {
 public:
   Collectable(const Position &position);
-  ~Collectable(){};
+  ~Collectable() {};
 
   bool m_collected = false;
   bool m_hasInitiatedMovement = false;

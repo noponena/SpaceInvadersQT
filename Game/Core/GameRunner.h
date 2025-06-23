@@ -15,7 +15,6 @@
 #include <QWheelEvent>
 #include <algorithm>
 
-
 namespace Game {
 namespace Core {
 

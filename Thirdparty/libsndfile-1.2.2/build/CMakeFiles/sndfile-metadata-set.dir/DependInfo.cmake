@@ -1,0 +1,24 @@
+
+# Consider dependencies only in project.
+set(CMAKE_DEPENDS_IN_PROJECT_ONLY OFF)
+
+# The set of languages for which implicit dependencies are needed:
+set(CMAKE_DEPENDS_LANGUAGES
+  )
+
+# The set of dependency files which are needed:
+set(CMAKE_DEPENDS_DEPENDENCY_FILES
+  "C:/Users/aaron/Downloads/libsndfile-1.2.2/libsndfile-1.2.2/programs/common.c" "CMakeFiles/sndfile-metadata-set.dir/programs/common.c.obj" "gcc" "CMakeFiles/sndfile-metadata-set.dir/programs/common.c.obj.d"
+  "C:/Users/aaron/Downloads/libsndfile-1.2.2/libsndfile-1.2.2/programs/sndfile-metadata-set.c" "CMakeFiles/sndfile-metadata-set.dir/programs/sndfile-metadata-set.c.obj" "gcc" "CMakeFiles/sndfile-metadata-set.dir/programs/sndfile-metadata-set.c.obj.d"
+  )
+
+# Targets to which this target links which contain Fortran sources.
+set(CMAKE_Fortran_TARGET_LINKED_INFO_FILES
+  )
+
+# Targets to which this target links which contain Fortran sources.
+set(CMAKE_Fortran_TARGET_FORWARD_LINKED_INFO_FILES
+  )
+
+# Fortran module output directory.
+set(CMAKE_Fortran_TARGET_MODULE_DIR "")

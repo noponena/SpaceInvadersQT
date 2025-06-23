@@ -1,0 +1,30 @@
+# Level number.
+Level: 0
+
+# Level name.
+Name: "Example Level"
+
+# Level description.
+Description: "Introduction to the game mechanics and level generation."
+
+# Maximum number of enemies allowed to reach the bottom of the screen.
+EnemyLimit: 1
+
+# Spawn events for this level.
+SpawnEvents:
+  # Spawn event 1
+  - Time: 5000                # Time in milliseconds when the spawn event is triggered.
+    Enabled: true             # Enable or disable this spawn event.
+    Count: 100                # Number of formations to spawn (not individual enemies).
+                              # Total enemies = Count × (Width × Height) for rectangles.
+
+    # Position: { X: 0.75, Y: 0.1 }  # Position as a single point (X, Y in normalized coordinates 0.0–1.0).
+    Position: { Min: { X: 0.0, Y: 0.0 }, Max: { X: 1.0, Y: 0.0 } }  # Range in which the enemy will spwan at random.
+    IntervalMs: 1000           # Interval (ms) between spawns; applies if Count > 1.
+
+    # Formation type: Height and Width are enemy counts, not screen dimensions.
+    # Available types: "Rectangle", "Triangle", "Circle"
+    Formation: { Type: "Rectangle", Width: 1, Height: 1, Solid: true, Spacing: { X: 50, Y: 50 } }
+
+    Behavior: "None"          # Not yet implemented.
+    Object: "BasicEnemy"      # Not yet implemented. Only "BasicEnemy" will be spawned.

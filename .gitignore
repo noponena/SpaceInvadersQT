@@ -1,7 +1,7 @@
-# C++ objects and libs
-*.slo
-*.lo
+# Compiled object files, static and dynamic libs
 *.o
+*.lo
+*.slo
 *.a
 *.la
 *.lai
@@ -10,48 +10,52 @@
 *.dll
 *.dylib
 
-# Qt-es
+# Qt build artifacts and caches
 object_script.*.Release
 object_script.*.Debug
 *_plugin_import.cpp
-/.qmake.cache
-/.qmake.stash
-*.pro.user
-*.pro.user.*
-*.qbs.user
-*.qbs.user.*
 *.moc
 moc_*.cpp
 moc_*.h
 qrc_*.cpp
 ui_*.h
+*_qmlcache.qrc
 *.qmlc
 *.jsc
 Makefile*
 *build-*
 *.qm
 *.prl
-
-# Qt unit tests
 target_wrapper.*
 
-# QtCreator
-*.autosave
-
-# QtCreator Qml
+# Project/user/session files (Qt Creator, Qbs, QML, etc.)
+*.pro.user
+*.pro.user.*
+*.qbs.user
+*.qbs.user.*
 *.qmlproject.user
 *.qmlproject.user.*
-
-# QtCreator CMake
-CMakeLists.txt.user*
-
-# QtCreator 4.8< compilation database
-compile_commands.json
-
-# QtCreator local machine specific files for imported projects
+*.autosave
 *creator.user*
 
-*_qmlcache.qrc
+# Qt Creator local cache, session, and stash files
+/.qmake.cache
+/.qmake.stash
+CMakeLists.txt.user*
 
-clang-format*
+# CMake build system artifacts
+/CMakeFiles/
+/CMakeCache.txt
+/cmake_install.cmake
+/install_manifest.txt
+compile_commands.json
+
+# VSCode & CLion (and other IDE) meta/config files
 .vs/
+
+# Build output/result folders
+/script_build_result/
+
+# clang-format configs, if not meant to be tracked
+clang-format*
+

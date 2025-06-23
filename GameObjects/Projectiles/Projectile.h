@@ -42,7 +42,7 @@ protected:
 
   // GameObject interface
 protected:
-  void initializeSounds() override{};
+  void initializeSounds() override {};
 };
 } // namespace Projectiles
 } // namespace GameObjects
