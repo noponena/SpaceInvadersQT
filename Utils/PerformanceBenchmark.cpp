@@ -5,10 +5,16 @@
 #include <QDebug>
 #include <chrono>
 #include <iomanip>
-#include <minwindef.h>
-#include <psapi.h>
-#include <sstream>
+#ifdef _WIN32
+// clang-format off
 #include <windows.h>
+#include <psapi.h>
+// clang-format on
+#else
+#include <sys/resource.h>
+#include <unistd.h>
+#endif
+#include <sstream>
 
 namespace Utils {
 
@@ -145,12 +151,26 @@ float PerformanceBenchmark::calculateBenchmarkScore() {
   return m_gain / (totalFrameTime / m_stats.size());
 }
 
-float PerformanceBenchmark::getMemUsage() {
+float
+PerformanceBenchmark::getMemUsage ()
+{
+#ifdef _WIN32
   PROCESS_MEMORY_COUNTERS_EX pmc;
-  GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS *)&pmc,
-                       sizeof(pmc));
+  GetProcessMemoryInfo (GetCurrentProcess (), (PROCESS_MEMORY_COUNTERS *)&pmc,
+                        sizeof (pmc));
   SIZE_T privateMemUsedByMe = pmc.PrivateUsage;
-  return static_cast<float>(privateMemUsedByMe) / (1024 * 1024);
+  return static_cast<float> (privateMemUsedByMe) / (1024 * 1024);
+#else
+  // Linux/macOS: get resident set size (RSS) in MB
+  struct rusage usage;
+  if (getrusage (RUSAGE_SELF, &usage) == 0)
+    {
+      // ru_maxrss is in kilobytes on Linux, bytes on macOS. We handle Linux
+      // here:
+      return static_cast<float> (usage.ru_maxrss) / 1024.0f;
+    }
+  return 0.0f;
+#endif
 }
 
 void PerformanceBenchmark::createFile() {
