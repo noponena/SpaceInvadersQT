@@ -55,6 +55,7 @@ compile_commands.json
 
 # Build output/result folders
 /script_build_result/
+/build/
 
 # clang-format configs, if not meant to be tracked
 clang-format*
