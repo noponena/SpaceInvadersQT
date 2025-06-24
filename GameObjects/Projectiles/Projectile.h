@@ -20,7 +20,7 @@ public:
   virtual ~Projectile() = default;
   virtual std::unique_ptr<GameObject> clone() const override;
 
-  bool shouldBeDeleted() override;
+  bool shouldBeDeleted() const override;
   void collideWith(GameObject &other) override;
   void collideWithEnemyShip(Ships::EnemyShip &enemyShip) override;
   void collideWithPlayerShip(Ships::PlayerShip &playerShip) override;

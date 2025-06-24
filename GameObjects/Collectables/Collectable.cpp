@@ -19,7 +19,7 @@ void GameObjects::Collectables::Collectable::update(
   }
 }
 
-bool Collectable::shouldBeDeleted() {
+bool Collectable::shouldBeDeleted() const {
   return GameObject::shouldBeDeleted() || m_collected || m_lifeSpanExceeded;
 }
 

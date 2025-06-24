@@ -17,7 +17,7 @@ private:
 public:
   void update(const UpdateContext &context) override;
   void collideWithEnemyShip(Ships::EnemyShip &enemyShip) override;
-  bool shouldBeDeleted() override;
+  bool shouldBeDeleted() const override;
   std::unique_ptr<GameObject> clone() const override;
 };
 

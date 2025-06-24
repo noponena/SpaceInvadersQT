@@ -25,7 +25,7 @@ public:
 
   void update(const UpdateContext &context) override;
 
-  bool shouldBeDeleted() override;
+  bool shouldBeDeleted() const override;
   void collideWithPlayerShip(Ships::PlayerShip &playerShip) override;
 
 private:

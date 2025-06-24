@@ -19,7 +19,7 @@ public:
   Ship(const std::uint32_t maxHp, const float speed, const Position &position);
   virtual ~Ship();
   virtual void update(const UpdateContext &context) override;
-  virtual bool shouldBeDeleted() override;
+  virtual bool shouldBeDeleted() const override;
   bool isDead() override;
   virtual void takeDamage(std::uint32_t amount);
   virtual void heal(std::uint32_t amount);

@@ -77,7 +77,7 @@ public:
 
   // Initialization & Lifecycle
   virtual void initialize();
-  virtual bool shouldBeDeleted();
+  virtual bool shouldBeDeleted() const;
 
   // Collision Handlers
   virtual void collideWith(GameObject &other) { Q_UNUSED(other); }
@@ -108,7 +108,7 @@ public:
   QString getHudPixmapPath() const;
   void setPosition(const Position &newPosition);
   bool isCollidable() const;
-  std::uint64_t id();
+  std::uint64_t id() const;
   const Magnetism &magnetism() const;
 
   // Actions & Modifiers

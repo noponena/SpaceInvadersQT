@@ -27,7 +27,7 @@ void Vortex::collideWithEnemyShip(Ships::EnemyShip &enemyShip) {
   disableMovement();
 }
 
-bool Vortex::shouldBeDeleted() {
+bool Vortex::shouldBeDeleted() const {
   return GameObject::shouldBeDeleted() ||
          m_timeSinceSpawnSeconds >= m_timeToLiveSeconds;
 }

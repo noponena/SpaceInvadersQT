@@ -20,7 +20,7 @@ std::unique_ptr<GameObject> Projectile::clone() const {
   return projectile;
 }
 
-bool Projectile::shouldBeDeleted() {
+bool Projectile::shouldBeDeleted() const {
   bool isPiercing =
       m_properties.find(ProjectileProperty::PIERCING) != m_properties.end();
 

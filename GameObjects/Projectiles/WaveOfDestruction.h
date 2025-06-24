@@ -12,7 +12,7 @@ public:
 
   // GameObject interface
 public:
-  bool shouldBeDeleted() override;
+  bool shouldBeDeleted() const override;
 
   // Projectile interface
 public:

@@ -11,7 +11,7 @@ WaveOfDestruction::WaveOfDestruction() {
   m_pixmapData.keepAspectRatio = false;
 }
 
-bool WaveOfDestruction::shouldBeDeleted() {
+bool WaveOfDestruction::shouldBeDeleted() const {
   return m_position.isBeyondScreenBottomLimit(50) ||
          m_position.isBeyondScreenTopLimit(50);
 }

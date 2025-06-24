@@ -113,7 +113,7 @@ std::unique_ptr<GameObject> EnemyShip::clone() const {
   return enemyShip;
 }
 
-bool EnemyShip::shouldBeDeleted() {
+bool EnemyShip::shouldBeDeleted() const {
   if (m_position.isBeyondScreenBottomLimit() && !m_bottomEdgeSignalEmitted) {
     emit bottomEdgeReached();
     m_bottomEdgeSignalEmitted = true;
