@@ -1,11 +1,11 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "Game/Core/BenchmarkPromptView.h"
 #include "Game/Core/GameRunnerView.h"
 #include "Game/Core/LevelSelectorView.h"
 #include "Game/Core/MainMenuView.h"
 #include "Game/Core/PauseMenuView.h"
-#include "Game/Core/BenchmarkPromptView.h"
 #include "Game/Levels/LevelLoader.h"
 #include <QMainWindow>
 #include <QStackedWidget>

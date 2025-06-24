@@ -110,53 +110,43 @@ void GameRunnerView::setupConnections() {
           this, &GameRunnerView::onSpawnEventsFinished);
 }
 
-void GameRunnerView::startLevel(const Levels::Level &level, bool benchmarkMode)
-{
-    qDebug() << "starting game..";
+void GameRunnerView::startLevel(const Levels::Level &level,
+                                bool benchmarkMode) {
+  qDebug() << "starting game..";
 
-    m_gameState->createPlayerShip();
-    m_playerShip = m_gameState->playerShip();
+  m_gameState->createPlayerShip();
+  m_playerShip = m_gameState->playerShip();
 
-    connect(m_playerShip,
-            &GameObjects::Ships::PlayerShip::playerSecondaryWeaponsChanged,
-            m_gameHUD,
-            &Core::GameHUD::onPlayerSecondaryWeaponsChanged);
+  connect(m_playerShip,
+          &GameObjects::Ships::PlayerShip::playerSecondaryWeaponsChanged,
+          m_gameHUD, &Core::GameHUD::onPlayerSecondaryWeaponsChanged);
 
-    connect(m_playerShip,
-            &GameObjects::Ships::PlayerShip::playerSecondaryWeaponFired,
-            m_gameHUD,
-            &Core::GameHUD::onPlayerSecondaryWeaponFired);
+  connect(m_playerShip,
+          &GameObjects::Ships::PlayerShip::playerSecondaryWeaponFired,
+          m_gameHUD, &Core::GameHUD::onPlayerSecondaryWeaponFired);
 
-    connect(m_playerShip,
-            &GameObjects::Ships::PlayerShip::playerEnergyUpdated,
-            m_gameHUD,
-            &Core::GameHUD::onPlayerEnergyUpdated);
+  connect(m_playerShip, &GameObjects::Ships::PlayerShip::playerEnergyUpdated,
+          m_gameHUD, &Core::GameHUD::onPlayerEnergyUpdated);
 
-    connect(m_playerShip,
-            &GameObjects::Ships::PlayerShip::playerMaxEnergySet,
-            m_gameHUD,
-            &Core::GameHUD::onPlayerMaxEnergySet);
+  connect(m_playerShip, &GameObjects::Ships::PlayerShip::playerMaxEnergySet,
+          m_gameHUD, &Core::GameHUD::onPlayerMaxEnergySet);
 
-    connect(m_playerShip,
-            &GameObjects::Ships::PlayerShip::playerHealthUpdated,
-            m_gameHUD,
-            &Core::GameHUD::onPlayerHealthUpdated);
+  connect(m_playerShip, &GameObjects::Ships::PlayerShip::playerHealthUpdated,
+          m_gameHUD, &Core::GameHUD::onPlayerHealthUpdated);
 
-    connect(m_playerShip,
-            &GameObjects::Ships::PlayerShip::playerMaxHealthSet,
-            m_gameHUD,
-            &Core::GameHUD::onPlayerMaxHealthSet);
+  connect(m_playerShip, &GameObjects::Ships::PlayerShip::playerMaxHealthSet,
+          m_gameHUD, &Core::GameHUD::onPlayerMaxHealthSet);
 
-    m_gameState->initialize();
+  m_gameState->initialize();
 
-    if (benchmarkMode) {
-        initializeBenchmark();
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    }
+  if (benchmarkMode) {
+    initializeBenchmark();
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  }
 
-    m_levelManager->setLevel(level);
-    m_levelManager->startLevel();
-    m_gameTimer.start(0);
+  m_levelManager->setLevel(level);
+  m_levelManager->startLevel();
+  m_gameTimer.start(0);
 }
 
 void GameRunnerView::quitLevel() {

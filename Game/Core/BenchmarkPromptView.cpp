@@ -7,8 +7,8 @@ BenchmarkPromptView::BenchmarkPromptView(QRect screenGeometry, QWidget *parent)
     : MenuView(screenGeometry, parent) {
   QColor color = QColor(255, 255, 255);
 
-  m_promptText = new QGraphicsTextItem(
-      "Are you sure you want to run benchmark?");
+  m_promptText =
+      new QGraphicsTextItem("Are you sure you want to run benchmark?");
   m_promptText->setDefaultTextColor(color);
   QFont font;
   font.setPointSize(32);

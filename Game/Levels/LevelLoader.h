@@ -23,7 +23,7 @@ public:
 
   Level loadBenchmarkLevel();
 
-  private:
+private:
   std::unique_ptr<GameObjects::Ships::EnemyShip> m_enemyShip;
   Weapons::WeaponBuilder m_weaponBuilder;
   GameObjects::Projectiles::ProjectileBuilder m_projectileBuilder;

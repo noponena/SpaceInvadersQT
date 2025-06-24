@@ -1,7 +1,7 @@
 #include "LevelLoader.h"
 #include "Weapons/PrimaryWeapon.h"
-#include <algorithm>
 #include <QDebug>
+#include <algorithm>
 #include <filesystem>
 #include <regex>
 #include <stdexcept>
@@ -10,10 +10,11 @@
 namespace Game {
 namespace Levels {
 
-bool iequals(const std::string& a, const std::string& b) {
-    return a.size() == b.size()
-    && std::equal(a.begin(), a.end(), b.begin(),
-                 [](char a, char b) { return std::tolower(a) == std::tolower(b); });
+bool iequals(const std::string &a, const std::string &b) {
+  return a.size() == b.size() &&
+         std::equal(a.begin(), a.end(), b.begin(), [](char a, char b) {
+           return std::tolower(a) == std::tolower(b);
+         });
 }
 
 LevelLoader::LevelLoader() {}
@@ -180,29 +181,31 @@ std::map<int, Level> LevelLoader::loadLevels() {
 }
 
 Level LevelLoader::loadBenchmarkLevel() {
-    std::filesystem::path levelsPath = std::filesystem::current_path() / "levels";
-    qDebug() << "Looking for benchmark.yaml in path:" << QString::fromStdString(levelsPath.string());
+  std::filesystem::path levelsPath = std::filesystem::current_path() / "levels";
+  qDebug() << "Looking for benchmark.yaml in path:"
+           << QString::fromStdString(levelsPath.string());
 
-    if (std::filesystem::exists(levelsPath) && std::filesystem::is_directory(levelsPath)) {
-        for (const auto &entry : std::filesystem::directory_iterator(levelsPath)) {
-            const auto &path = entry.path();
-            std::string filename = path.filename().string();
+  if (std::filesystem::exists(levelsPath) &&
+      std::filesystem::is_directory(levelsPath)) {
+    for (const auto &entry : std::filesystem::directory_iterator(levelsPath)) {
+      const auto &path = entry.path();
+      std::string filename = path.filename().string();
 
-            // Case-insensitive comparison for "benchmark.yaml"
-            if (iequals(filename, "benchmark.yaml")) {
-                Level level = loadLevel(path.string());
-                if (!level.name.empty()) {
-                    return level;
-                } else {
-                    qWarning() << "benchmark.yaml exists but is invalid.";
-                    break;
-                }
-            }
+      // Case-insensitive comparison for "benchmark.yaml"
+      if (iequals(filename, "benchmark.yaml")) {
+        Level level = loadLevel(path.string());
+        if (!level.name.empty()) {
+          return level;
+        } else {
+          qWarning() << "benchmark.yaml exists but is invalid.";
+          break;
         }
+      }
     }
+  }
 
-    qWarning() << "benchmark.yaml not found in levels directory.";
-    return Level{};
+  qWarning() << "benchmark.yaml not found in levels directory.";
+  return Level{};
 }
 
 void LevelLoader::setScreenSize(QPoint screenSize) {

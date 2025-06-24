@@ -1,11 +1,11 @@
 #ifndef PARTICLE_H
 #define PARTICLE_H
 
+#include "Utils/MathConstants.h"
 #include <QDebug>
 #include <QPainter>
 #include <QPointF>
 #include <QRandomGenerator>
-#include "Utils/MathConstants.h"
 
 namespace Graphics {
 namespace Effects {

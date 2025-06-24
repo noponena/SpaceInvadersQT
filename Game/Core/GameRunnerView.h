@@ -169,9 +169,9 @@ private slots:
     emit gamePaused();
   }
   void onBenchmarkFinished() {
-      m_benchmarkTimer.disconnect();
-      m_benchmarkTimer.stop();
-      emit benchmarkFinished();
+    m_benchmarkTimer.disconnect();
+    m_benchmarkTimer.stop();
+    emit benchmarkFinished();
   }
 };
 } // namespace Core

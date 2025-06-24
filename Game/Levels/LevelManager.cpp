@@ -31,7 +31,8 @@ void LevelManager::progressLevel() {
       }
     }
 
-    if (m_currentLevel.enemyLimit >= 0 && m_gameState->enemyShipsReachedBottomLimit() > m_currentLevel.enemyLimit)
+    if (m_currentLevel.enemyLimit >= 0 &&
+        m_gameState->enemyShipsReachedBottomLimit() > m_currentLevel.enemyLimit)
       emit enemyLimitReached();
 
     if (spawnEvents.empty())

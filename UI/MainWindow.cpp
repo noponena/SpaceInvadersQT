@@ -48,8 +48,8 @@ MainWindow::MainWindow(QWidget *parent)
 
   connect(m_gameRunnerView, &Game::Core::GameRunnerView::gamePaused, this,
           &MainWindow::onGamePaused);
-  connect(m_gameRunnerView, &Game::Core::GameRunnerView::benchmarkFinished, this,
-          &MainWindow::onLevelQuit);
+  connect(m_gameRunnerView, &Game::Core::GameRunnerView::benchmarkFinished,
+          this, &MainWindow::onLevelQuit);
   connect(m_mainMenuView, &Game::Core::MainMenuView::windowClosed, this,
           &MainWindow::onWindowClosed);
   connect(m_mainMenuView, &Game::Core::MainMenuView::newGameSelected, this,
