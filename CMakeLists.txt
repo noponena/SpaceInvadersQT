@@ -180,9 +180,14 @@ endif()
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
-# Thirdparty yaml-cpp
-target_include_directories(${PROJECT_NAME} PRIVATE Thirdparty/yaml-cpp/include)
-target_link_directories(${PROJECT_NAME} PRIVATE Thirdparty/yaml-cpp/build)
+# Try vcpkg or system yaml-cpp first
+find_package(yaml-cpp CONFIG QUIET)
+if(NOT yaml-cpp_FOUND)
+    message(STATUS "Using local Thirdparty yaml-cpp")
+    target_include_directories(${PROJECT_NAME} PRIVATE Thirdparty/yaml-cpp/include)
+    target_link_directories(${PROJECT_NAME} PRIVATE Thirdparty/yaml-cpp/build)
+endif()
+
 target_link_libraries(${PROJECT_NAME} PRIVATE yaml-cpp)
 
 # Thirdparty OpenAL & libsndfile (MinGW)
