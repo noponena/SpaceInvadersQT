@@ -9,7 +9,8 @@ namespace Core {
 GameRunnerView::GameRunnerView(QRect screenGeometry, QWidget *parent)
     : QGraphicsView(parent), m_scene(this), m_continuousShoot(false),
       m_continuousEnemySpawn(true), m_levelFailed(false),
-      m_levelFailedOrPassedInfoDisplayed(false), m_spawnEventsFinished(false) {
+      m_levelFailedOrPassedInfoDisplayed(false), m_spawnEventsFinished(false),
+      m_benchmarkMode(false) {
   m_gameState = new GameState();
   m_levelManager = std::make_unique<Levels::LevelManager>(m_gameState);
   m_gameObjects = &(m_gameState->gameObjects());
@@ -110,13 +111,8 @@ void GameRunnerView::setupConnections() {
 
 void GameRunnerView::startLevel(const Levels::Level &level) {
   qDebug() << "starting game..";
-  bool perfTest = false;
-
-#ifdef PERFORMANCE_BENCHMARK
-  perfTest = true;
-  initializeBenchmark();
-#endif
-  // m_levelManager = std::make_unique<LevelManager>(m_gameState, perfTest);
+  if (m_benchmarkMode)
+    initializeBenchmark();
   m_gameState->createPlayerShip();
   m_playerShip = m_gameState->playerShip();
 
@@ -163,6 +159,17 @@ void GameRunnerView::resumeGame() {
   m_gameTimer.start(0);
 }
 
+void GameRunnerView::setBenchmarkMode(bool enabled) {
+  m_benchmarkMode = enabled;
+  if (enabled) {
+    m_levelManager = std::make_unique<Levels::LevelManager>(m_gameState, true);
+    connect(m_levelManager.get(), &Levels::LevelManager::enemyLimitReached, this,
+            &GameRunnerView::onEnemyLimitReached);
+    connect(m_levelManager.get(), &Levels::LevelManager::spawnEventsFinished,
+            this, &GameRunnerView::onSpawnEventsFinished);
+  }
+}
+
 void GameRunnerView::gameLoop() {
   auto loopStartTime = std::chrono::high_resolution_clock::now();
 
@@ -170,9 +177,8 @@ void GameRunnerView::gameLoop() {
   float deltaTimeInSeconds = calculateDeltaTime();
   manageEnemySpawn(deltaTimeInSeconds);
 
-#ifndef PERFORMANCE_BENCHMARK
-  processInput(deltaTimeInSeconds);
-#endif
+  if (!m_benchmarkMode)
+    processInput(deltaTimeInSeconds);
 
   float updateTimeUs =
       measureFunctionDuration([&]() { updateGameState(deltaTimeInSeconds); });
@@ -199,10 +205,10 @@ float GameRunnerView::calculateRenderTime(
 
 float GameRunnerView::calculateDeltaTime() {
   int frameTimeMs = m_elapsedTimer.restart();
-#ifdef PERFORMANCE_BENCHMARK
-  Utils::PerformanceBenchmark::getInstance().logPerformance(
-      frameTimeMs, m_gameObjects->size(), m_scene.items().size());
-#endif
+  if (m_benchmarkMode) {
+    Utils::PerformanceBenchmark::getInstance().logPerformance(
+        frameTimeMs, m_gameObjects->size(), m_scene.items().size());
+  }
   return static_cast<float>(frameTimeMs) / 1000.0f;
 }
 

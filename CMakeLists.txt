@@ -37,6 +37,7 @@ set(HEADERS
     Game/Core/MenuTextItem.h
     Game/Core/MenuView.h
     Game/Core/PauseMenuView.h
+    Game/Core/BenchmarkPromptView.h
     Game/Core/TogglableMenuTextItem.h
     Game/Levels/Enemy.h
     Game/Levels/Formation.h
@@ -100,6 +101,7 @@ set(SOURCES
     Game/Core/MenuTextItem.cpp
     Game/Core/MenuView.cpp
     Game/Core/PauseMenuView.cpp
+    Game/Core/BenchmarkPromptView.cpp
     Game/Core/TogglableMenuTextItem.cpp
     Game/Levels/Enemy.cpp
     Game/Levels/Formation.cpp
