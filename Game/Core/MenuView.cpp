@@ -48,6 +48,9 @@ void MenuView::onMenuItemClicked() {
     break;
   case MenuAction::OPTIONS:
     break;
+  case MenuAction::BENCHMARK:
+    emit benchmarkSelected();
+    break;
   case MenuAction::SELECT_LEVEL:
     if (!item->payload().isNull()) {
       Game::Levels::Level level =
@@ -57,6 +60,9 @@ void MenuView::onMenuItemClicked() {
     break;
   case MenuAction::START_LEVEL:
     emit startLevelSelected();
+    break;
+  case MenuAction::START_BENCHMARK:
+    emit startBenchmarkSelected();
     break;
   case MenuAction::QUIT_LEVEL:
     emit quitLevelSelected();

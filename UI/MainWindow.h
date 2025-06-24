@@ -5,6 +5,7 @@
 #include "Game/Core/LevelSelectorView.h"
 #include "Game/Core/MainMenuView.h"
 #include "Game/Core/PauseMenuView.h"
+#include "Game/Core/BenchmarkPromptView.h"
 #include "Game/Levels/LevelLoader.h"
 #include <QMainWindow>
 #include <QStackedWidget>
@@ -29,6 +30,7 @@ private:
   Game::Core::MainMenuView *m_mainMenuView;
   Game::Core::LevelSelectorView *m_levelSelectorView;
   Game::Core::PauseMenuView *m_pauseMenuView;
+  Game::Core::BenchmarkPromptView *m_benchmarkPromptView;
   Game::Core::GameRunnerView *m_gameRunnerView;
   QStackedWidget *m_stackedWidget;
   int m_currentLevelNumber;
@@ -42,6 +44,8 @@ private slots:
   void onWindowClosed();
   void onLevelStarted(Game::Levels::Level level);
   void onBackToMainMenuSelected();
+  void onBenchmarkSelected();
+  void startBenchmark();
   void bringToForeground();
   void adjustMainMenuSize();
   void adjustGameRunnerSize();

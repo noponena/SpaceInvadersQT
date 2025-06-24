@@ -26,6 +26,7 @@ public:
   void startLevel(const Levels::Level &level);
   void quitLevel();
   void resumeGame();
+  void setBenchmarkMode(bool enabled);
 
   GameObjects::Ships::PlayerShip *playerShip() const;
 
@@ -55,6 +56,7 @@ private:
   bool m_levelFailed;
   bool m_levelFailedOrPassedInfoDisplayed;
   bool m_spawnEventsFinished;
+  bool m_benchmarkMode;
   std::chrono::high_resolution_clock::time_point m_lastFrameEndTime;
 
   UI::FPSCounter *m_fpsCounter;

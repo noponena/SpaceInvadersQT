@@ -28,9 +28,11 @@ signals:
   void levelSelectorSelected();
   void levelSelected(Game::Levels::Level level);
   void startLevelSelected();
+  void startBenchmarkSelected();
   void quitLevelSelected();
   void backToMainMenuSelected();
   void resumeGameSelected();
+  void benchmarkSelected();
   void windowClosed();
 };
 

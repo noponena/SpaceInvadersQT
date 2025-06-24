@@ -30,10 +30,15 @@ MainWindow::MainWindow(QWidget *parent)
   m_pauseMenuView->setSizePolicy(QSizePolicy::Expanding,
                                  QSizePolicy::Expanding);
 
+  m_benchmarkPromptView = new Game::Core::BenchmarkPromptView(screenGeometry);
+  m_benchmarkPromptView->setSizePolicy(QSizePolicy::Expanding,
+                                       QSizePolicy::Expanding);
+
   m_stackedWidget = new QStackedWidget(this);
   m_stackedWidget->addWidget(m_mainMenuView);
   m_stackedWidget->addWidget(m_levelSelectorView);
   m_stackedWidget->addWidget(m_pauseMenuView);
+  m_stackedWidget->addWidget(m_benchmarkPromptView);
   m_stackedWidget->addWidget(m_gameRunnerView);
 
   // Set central widget of the main window
@@ -49,6 +54,8 @@ MainWindow::MainWindow(QWidget *parent)
           &MainWindow::newGame);
   connect(m_mainMenuView, &Game::Core::MainMenuView::levelSelectorSelected,
           this, &MainWindow::levelSelector);
+  connect(m_mainMenuView, &Game::Core::MainMenuView::benchmarkSelected, this,
+          &MainWindow::onBenchmarkSelected);
   connect(m_levelSelectorView, &Game::Core::LevelSelectorView::levelStarted,
           this, &MainWindow::onLevelStarted);
   connect(m_levelSelectorView,
@@ -61,6 +68,12 @@ MainWindow::MainWindow(QWidget *parent)
           &MainWindow::onLevelQuit);
   connect(m_pauseMenuView, &Game::Core::PauseMenuView::windowClosed, this,
           &MainWindow::onWindowClosed);
+  connect(m_benchmarkPromptView,
+          &Game::Core::BenchmarkPromptView::startBenchmarkSelected, this,
+          &MainWindow::startBenchmark);
+  connect(m_benchmarkPromptView,
+          &Game::Core::BenchmarkPromptView::backToMainMenuSelected, this,
+          &MainWindow::onBackToMainMenuSelected);
 
   m_stackedWidget->setCurrentWidget(m_mainMenuView);
 
@@ -137,4 +150,15 @@ void MainWindow::onLevelStarted(Game::Levels::Level level) {
 
 void MainWindow::onBackToMainMenuSelected() {
   m_stackedWidget->setCurrentWidget(m_mainMenuView);
+}
+
+void MainWindow::onBenchmarkSelected() {
+  m_stackedWidget->setCurrentWidget(m_benchmarkPromptView);
+}
+
+void MainWindow::startBenchmark() {
+  QApplication::setOverrideCursor(Qt::BlankCursor);
+  m_gameRunnerView->setBenchmarkMode(true);
+  m_stackedWidget->setCurrentWidget(m_gameRunnerView);
+  m_gameRunnerView->startLevel(m_levels[1]);
 }

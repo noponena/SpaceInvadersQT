@@ -13,7 +13,9 @@ MainMenuView::MainMenuView(QRect screenGeometry, QWidget *parent)
   createMenuItem("Level Selector", MenuAction::LEVEL_SELECTOR, color, 100,
                  QPointF(100, 150));
   createMenuItem("Options", MenuAction::OPTIONS, color, 100, QPointF(100, 300));
-  createMenuItem("Quit", MenuAction::QUIT, color, 100, QPointF(100, 450));
+  createMenuItem("Benchmark", MenuAction::BENCHMARK, color, 100,
+                 QPointF(100, 450));
+  createMenuItem("Quit", MenuAction::QUIT, color, 100, QPointF(100, 600));
 }
 
 } // namespace Core
