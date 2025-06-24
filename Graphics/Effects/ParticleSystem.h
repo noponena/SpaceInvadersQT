@@ -4,7 +4,6 @@
 #include "Effect.h"
 #include "Particle.h"
 
-
 namespace Graphics {
 namespace Effects {
 

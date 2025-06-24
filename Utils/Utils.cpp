@@ -9,7 +9,13 @@ float lerp(float a, float b, float t) { return a + t * (b - a); }
 int randi(int lowerBound, int upperBound) {
   static std::random_device rd;
   static std::mt19937 eng(rd());
-  std::uniform_int_distribution<> distr(lowerBound, upperBound);
+  static int prevLower = 0, prevUpper = -1;
+  static std::uniform_int_distribution<> distr;
+  if (lowerBound != prevLower || upperBound != prevUpper) {
+    distr = std::uniform_int_distribution<>(lowerBound, upperBound);
+    prevLower = lowerBound;
+    prevUpper = upperBound;
+  }
   return distr(eng);
 }
 
@@ -19,11 +25,9 @@ bool probabilityCheck(float probability) {
               << std::endl;
     return false;
   }
-
   static std::random_device rd;
   static std::mt19937 gen(rd());
-  std::uniform_real_distribution<> dis(0.0, 1.0);
-
+  static std::uniform_real_distribution<float> dis(0.0f, 1.0f);
   return dis(gen) < probability;
 }
 

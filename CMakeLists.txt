@@ -10,6 +10,10 @@ set(CMAKE_AUTOUIC ON)
 
 set(RESOURCES Resources.qrc)
 
+if(POLICY CMP0135)
+  cmake_policy(SET CMP0135 NEW)
+endif()
+
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets OpenGLWidgets Concurrent)
 
 set(HEADERS
@@ -134,6 +138,7 @@ set(SOURCES
     Weapons/SecondaryWeapon.cpp
     Weapons/Weapon.cpp
     Weapons/WeaponBuilder.cpp
+    Tests/test_collisions.cpp
 )
 
 set(UIS
@@ -217,4 +222,26 @@ else()
 endif()
 
 install(TARGETS ${PROJECT_NAME} DESTINATION ${INSTALL_PATH})
+
+# Enable testing
+enable_testing()
+
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+    include(FetchContent)
+    FetchContent_Declare(
+      googletest
+      URL https://github.com/google/googletest/archive/refs/heads/main.zip
+    )
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(googletest)
+
+    add_executable(UnitTests
+        Tests/test_collisions.cpp
+    )
+
+    target_link_libraries(UnitTests PRIVATE gtest_main Qt6::Core)
+
+    add_test(NAME SpaceInvadersQT_UnitTests COMMAND UnitTests)
+endif()
+
 

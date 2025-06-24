@@ -82,8 +82,7 @@ void GameRunnerView::setupCounters() {
 
   m_fpsCounter->setPos(0, 0);
   m_gameObjectCounter->setPos(0, m_fpsCounter->boundingRect().height() - 10);
-  m_stellarTokens->setPos(0,
-                          m_fpsCounter->boundingRect().height() - 10 + 20);
+  m_stellarTokens->setPos(0, m_fpsCounter->boundingRect().height() - 10 + 20);
   m_playerHp->setPos(0, m_gameObjectCounter->boundingRect().height() - 10 + 40);
 
   scene()->addItem(m_fpsCounter);
@@ -245,8 +244,7 @@ void GameRunnerView::logFrameStatistics(float renderTimeUs, float updateTimeUs,
 }
 
 void GameRunnerView::updateGameCounters() {
-  int gameObjectCount = m_gameObjects->size();
-  m_gameObjectCounter->setObjectCount(gameObjectCount);
+  m_gameObjectCounter->setObjectCount(m_gameObjects->size());
 
   if (!m_levelFailed) {
     int playerHp = m_playerShip->currentHp();

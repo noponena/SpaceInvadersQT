@@ -26,7 +26,6 @@ void ParticleSystem::update(float deltaTimeInSeconds) {
 
 ParticleSystem::~ParticleSystem() {}
 
-
 void ParticleSystem::spawnParticles(int count, QColor color,
                                     float lifespanInSeconds) {
   bool randomColor = color == nullptr;

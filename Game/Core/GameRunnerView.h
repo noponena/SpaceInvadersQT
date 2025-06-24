@@ -15,8 +15,6 @@
 #include <QTimer>
 #include <QWheelEvent>
 
-// #define PERFORMANCE_BENCHMARK
-
 namespace Game {
 namespace Core {
 
@@ -153,14 +151,8 @@ signals:
   void levelQuit();
 
 private slots:
-  void onObjectAdded(QGraphicsItem *object) {
-    m_scene.addItem(object);
-    m_gameObjectCounter->updateObjectCount(1);
-  }
-  void onObjectDeleted(QGraphicsItem *object) {
-    m_scene.removeItem(object);
-    m_gameObjectCounter->updateObjectCount(-1);
-  }
+  void onObjectAdded(QGraphicsItem *object) { m_scene.addItem(object); }
+  void onObjectDeleted(QGraphicsItem *object) { m_scene.removeItem(object); }
   void onPlayerShipDestroyed() {
     m_levelFailed = true;
     m_playerShip = nullptr;
