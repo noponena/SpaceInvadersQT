@@ -14,13 +14,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install dependencies (CMake, Ninja, MinGW)
+      - name: Install dependencies (CMake, Ninja)
         run: |
-          choco install -y mingw cmake ninja
-
-      - name: Add MinGW to PATH
-        run: |
-          echo "C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          choco install -y cmake ninja
 
       - name: Set up Qt (MSVC)
         uses: jurplel/install-qt-action@v4
@@ -29,18 +25,18 @@ jobs:
           arch: win64_msvc2022_64
           modules: 'qtbase qttools'
 
-      - name: Check MinGW and g++
+      - name: Check compiler and tools
         run: |
-          g++ --version
+          cl.exe
           cmake --version
           ninja --version
 
-      - name: Configure CMake (MinGW + Ninja)
+      - name: Configure CMake (MSVC + Ninja)
         run: |
-          cmake -S . -B build -G "Ninja" -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++
+          cmake -S . -B build -G "Ninja Multi-Config"
 
-      - name: Build
-        run: cmake --build build --parallel
+      - name: Build Release
+        run: cmake --build build --config Release --parallel
 
       - name: List build output
-        run: dir build
+        run: dir build\Release
