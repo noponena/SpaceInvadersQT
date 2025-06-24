@@ -1,0 +1,45 @@
+name: Build (Linux)
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            qt6-base-dev \
+            libopenal-dev \
+            libsndfile1-dev \
+            libyaml-cpp-dev \
+            pkg-config \
+            cmake
+
+      - name: Create build directory
+        run: cmake -E make_directory build
+
+      - name: Configure CMake
+        run: cmake -S . -B build
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: List build output
+        run: ls -lh build
+
+      # - name: Upload build
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: SpaceInvadersQT-linux-build
+      #     path: build/SpaceInvaders*
