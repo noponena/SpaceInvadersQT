@@ -34,8 +34,10 @@ void GameObject::update(const UpdateContext &context) {
     executeDestructionProcedure();
   applyMovementStrategy(context.deltaTimeInSeconds);
   updateGraphicsItemPosition();
-  if (m_destructionInitiated)
+  if (m_destructionInitiated) {
     m_destructionAnimation.showNextFrame();
+    m_destructionEffect.update(context.deltaTimeInSeconds);
+  }
 }
 
 void GameObject::show() { m_graphicsItem->show(); }

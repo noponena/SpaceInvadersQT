@@ -3,8 +3,7 @@
 
 #include "Effect.h"
 #include "Particle.h"
-#include <QElapsedTimer>
-#include <QThread>
+
 
 namespace Graphics {
 namespace Effects {
@@ -21,16 +20,9 @@ public:
   operator bool() const { return !m_particles.empty(); }
 
 private:
-  QThread m_updateThread;
   bool m_effectFinished;
-  bool m_particlesUpdated;
-  bool m_particlesDrawn;
-  bool m_updateThreadStarted;
   std::vector<Particle> m_particles;
-  QElapsedTimer m_elapsedTimer;
   QColor getRandomColor();
-
-  void runUpdateLoop();
 
 public:
   QRectF boundingRect() const override { return QRectF(); };
