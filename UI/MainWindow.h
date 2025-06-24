@@ -27,6 +27,7 @@ private:
   Ui::MainWindow *ui;
   Game::Levels::LevelLoader m_levelLoader;
   std::map<int, Game::Levels::Level> m_levels;
+  Game::Levels::Level m_benchmarkLevel;
   Game::Core::MainMenuView *m_mainMenuView;
   Game::Core::LevelSelectorView *m_levelSelectorView;
   Game::Core::PauseMenuView *m_pauseMenuView;

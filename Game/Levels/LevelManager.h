@@ -10,7 +10,6 @@ namespace Levels {
 class LevelManager : public QObject {
   Q_OBJECT
 public:
-  LevelManager(Core::GameState *gameState, bool performanceTest);
   LevelManager(Core::GameState *gameState);
   void startLevel();
   void stopLevel();

@@ -48,6 +48,8 @@ MainWindow::MainWindow(QWidget *parent)
 
   connect(m_gameRunnerView, &Game::Core::GameRunnerView::gamePaused, this,
           &MainWindow::onGamePaused);
+  connect(m_gameRunnerView, &Game::Core::GameRunnerView::benchmarkFinished, this,
+          &MainWindow::onLevelQuit);
   connect(m_mainMenuView, &Game::Core::MainMenuView::windowClosed, this,
           &MainWindow::onWindowClosed);
   connect(m_mainMenuView, &Game::Core::MainMenuView::newGameSelected, this,
@@ -84,6 +86,7 @@ MainWindow::MainWindow(QWidget *parent)
       QPoint(screenGeometry.width() * 0.98, screenGeometry.height() * 0.865));
   m_levelLoader.initialize();
   m_levels = m_levelLoader.loadLevels();
+  m_benchmarkLevel = m_levelLoader.loadBenchmarkLevel();
   m_levelSelectorView->setLevelData(m_levels);
   resize(screenGeometry.width(), screenGeometry.height());
 
@@ -158,7 +161,6 @@ void MainWindow::onBenchmarkSelected() {
 
 void MainWindow::startBenchmark() {
   QApplication::setOverrideCursor(Qt::BlankCursor);
-  m_gameRunnerView->setBenchmarkMode(true);
   m_stackedWidget->setCurrentWidget(m_gameRunnerView);
-  m_gameRunnerView->startLevel(m_levels[1]);
+  m_gameRunnerView->startLevel(m_benchmarkLevel, true);
 }

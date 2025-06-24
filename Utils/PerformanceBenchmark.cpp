@@ -64,7 +64,7 @@ void PerformanceBenchmark::initializeBenchmark(
 
   std::unique_ptr<GameObjects::Projectiles::Projectile> primaryProjectile =
       projectileBuilder.createProjectile<GameObjects::Projectiles::Projectile>()
-          .withDamage(1)
+          .withDamage(999)
           .withObjectType(GameObjects::ObjectType::PLAYER_PROJECTILE)
           .withGrahpics(GameObjects::PixmapData{
               QPointF(30, 30), ":/Images/player_laser_projectile.png", "", ""})

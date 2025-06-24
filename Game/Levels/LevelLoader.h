@@ -21,7 +21,9 @@ public:
   void setPositionConstraints(QPoint positionConstraintMin,
                               QPoint positionConstraintMax);
 
-private:
+  Level loadBenchmarkLevel();
+
+  private:
   std::unique_ptr<GameObjects::Ships::EnemyShip> m_enemyShip;
   Weapons::WeaponBuilder m_weaponBuilder;
   GameObjects::Projectiles::ProjectileBuilder m_projectileBuilder;

@@ -4,36 +4,6 @@
 
 namespace Game {
 namespace Levels {
-LevelManager::LevelManager(Core::GameState *gameState, bool performanceTest)
-    : m_gameState(gameState), m_lastSpawnTime(0), m_levelInProgress(false) {
-  m_elapsedTimer.start();
-  if (performanceTest) {
-    m_spawnIntervalMs = 50;
-    m_enemyWeaponCooldownMs = 500;
-    m_enemyShipHp = 3;
-    m_enemyShipDestructionParticleCount = 250;
-    m_performanceTest = performanceTest;
-  }
-
-  GameObjects::PixmapData pixmapData{
-      QPointF(30, 30), ":/Images/enemy_laser_projectile.png", "", ""};
-
-  std::unique_ptr<GameObjects::Projectiles::Projectile> projectile =
-      m_projectileBuilder
-          .createProjectile<GameObjects::Projectiles::Projectile>()
-          .withDamage(1)
-          .withMovementStrategy(
-              Game::Movement::VerticalMovementStrategy(500, 1))
-          .withGrahpics(pixmapData)
-          .withSpawnSound(Audio::SoundInfo(
-              {true, Game::Audio::SoundEffect::LESSER_ENEMY_LASER}))
-          .withObjectType(GameObjects::ObjectType::ENEMY_PROJECTILE)
-          .build();
-
-  m_weaponBuilder.createWeapon<Weapons::PrimaryWeapon>()
-      .withProjectile(std::move(projectile))
-      .withWeaponCooldownMs(m_enemyWeaponCooldownMs);
-}
 
 LevelManager::LevelManager(Core::GameState *gameState)
     : m_addGameObjectFunc(
@@ -61,7 +31,7 @@ void LevelManager::progressLevel() {
       }
     }
 
-    if (m_gameState->enemyShipsReachedBottomLimit() > m_currentLevel.enemyLimit)
+    if (m_currentLevel.enemyLimit >= 0 && m_gameState->enemyShipsReachedBottomLimit() > m_currentLevel.enemyLimit)
       emit enemyLimitReached();
 
     if (spawnEvents.empty())

@@ -110,41 +110,53 @@ void GameRunnerView::setupConnections() {
           this, &GameRunnerView::onSpawnEventsFinished);
 }
 
-void GameRunnerView::startLevel(const Levels::Level &level) {
-  qDebug() << "starting game..";
+void GameRunnerView::startLevel(const Levels::Level &level, bool benchmarkMode)
+{
+    qDebug() << "starting game..";
 
-  m_gameState->createPlayerShip();
-  m_playerShip = m_gameState->playerShip();
+    m_gameState->createPlayerShip();
+    m_playerShip = m_gameState->playerShip();
 
-  connect(m_playerShip,
-          &GameObjects::Ships::PlayerShip::playerSecondaryWeaponsChanged,
-          m_gameHUD, &Core::GameHUD::onPlayerSecondaryWeaponsChanged);
+    connect(m_playerShip,
+            &GameObjects::Ships::PlayerShip::playerSecondaryWeaponsChanged,
+            m_gameHUD,
+            &Core::GameHUD::onPlayerSecondaryWeaponsChanged);
 
-  connect(m_playerShip,
-          &GameObjects::Ships::PlayerShip::playerSecondaryWeaponFired,
-          m_gameHUD, &Core::GameHUD::onPlayerSecondaryWeaponFired);
+    connect(m_playerShip,
+            &GameObjects::Ships::PlayerShip::playerSecondaryWeaponFired,
+            m_gameHUD,
+            &Core::GameHUD::onPlayerSecondaryWeaponFired);
 
-  connect(m_playerShip, &GameObjects::Ships::PlayerShip::playerEnergyUpdated,
-          m_gameHUD, &Core::GameHUD::onPlayerEnergyUpdated);
+    connect(m_playerShip,
+            &GameObjects::Ships::PlayerShip::playerEnergyUpdated,
+            m_gameHUD,
+            &Core::GameHUD::onPlayerEnergyUpdated);
 
-  connect(m_playerShip, &GameObjects::Ships::PlayerShip::playerMaxEnergySet,
-          m_gameHUD, &Core::GameHUD::onPlayerMaxEnergySet);
+    connect(m_playerShip,
+            &GameObjects::Ships::PlayerShip::playerMaxEnergySet,
+            m_gameHUD,
+            &Core::GameHUD::onPlayerMaxEnergySet);
 
-  connect(m_playerShip, &GameObjects::Ships::PlayerShip::playerHealthUpdated,
-          m_gameHUD, &Core::GameHUD::onPlayerHealthUpdated);
+    connect(m_playerShip,
+            &GameObjects::Ships::PlayerShip::playerHealthUpdated,
+            m_gameHUD,
+            &Core::GameHUD::onPlayerHealthUpdated);
 
-  connect(m_playerShip, &GameObjects::Ships::PlayerShip::playerMaxHealthSet,
-          m_gameHUD, &Core::GameHUD::onPlayerMaxHealthSet);
+    connect(m_playerShip,
+            &GameObjects::Ships::PlayerShip::playerMaxHealthSet,
+            m_gameHUD,
+            &Core::GameHUD::onPlayerMaxHealthSet);
 
-  m_gameState->initialize();
+    m_gameState->initialize();
 
-  if (m_benchmarkMode) {
-       initializeBenchmark();
-  } else {
-      m_levelManager->setLevel(level);
-      m_levelManager->startLevel();
-      m_gameTimer.start(0);
-  }
+    if (benchmarkMode) {
+        initializeBenchmark();
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+
+    m_levelManager->setLevel(level);
+    m_levelManager->startLevel();
+    m_gameTimer.start(0);
 }
 
 void GameRunnerView::quitLevel() {
@@ -162,17 +174,6 @@ void GameRunnerView::resumeGame() {
   qDebug() << "resuming game..";
   m_elapsedTimer.start();
   m_gameTimer.start(0);
-}
-
-void GameRunnerView::setBenchmarkMode(bool enabled) {
-  m_benchmarkMode = enabled;
-  if (enabled) {
-    m_levelManager = std::make_unique<Levels::LevelManager>(m_gameState, true);
-    connect(m_levelManager.get(), &Levels::LevelManager::enemyLimitReached, this,
-            &GameRunnerView::onEnemyLimitReached);
-    connect(m_levelManager.get(), &Levels::LevelManager::spawnEventsFinished,
-            this, &GameRunnerView::onSpawnEventsFinished);
-  }
 }
 
 void GameRunnerView::gameLoop() {
@@ -276,10 +277,10 @@ void GameRunnerView::checkLevelFailedOrPassed() {
 
 void GameRunnerView::initializeBenchmark() {
   Utils::PerformanceBenchmark::getInstance().initializeBenchmark(m_playerShip);
-  connect(&m_benchmarkTimer, &QTimer::timeout, this, ([]() {
+  connect(&m_benchmarkTimer, &QTimer::timeout, this, ([this]() {
     Utils::PerformanceBenchmark::getInstance().logPerformanceScore();
+    onBenchmarkFinished();
   }));
-  connect(&m_benchmarkTimer, &QTimer::timeout, this, &GameRunnerView::pause);
   m_benchmarkTimer.start(30000);
 }
 

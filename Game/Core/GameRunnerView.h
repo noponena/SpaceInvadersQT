@@ -23,10 +23,9 @@ class GameRunnerView : public QGraphicsView {
 public:
   explicit GameRunnerView(QRect screenGeometry, QWidget *parent = nullptr);
   ~GameRunnerView();
-  void startLevel(const Levels::Level &level);
+  void startLevel(const Levels::Level &level, bool benchmarkMode = false);
   void quitLevel();
   void resumeGame();
-  void setBenchmarkMode(bool enabled);
 
   GameObjects::Ships::PlayerShip *playerShip() const;
 
@@ -151,6 +150,7 @@ signals:
   void fpsUpdated(int fps);
   void gamePaused();
   void levelQuit();
+  void benchmarkFinished();
 
 private slots:
   void onObjectAdded(QGraphicsItem *object) { m_scene.addItem(object); }
@@ -167,6 +167,11 @@ private slots:
   void pause() {
     m_gameTimer.stop();
     emit gamePaused();
+  }
+  void onBenchmarkFinished() {
+      m_benchmarkTimer.disconnect();
+      m_benchmarkTimer.stop();
+      emit benchmarkFinished();
   }
 };
 } // namespace Core
