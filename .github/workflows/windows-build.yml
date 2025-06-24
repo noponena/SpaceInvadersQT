@@ -1,0 +1,46 @@
+name: Build (Windows)
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
+
+jobs:
+  build-windows-mingw:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies (CMake, Ninja, MinGW)
+        run: |
+          choco install -y mingw cmake ninja
+
+      - name: Add MinGW to PATH
+        run: |
+          echo "C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Set up Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.9.1'
+          arch: win64_mingw
+          modules: 'qtbase qttools'
+
+      - name: Check MinGW and g++
+        run: |
+          g++ --version
+          cmake --version
+          ninja --version
+
+      - name: Configure CMake (MinGW + Ninja)
+        run: |
+          cmake -S . -B build -G "Ninja" -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: List build output
+        run: dir build
