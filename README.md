@@ -74,10 +74,14 @@ sudo apt install build-essential qt6-base-dev libopenal-dev libsndfile1-dev liby
 ```
 
 ### macOS
-Install dependencies using Homebrew:
-```bash
-brew install qt openal-soft libsndfile yaml-cpp pkg-config
-```
+1. If you don't already have Homebrew, install it first by running:
+    ```bash
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    ```
+2. Install dependencies using Homebrew:
+    ```bash
+    brew install qt openal-soft libsndfile yaml-cpp pkg-config
+    ```
 
 ## Building
 

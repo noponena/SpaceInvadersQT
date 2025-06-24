@@ -12,17 +12,17 @@ goto :skip_help
 
 :help
 echo.
-echo Usage: %~nx0 [--clean] [core_count]
+echo Usage: %~nx0 [--clean] [--cores N] 
 echo.
-echo   --clean       Optional: Clean all build directories before building.
-echo   core_count    Optional: Number of CPU cores to use for parallel builds.
-echo                 If omitted, the default is 8.
+echo   --clean                    Optional: Clean all build directories before building.
+echo   --cores N, -j N            Optional: Number of CPU cores to use for parallel builds.
+echo                              If omitted, the default is 8.
 echo.
 echo Examples:
 echo   %~nx0
-echo   %~nx0 8
+echo   %~nx0 --cores 8
 echo   %~nx0 --clean
-echo   %~nx0 --clean 12
+echo   %~nx0 --clean --cores 12
 echo.
 exit /b 0
 
@@ -35,19 +35,40 @@ REM === Argument Parsing ===
 set "CLEAN_BUILD=0"
 set "CORES=8"  REM Default to 8 if not specified
 
-REM Detect if first argument is --clean
-if /i "%~1"=="--clean" (
+:parse_args
+if "%~1"=="" goto args_parsed
+
+if /I "%~1"=="--clean" (
     set "CLEAN_BUILD=1"
-    if not "%~2"=="" (
-        set "CORES=%~2"
+) else if /I "%~1"=="--cores" (
+    shift
+    if "%~1"=="" (
+        echo ERROR: --cores requires a value.
+        exit /b 1
     )
-) else if not "%~1"=="" (
     set "CORES=%~1"
+) else if /I "%~1"=="-j" (
+    shift
+    if "%~1"=="" (
+        echo ERROR: -j requires a value.
+        exit /b 1
+    )
+    set "CORES=%~1"
+) else (
+    REM If argument is a number, treat as core count (for backward compatibility)
+    set "IS_NUM=0"
+    for /f "delims=0123456789" %%c in ("%~1") do set IS_NUM=1
+    if "!IS_NUM!"=="0" set "CORES=%~1"
 )
+shift
+goto :parse_args
+:args_parsed
 
 echo Using %CORES% parallel jobs for builds.
 
 REM ==== CONFIGURATION ====
+
+REM ==== Set build result directory name ====
 set "RESULT_DIR=script_build_result"
 
 REM ==== Clean build result if requested ====
@@ -98,7 +119,7 @@ cmake --build . --config Release -- -j!CORES!
 if %ERRORLEVEL% NEQ 0 goto error
 cd ..
 
-REM ==== Copy levels directory to actual executable folder ====
+REM ==== Copy levels directory ====
 REM Prefer "release", fallback to just RESULT_DIR if no such folder exists
 
 set "TARGET_DIR=%RESULT_DIR%\Release"
@@ -114,7 +135,7 @@ if exist "levels" (
     xcopy "levels" "%TARGET_DIR%\levels" /E /I /Q /Y
     echo Levels directory copied successfully.
 ) else (
-    echo WARNING: levels directory not found in project root!
+     echo WARNING: levels directory not found in project root!
 )
 
 REM ==== Always remove the debug folder from build result ====
