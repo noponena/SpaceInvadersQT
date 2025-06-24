@@ -3,6 +3,7 @@
 #include "Utils/PerformanceBenchmark.h"
 #include <QOpenGLWidget>
 #include <QTimer>
+#include <thread>
 
 namespace Game {
 namespace Core {
@@ -111,8 +112,7 @@ void GameRunnerView::setupConnections() {
 
 void GameRunnerView::startLevel(const Levels::Level &level) {
   qDebug() << "starting game..";
-  if (m_benchmarkMode)
-    initializeBenchmark();
+
   m_gameState->createPlayerShip();
   m_playerShip = m_gameState->playerShip();
 
@@ -137,9 +137,14 @@ void GameRunnerView::startLevel(const Levels::Level &level) {
           m_gameHUD, &Core::GameHUD::onPlayerMaxHealthSet);
 
   m_gameState->initialize();
-  m_levelManager->setLevel(level);
-  m_levelManager->startLevel();
-  m_gameTimer.start(0);
+
+  if (m_benchmarkMode) {
+       initializeBenchmark();
+  } else {
+      m_levelManager->setLevel(level);
+      m_levelManager->startLevel();
+      m_gameTimer.start(0);
+  }
 }
 
 void GameRunnerView::quitLevel() {

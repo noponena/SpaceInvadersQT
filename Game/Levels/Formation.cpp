@@ -1,4 +1,6 @@
 #include "Formation.h"
+#include "Utils/MathConstants.h"
+#include <algorithm>
 
 namespace Game {
 namespace Levels {
@@ -96,10 +98,10 @@ std::vector<QPoint> Formation::getCirclePoints(QPoint referencePosition) const {
     }
   } else {
     // Generate points along the circumference for a hollow circle
-    int numPoints = std::max(2 * M_PI * radius / spacing,
+    int numPoints = std::max(2 * PI * radius / spacing,
                              static_cast<double>(pointsInDiameter));
     for (int i = 0; i < numPoints; ++i) {
-      double angle = 2 * M_PI * i / numPoints;
+      double angle = 2 * PI * i / numPoints;
       int x = center.x() + static_cast<int>(radius * std::cos(angle));
       int y = center.y() + static_cast<int>(radius * std::sin(angle));
       points.push_back(QPoint(x, y));

@@ -1,7 +1,8 @@
 #ifndef MOVEMENTSTRATEGY_H
 #define MOVEMENTSTRATEGY_H
 
-#include "AxisMovementStrategy.h" // Include or forward-declare your movement strategy classes
+#include "AxisMovementStrategy.h"
+#include "Utils/MathConstants.h"
 #include <QPointF>
 #include <tuple>
 #include <variant>
@@ -117,7 +118,7 @@ class AngledMovementStrategy : public MovementStrategy {
 public:
   AngledMovementStrategy(float speed = 1, int direction = 1, int angleDeg = 0) {
 
-    float angleRad = angleDeg * M_PI / 180.0;
+    float angleRad = angleDeg * PI / 180.0;
     float speedX = cos(angleRad) * speed;
     float speedY = sin(angleRad) * speed;
 

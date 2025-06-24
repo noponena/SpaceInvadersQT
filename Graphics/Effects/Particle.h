@@ -5,6 +5,7 @@
 #include <QPainter>
 #include <QPointF>
 #include <QRandomGenerator>
+#include "Utils/MathConstants.h"
 
 namespace Graphics {
 namespace Effects {
@@ -17,7 +18,7 @@ public:
   };
 
   QPointF randomVelocity(float maxSpeed) {
-    float angle = QRandomGenerator::global()->generateDouble() * 2 * M_PI;
+    float angle = QRandomGenerator::global()->generateDouble() * 2 * PI;
     float speed = QRandomGenerator::global()->generateDouble() * maxSpeed;
 
     return QPointF(cos(angle) * speed, sin(angle) * speed);

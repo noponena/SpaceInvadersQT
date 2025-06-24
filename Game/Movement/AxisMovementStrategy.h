@@ -1,8 +1,5 @@
-#include <chrono>
+#include "Utils/MathConstants.h"
 #include <cmath>
-#include <iostream>
-#include <memory>
-#include <thread>
 #include <variant>
 
 #include <QDebug>
@@ -58,7 +55,7 @@ public:
     m_accumulatedTime += deltaTimeInSeconds;
     float delta =
         m_amplitude *
-        std::sin(2 * M_PI * m_frequency * m_accumulatedTime + m_phase * M_PI) *
+        std::sin(2 * PI * m_frequency * m_accumulatedTime + m_phase * PI) *
         m_direction;
     if (m_updateAnchor)
       anchorPosition += delta;

@@ -1,4 +1,5 @@
 #include "Collectable.h"
+#include "Utils/MathConstants.h"
 
 namespace GameObjects {
 namespace Collectables {
@@ -71,7 +72,7 @@ void Collectable::handleInitialMovement(float deltaTimeInSeconds) {
 }
 
 void Collectable::initiateMovement() {
-  float angle = QRandomGenerator::global()->bounded(2.0 * M_PI);
+  float angle = QRandomGenerator::global()->bounded(2.0 * PI);
   float initialSpeed = QRandomGenerator::global()->bounded(50, 200);
   m_initialVelocity.setX(initialSpeed * cos(angle));
   m_initialVelocity.setY(initialSpeed * sin(angle));

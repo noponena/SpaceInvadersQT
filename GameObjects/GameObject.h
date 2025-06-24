@@ -2,7 +2,6 @@
 #define GAMEOBJECT_H
 
 #include "Game/Audio/SoundInfo.h"
-#include "Game/Core/CustomGraphicsItem.h"
 #include "Game/Movement/MovementStrategy.h"
 #include "Graphics/Animations/AnimatedItem.h"
 #include "Graphics/Effects/ParticleSystem.h"
@@ -10,7 +9,6 @@
 #include <QGraphicsItem>
 #include <QObject>
 #include <QUrl>
-#include <stdexcept>
 #include <unordered_set>
 
 namespace GameObjects {

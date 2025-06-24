@@ -1,0 +1,6 @@
+#ifndef MATHCONSTANTS_H
+#define MATHCONSTANTS_H
+
+constexpr double PI = 3.14159265358979323846;
+
+#endif // MATHCONSTANTS_H
