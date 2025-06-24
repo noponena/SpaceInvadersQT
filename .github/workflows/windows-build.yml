@@ -24,6 +24,9 @@ jobs:
           version: '6.6.3'
           arch: win64_msvc2019_64
 
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
       - name: Check compiler and tools
         run: |
           cl.exe
