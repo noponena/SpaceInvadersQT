@@ -21,9 +21,8 @@ jobs:
       - name: Set up Qt (MSVC 2019)
         uses: jurplel/install-qt-action@v4
         with:
-          version: '6.7.1'
+          version: '6.6.3'
           arch: win64_msvc2019_64
-          modules: 'qtbase qttools'
 
       - name: Check compiler and tools
         run: |
