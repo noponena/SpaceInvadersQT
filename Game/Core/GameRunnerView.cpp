@@ -67,10 +67,6 @@ void GameRunnerView::setupCounters() {
   m_fpsCounter = new UI::FPSCounter();
   m_gameObjectCounter = new UI::GameObjectCounter();
 
-  m_sceneItemCounter = new QGraphicsTextItem();
-  m_sceneItemCounter->setDefaultTextColor(Qt::white);
-  m_sceneItemCounter->setFont(QFont("times", 12));
-
   m_stellarTokens = new QGraphicsTextItem();
   m_stellarTokens->setPlainText("Stellar tokens: 0");
   m_stellarTokens->setDefaultTextColor(Qt::white);
@@ -86,15 +82,12 @@ void GameRunnerView::setupCounters() {
 
   m_fpsCounter->setPos(0, 0);
   m_gameObjectCounter->setPos(0, m_fpsCounter->boundingRect().height() - 10);
-  m_sceneItemCounter->setPos(0,
-                             m_fpsCounter->boundingRect().height() - 10 + 20);
-  m_stellarTokens->setPos(0, m_gameObjectCounter->boundingRect().height() - 10 +
-                                 40);
-  m_playerHp->setPos(0, m_gameObjectCounter->boundingRect().height() - 10 + 60);
+  m_stellarTokens->setPos(0,
+                          m_fpsCounter->boundingRect().height() - 10 + 20);
+  m_playerHp->setPos(0, m_gameObjectCounter->boundingRect().height() - 10 + 40);
 
   scene()->addItem(m_fpsCounter);
   scene()->addItem(m_gameObjectCounter);
-  scene()->addItem(m_sceneItemCounter);
   scene()->addItem(m_stellarTokens);
   scene()->addItem(m_playerHp);
   connect(this, &GameRunnerView::fpsUpdated, m_fpsCounter,
@@ -253,10 +246,6 @@ void GameRunnerView::logFrameStatistics(float renderTimeUs, float updateTimeUs,
 
 void GameRunnerView::updateGameCounters() {
   int gameObjectCount = m_gameObjects->size();
-  int sceneItemCount = scene()->items().size();
-
-  m_sceneItemCounter->setPlainText("Scene items: " +
-                                   QString::number(sceneItemCount));
   m_gameObjectCounter->setObjectCount(gameObjectCount);
 
   if (!m_levelFailed) {

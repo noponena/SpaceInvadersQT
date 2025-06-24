@@ -108,7 +108,7 @@ public:
   QString getHudPixmapPath() const;
   void setPosition(const Position &newPosition);
   bool isCollidable() const;
-  std::uint64_t id();
+  std::uint64_t id() const;
   const Magnetism &magnetism() const;
 
   // Actions & Modifiers

@@ -127,8 +127,8 @@ void Ship::initializeDestructionEffects() {
 }
 
 void Ship::onProjectileFired(
-    std::shared_ptr<Projectiles::Projectile> projectile) {
-  emit objectCreated(std::move(projectile));
+    std::shared_ptr<GameObjects::Projectiles::Projectile> projectile) {
+    emit objectCreated(std::move(projectile));
 }
 
 void Ship::setImmortal(bool newImmortal) { m_immortal = newImmortal; }

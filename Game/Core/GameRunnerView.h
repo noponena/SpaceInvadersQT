@@ -52,7 +52,6 @@ private:
   QGraphicsTextItem *m_stellarTokens;
   QGraphicsTextItem *m_playerHp;
   QGraphicsTextItem *m_levelEndedInfo;
-  QGraphicsTextItem *m_sceneItemCounter;
   bool m_continuousShoot;
   bool m_continuousEnemySpawn;
   bool m_levelFailed;

@@ -66,7 +66,7 @@ protected:
   virtual void playOnHitAnimation();
   void regenerateEnergy(float deltaTimeInSeconds);
 protected slots:
-  void onProjectileFired(std::shared_ptr<Projectiles::Projectile> projectile);
+  void onProjectileFired(std::shared_ptr<GameObjects::Projectiles::Projectile> projectile);
 
 private:
   void timerEvent(QTimerEvent *event) override;

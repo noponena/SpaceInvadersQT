@@ -154,7 +154,10 @@ void GameObject::addMovementStrategy(
   m_movementStrategy = m_movementStrategy + newMovementStrategy;
 }
 
-std::uint64_t GameObject::id() { return m_id; }
+std::uint64_t GameObject::id() const
+{
+    return m_id;
+}
 
 const Magnetism &GameObject::magnetism() const { return m_magnetism; }
 

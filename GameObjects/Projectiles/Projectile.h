@@ -5,6 +5,7 @@
 #include <QUrl>
 #include <set>
 
+
 namespace Weapons {
 enum class ProjectileProperty;
 }
@@ -46,5 +47,6 @@ protected:
 };
 } // namespace Projectiles
 } // namespace GameObjects
+
 
 #endif // PROJECTILE_H
