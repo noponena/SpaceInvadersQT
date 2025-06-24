@@ -26,7 +26,7 @@ jobs:
         uses: jurplel/install-qt-action@v4
         with:
           version: '6.9.1'
-          arch: win64_mingw
+          arch: win64_llvm_mingw
           modules: 'qtbase qttools'
 
       - name: Check MinGW and g++
