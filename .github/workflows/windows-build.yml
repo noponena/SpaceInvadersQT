@@ -14,9 +14,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install dependencies (CMake, Ninja)
-        run: |
-          choco install -y cmake ninja
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
 
       - name: Set up Qt (MSVC 2019)
         uses: jurplel/install-qt-action@v4
@@ -24,18 +23,13 @@ jobs:
           version: '6.6.3'
           arch: win64_msvc2019_64
 
-      - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v2
-
-      - name: Check compiler and tools
+      - name: Check CMake and Ninja
         run: |
-          cl.exe
           cmake --version
           ninja --version
 
-      - name: Configure CMake (MSVC + Ninja)
-        run: |
-          cmake -S . -B build -G "Ninja Multi-Config"
+      - name: Configure CMake
+        run: cmake -S . -B build -G "Ninja Multi-Config"
 
       - name: Build Release
         run: cmake --build build --config Release --parallel
