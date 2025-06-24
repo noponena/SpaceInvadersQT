@@ -7,7 +7,7 @@ on:
     branches: [main, master, develop]
 
 jobs:
-  build-windows-mingw:
+  build-windows-msvc:
     runs-on: windows-latest
 
     steps:
@@ -22,11 +22,11 @@ jobs:
         run: |
           echo "C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
-      - name: Set up Qt
+      - name: Set up Qt (MSVC)
         uses: jurplel/install-qt-action@v4
         with:
           version: '6.9.1'
-          arch: win64_llvm_mingw
+          arch: win64_msvc2022_64
           modules: 'qtbase qttools'
 
       - name: Check MinGW and g++
