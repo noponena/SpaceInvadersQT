@@ -72,6 +72,7 @@ set(HEADERS
     Graphics/Effects/ParticleSystem.h
     Graphics/EnergyBar.h
     Graphics/HealthBar.h
+    Graphics/PixmapRegistry.h
     Graphics/PixmapLibrary.h
     Graphics/ProgressBar.h
     UI/FPSCounter.h

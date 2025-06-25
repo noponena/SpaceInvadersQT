@@ -9,6 +9,7 @@ namespace Collectables {
 class Stellar : public Collectable {
 public:
   Stellar(const Position &position);
+  static void registerPixmaps();
 
   // GameObject interface
 protected:
