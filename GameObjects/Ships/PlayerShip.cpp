@@ -2,6 +2,8 @@
 #include "GameObjects/Collectables/Collectable.h"
 #include "GameObjects/Projectiles/Projectile.h"
 #include <QPen>
+#include "Graphics/PixmapLibrary.h"
+#include "Graphics/PixmapRegistry.h"
 
 namespace GameObjects {
 namespace Ships {
@@ -10,6 +12,10 @@ PlayerShip::PlayerShip(const float speed, const Position &position)
   m_magnetism = {true, true, 100.0f, 100.0f};
   m_pixmapData.pixmapResourcePath = ":/Images/player_ship.png";
   m_pixmapData.pixmapScale = QPointF(50.0, 50.0);
+}
+
+void PlayerShip::registerPixmaps() {
+    Graphics::PixmapLibrary::getPixmap(":/Images/player_ship.png", 50.0, 50.0);
 }
 
 void PlayerShip::update(const UpdateContext &context) {
@@ -180,6 +186,15 @@ void PlayerShip::disableMovement() {
   m_currentSpeedX = 0;
   m_currentSpeedY = 0;
   m_acceleration = 0;
+}
+
+namespace {
+struct PixmapRegistrar {
+    PixmapRegistrar() {
+        PixmapRegistry::instance().add(&PlayerShip::registerPixmaps);
+    }
+};
+static PixmapRegistrar _playership_pixmap_registrar;
 }
 } // namespace Ships
 

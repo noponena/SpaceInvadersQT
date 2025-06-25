@@ -9,6 +9,7 @@ namespace Projectiles {
 class Vortex : public Projectile {
 public:
   Vortex();
+  static void registerPixmaps();
 
 private:
   float m_timeToLiveSeconds;

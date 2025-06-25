@@ -1,6 +1,8 @@
 #include "PlayerLaserProjectile.h"
 #include "Game/Audio/SoundInfo.h"
 #include <QPen>
+#include "Graphics/PixmapLibrary.h"
+#include "Graphics/PixmapRegistry.h"
 
 namespace GameObjects {
 namespace Projectiles {
@@ -9,6 +11,10 @@ PlayerLaserProjectile::PlayerLaserProjectile(
     : Projectile(damage, properties) {
   m_pixmapData.pixmapResourcePath = ":/Images/player_laser_projectile.png";
   m_pixmapData.pixmapScale = QPointF(30, 30);
+}
+
+void PlayerLaserProjectile::registerPixmaps() {
+    Graphics::PixmapLibrary::getPixmap(":/Images/player_laser_projectile.png", 30, 30);
 }
 
 std::unique_ptr<Projectile> PlayerLaserProjectile::clone() const {
@@ -28,6 +34,15 @@ void PlayerLaserProjectile::initializeObjectType() {
 void PlayerLaserProjectile::initializeSounds() {
   m_spawnSoundInfo =
       Game::Audio::SoundInfo({m_soundEnabled, Game::Audio::SoundEffect::LASER});
+}
+
+namespace {
+struct PixmapRegistrar {
+    PixmapRegistrar() {
+        PixmapRegistry::instance().add(&PlayerLaserProjectile::registerPixmaps);
+    }
+};
+static PixmapRegistrar _playerlaserprojectile_pixmap_registrar;
 }
 
 } // namespace Projectiles

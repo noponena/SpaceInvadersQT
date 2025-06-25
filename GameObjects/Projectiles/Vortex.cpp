@@ -1,4 +1,6 @@
 #include "Vortex.h"
+#include "Graphics/PixmapLibrary.h"
+#include "Graphics/PixmapRegistry.h"
 
 namespace GameObjects {
 namespace Projectiles {
@@ -11,6 +13,12 @@ Vortex::Vortex() : m_timeToLiveSeconds(5.0f), m_timeSinceSpawnSeconds(0.0f) {
   m_pixmapData.onHitPixmapResourcePath = ":/Images/black_hole.png";
   m_pixmapData.hudPixmapResourcePath = ":/Images/black_hole_hud.png";
   m_pixmapData.pixmapScale = QPointF(25, 25);
+}
+
+void Vortex::registerPixmaps() {
+    Graphics::PixmapLibrary::getPixmap(":/Images/black_orb.png", 25, 25);
+    Graphics::PixmapLibrary::getPixmap(":/Images/black_hole.png", 25, 25);
+    Graphics::PixmapLibrary::getPixmap(":/Images/black_hole_hud.png", 25, 25);
 }
 
 void Vortex::update(const UpdateContext &context) {
@@ -43,6 +51,15 @@ std::unique_ptr<GameObject> Vortex::clone() const {
   projectile->setPixmapData(m_pixmapData);
   projectile->setMovementStrategy(movementStrategy());
   return projectile;
+}
+
+namespace {
+struct PixmapRegistrar {
+    PixmapRegistrar() {
+        PixmapRegistry::instance().add(&Vortex::registerPixmaps);
+    }
+};
+static PixmapRegistrar _vortex_pixmap_registrar;
 }
 
 } // namespace Projectiles
