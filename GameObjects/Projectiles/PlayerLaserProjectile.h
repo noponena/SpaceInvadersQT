@@ -10,6 +10,7 @@ public:
   PlayerLaserProjectile(int damage = 1,
                         std::unordered_set<ProjectileProperty> properties = {});
   std::unique_ptr<Projectile> clone() const override;
+  static void registerPixmaps();
 
   // GameObject interface
 public:

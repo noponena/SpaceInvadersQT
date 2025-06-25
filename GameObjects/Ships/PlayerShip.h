@@ -9,6 +9,7 @@ class PlayerShip : public Ship {
   Q_OBJECT
 public:
   PlayerShip(const float speed, const Position &position);
+  static void registerPixmaps();
 
   // GameObject interface
 public:

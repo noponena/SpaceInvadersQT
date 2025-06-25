@@ -1,4 +1,6 @@
 #include "WaveOfDestruction.h"
+#include "Graphics/PixmapLibrary.h"
+#include "Graphics/PixmapRegistry.h"
 
 namespace GameObjects {
 namespace Projectiles {
@@ -9,6 +11,11 @@ WaveOfDestruction::WaveOfDestruction() {
   m_pixmapData.hudPixmapResourcePath = ":/Images/wave_of_destruction_hud.png";
   m_pixmapData.pixmapScale = QPointF(250, 20);
   m_pixmapData.keepAspectRatio = false;
+}
+
+void WaveOfDestruction::registerPixmaps() {
+    Graphics::PixmapLibrary::getPixmap(":/Images/wave.png", 250, 20, false);
+    Graphics::PixmapLibrary::getPixmap(":/Images/wave_of_destruction_hud.png", 250, 20, false);
 }
 
 bool WaveOfDestruction::shouldBeDeleted() {
@@ -28,6 +35,15 @@ std::unique_ptr<GameObject> WaveOfDestruction::clone() const {
   projectile->setPixmapData(m_pixmapData);
   projectile->setMovementStrategy(movementStrategy());
   return projectile;
+}
+
+namespace {
+struct PixmapRegistrar {
+    PixmapRegistrar() {
+        PixmapRegistry::instance().add(&WaveOfDestruction::registerPixmaps);
+    }
+};
+static PixmapRegistrar _waveofdestruction_pixmap_registrar;
 }
 
 } // namespace Projectiles

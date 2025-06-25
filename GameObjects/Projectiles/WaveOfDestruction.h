@@ -9,6 +9,7 @@ namespace Projectiles {
 class WaveOfDestruction : public Projectile {
 public:
   WaveOfDestruction();
+  static void registerPixmaps();
 
   // GameObject interface
 public:

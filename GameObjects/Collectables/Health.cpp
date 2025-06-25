@@ -1,4 +1,6 @@
 #include "Health.h"
+#include "Graphics/PixmapLibrary.h"
+#include "Graphics/PixmapRegistry.h"
 
 namespace GameObjects {
 namespace Collectables {
@@ -6,6 +8,10 @@ namespace Collectables {
 Health::Health(const Position &position) : Collectable(position) {
   m_pixmapData.pixmapResourcePath = ":/Images/health.png";
   m_pixmapData.pixmapScale = QPointF(22.0, 22.0);
+}
+
+void Health::registerPixmaps() {
+    Graphics::PixmapLibrary::getPixmap(":/Images/health.png", 22.0, 22.0);
 }
 
 void Health::initializeSounds() {
@@ -24,6 +30,15 @@ std::unique_ptr<GameObject> Health::clone() const {
   health->m_destructionSoundInfo = m_destructionSoundInfo;
   health->m_objectTypes = m_objectTypes;
   return health;
+}
+
+namespace {
+struct PixmapRegistrar {
+    PixmapRegistrar() {
+        PixmapRegistry::instance().add(&Health::registerPixmaps);
+    }
+};
+static PixmapRegistrar _health_pixmap_registrar;
 }
 
 } // namespace Collectables

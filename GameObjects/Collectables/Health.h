@@ -9,6 +9,7 @@ namespace Collectables {
 class Health : public Collectable {
 public:
   Health(const Position &position);
+  static void registerPixmaps();
 
   // GameObject interface
 protected:

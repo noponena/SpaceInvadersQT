@@ -10,6 +10,7 @@ class EnemyShip : public ShipWithHealthBar {
   Q_OBJECT
 public:
   EnemyShip(const std::uint32_t maxHp, const Position &position);
+  static void registerPixmaps();
   void collideWith(GameObject &other) override;
   void collideWithProjectile(Projectiles::Projectile &projectile) override;
   void collideWithEnemyShip(EnemyShip &enemyShip) override;
