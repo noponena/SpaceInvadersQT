@@ -27,8 +27,6 @@ public:
   void quitLevel();
   void resumeGame();
 
-  GameObjects::Ships::PlayerShip *playerShip() const;
-
 protected:
   void keyPressEvent(QKeyEvent *event) override;
   void keyReleaseEvent(QKeyEvent *event) override;
@@ -40,7 +38,7 @@ private:
   std::unique_ptr<Levels::LevelManager> m_levelManager;
   QTimer m_gameTimer;
   QTimer m_benchmarkTimer;
-  GameObjects::Ships::PlayerShip *m_playerShip;
+  std::shared_ptr<GameObjects::Ships::PlayerShip> m_playerShip;
   std::unique_ptr<CollisionDetection::CollisionDetector> m_collisionDetector;
   QElapsedTimer m_elapsedTimer;
   QElapsedTimer m_fpsTimer;
@@ -65,7 +63,6 @@ private:
   void setupCounters();
   void setupConnections();
   inline void gameLoop();
-  void initializeBenchmark();
 
   inline void processInput(float deltaTimeInSeconds);
   inline void processGameAction(float deltaTimeInSeconds);
@@ -146,6 +143,8 @@ private:
                                  float collisionDetectionTimeUs);
   inline void updateGameCounters();
   inline void checkLevelFailedOrPassed();
+  void initializeBenchmark();
+  void deinitializeBenchmark();
 signals:
   void fpsUpdated(int fps);
   void gamePaused();
@@ -168,11 +167,7 @@ private slots:
     m_gameTimer.stop();
     emit gamePaused();
   }
-  void onBenchmarkFinished() {
-    m_benchmarkTimer.disconnect();
-    m_benchmarkTimer.stop();
-    emit benchmarkFinished();
-  }
+  void onBenchmarkFinished() { deinitializeBenchmark(); }
 };
 } // namespace Core
 } // namespace Game

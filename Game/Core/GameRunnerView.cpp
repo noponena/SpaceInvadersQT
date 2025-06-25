@@ -117,31 +117,34 @@ void GameRunnerView::startLevel(const Levels::Level &level,
   m_gameState->createPlayerShip();
   m_playerShip = m_gameState->playerShip();
 
-  connect(m_playerShip,
+  connect(m_playerShip.get(),
           &GameObjects::Ships::PlayerShip::playerSecondaryWeaponsChanged,
           m_gameHUD, &Core::GameHUD::onPlayerSecondaryWeaponsChanged);
 
-  connect(m_playerShip,
+  connect(m_playerShip.get(),
           &GameObjects::Ships::PlayerShip::playerSecondaryWeaponFired,
           m_gameHUD, &Core::GameHUD::onPlayerSecondaryWeaponFired);
 
-  connect(m_playerShip, &GameObjects::Ships::PlayerShip::playerEnergyUpdated,
-          m_gameHUD, &Core::GameHUD::onPlayerEnergyUpdated);
+  connect(m_playerShip.get(),
+          &GameObjects::Ships::PlayerShip::playerEnergyUpdated, m_gameHUD,
+          &Core::GameHUD::onPlayerEnergyUpdated);
 
-  connect(m_playerShip, &GameObjects::Ships::PlayerShip::playerMaxEnergySet,
-          m_gameHUD, &Core::GameHUD::onPlayerMaxEnergySet);
+  connect(m_playerShip.get(),
+          &GameObjects::Ships::PlayerShip::playerMaxEnergySet, m_gameHUD,
+          &Core::GameHUD::onPlayerMaxEnergySet);
 
-  connect(m_playerShip, &GameObjects::Ships::PlayerShip::playerHealthUpdated,
-          m_gameHUD, &Core::GameHUD::onPlayerHealthUpdated);
+  connect(m_playerShip.get(),
+          &GameObjects::Ships::PlayerShip::playerHealthUpdated, m_gameHUD,
+          &Core::GameHUD::onPlayerHealthUpdated);
 
-  connect(m_playerShip, &GameObjects::Ships::PlayerShip::playerMaxHealthSet,
-          m_gameHUD, &Core::GameHUD::onPlayerMaxHealthSet);
+  connect(m_playerShip.get(),
+          &GameObjects::Ships::PlayerShip::playerMaxHealthSet, m_gameHUD,
+          &Core::GameHUD::onPlayerMaxHealthSet);
 
   m_gameState->initialize();
 
   if (benchmarkMode) {
     initializeBenchmark();
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
   }
 
   m_levelManager->setLevel(level);
@@ -158,6 +161,7 @@ void GameRunnerView::quitLevel() {
   }
   m_levelFailedOrPassedInfoDisplayed = false;
   m_gameState->deinitialize();
+  m_playerShip = nullptr;
 }
 
 void GameRunnerView::resumeGame() {
@@ -202,8 +206,7 @@ float GameRunnerView::calculateRenderTime(
 float GameRunnerView::calculateDeltaTime() {
   int frameTimeMs = m_elapsedTimer.restart();
   if (m_benchmarkMode) {
-    Utils::PerformanceBenchmark::getInstance().logPerformance(
-        frameTimeMs, m_gameObjects->size(), m_scene.items().size());
+    Utils::PerformanceBenchmark::getInstance().recordFrameTime(frameTimeMs);
   }
   return static_cast<float>(frameTimeMs) / 1000.0f;
 }
@@ -271,7 +274,15 @@ void GameRunnerView::initializeBenchmark() {
     Utils::PerformanceBenchmark::getInstance().logPerformanceScore();
     onBenchmarkFinished();
   }));
+  m_benchmarkMode = true;
   m_benchmarkTimer.start(30000);
+}
+
+void GameRunnerView::deinitializeBenchmark() {
+  m_benchmarkTimer.disconnect();
+  m_benchmarkTimer.stop();
+  m_benchmarkMode = false;
+  emit benchmarkFinished();
 }
 
 void GameRunnerView::processInput(float deltaTimeInSeconds) {
@@ -357,10 +368,6 @@ void GameRunnerView::keyPressEvent(QKeyEvent *event) {
 
 void GameRunnerView::keyReleaseEvent(QKeyEvent *event) {
   m_pressedKeys.remove(event->key());
-}
-
-GameObjects::Ships::PlayerShip *GameRunnerView::playerShip() const {
-  return m_playerShip;
 }
 
 } // namespace Core

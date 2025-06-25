@@ -23,7 +23,7 @@ public:
 
   const std::vector<std::shared_ptr<GameObjects::GameObject>> &
   gameObjects() const;
-  GameObjects::Ships::PlayerShip *playerShip() const;
+  std::shared_ptr<GameObjects::Ships::PlayerShip> playerShip() const;
 
   int m_minX, m_minY, m_maxX, m_maxY, m_windowWidth, m_windowHeight;
 

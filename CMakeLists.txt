@@ -77,7 +77,8 @@ set(HEADERS
     UI/FPSCounter.h
     UI/GameObjectCounter.h
     UI/MainWindow.h
-    Utils/MathConstants.h
+    Utils/Math/MathConstants.h
+    Utils/Math/MathFunctions.h
     Utils/PerformanceBenchmark.h
     Utils/Utils.h
     Weapons/PrimaryWeapon.h

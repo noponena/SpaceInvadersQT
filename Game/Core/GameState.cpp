@@ -13,7 +13,7 @@ GameState::GameState(QObject *parent)
 }
 
 void GameState::createPlayerShip() {
-  m_playerShip = std::make_unique<GameObjects::Ships::PlayerShip>(
+  m_playerShip = std::make_shared<GameObjects::Ships::PlayerShip>(
       m_playersShipStartSpeed, GameObjects::Position(0, 0));
 }
 
@@ -190,8 +190,8 @@ void GameState::initMovementConstrains() {
   m_maxY = m_windowHeight * 0.865;
 }
 
-GameObjects::Ships::PlayerShip *GameState::playerShip() const {
-  return m_playerShip.get();
+std::shared_ptr<GameObjects::Ships::PlayerShip> GameState::playerShip() const {
+  return m_playerShip;
 }
 
 const std::uint32_t &GameState::stellarTokens() const {

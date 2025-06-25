@@ -10,15 +10,16 @@ namespace Utils {
 class PerformanceBenchmark {
 public:
   static PerformanceBenchmark &getInstance(int logIntervalMs = 0,
-                                           int gameObjectThreshold = 500,
+                                           int gameObjectThreshold = 50,
                                            char csvDelimiter = ';') {
     static PerformanceBenchmark instance(logIntervalMs, gameObjectThreshold,
                                          csvDelimiter);
     return instance;
   }
   ~PerformanceBenchmark();
-  void initializeBenchmark(GameObjects::Ships::PlayerShip *playerShip);
-  void logPerformance(int frameTimeMs, int gameObjectCount, int sceneItemCount);
+  void initializeBenchmark(
+      std::shared_ptr<GameObjects::Ships::PlayerShip> playerShipplayerShip);
+  void recordFrameTime(int frameTimeMs);
   void logPerformanceScore();
 
 private:
@@ -29,9 +30,8 @@ private:
   int m_logIntervalMs;
   int m_gameObjectThreshold;
   char m_csvDelimiter;
-  int m_accumulatedTimeSinceLastLogMs;
   const float m_gain = 1000.0f;
-  std::vector<std::tuple<int, int, int, float, float>> m_stats;
+  std::vector<float> m_frameTimesMs;
 
   float calculateBenchmarkScore();
   float getMemUsage();

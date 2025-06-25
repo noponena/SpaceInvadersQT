@@ -1,5 +1,6 @@
 #include "PerformanceBenchmark.h"
 #include "GameObjects/Projectiles/ProjectileBuilder.h"
+#include "Utils/Math/MathFunctions.h"
 #include "Weapons/PrimaryWeapon.h"
 #include "Weapons/WeaponBuilder.h"
 #include <QDebug>
@@ -22,8 +23,7 @@ PerformanceBenchmark::PerformanceBenchmark(int logIntervalMs,
                                            int gameObjectThreshold,
                                            char csvDelimiter)
     : m_logIntervalMs(logIntervalMs),
-      m_gameObjectThreshold(gameObjectThreshold), m_csvDelimiter(csvDelimiter),
-      m_accumulatedTimeSinceLastLogMs(0) {
+      m_gameObjectThreshold(gameObjectThreshold), m_csvDelimiter(csvDelimiter) {
 
   std::filesystem::path exePath = std::filesystem::current_path();
   std::filesystem::path performanceDir = exePath / "performance";
@@ -48,7 +48,7 @@ PerformanceBenchmark::~PerformanceBenchmark() {
 }
 
 void PerformanceBenchmark::initializeBenchmark(
-    GameObjects::Ships::PlayerShip *playerShip) {
+    std::shared_ptr<GameObjects::Ships::PlayerShip> playerShip) {
   Game::Movement::MovementStrategy horizontalStrategyLeft =
       Game::Movement::HorizontalMovementStrategy(240, 1);
   Game::Movement::MovementStrategy horizontalStrategyRight =
@@ -138,17 +138,11 @@ void PerformanceBenchmark::initializeBenchmark(
 }
 
 float PerformanceBenchmark::calculateBenchmarkScore() {
-  if (m_stats.empty())
+  if (m_frameTimesMs.empty())
     return 0.0f;
-
-  float totalFrameTime = 0.0;
-
-  for (const auto &data : m_stats) {
-    float frameTime = std::get<0>(data);
-    totalFrameTime += frameTime;
-  }
-
-  return m_gain / (totalFrameTime / m_stats.size());
+  float sum =
+      std::accumulate(m_frameTimesMs.begin(), m_frameTimesMs.end(), 0.0f);
+  return m_gain / (sum / m_frameTimesMs.size());
 }
 
 float PerformanceBenchmark::getMemUsage() {
@@ -183,49 +177,59 @@ void PerformanceBenchmark::openFile() {
 
 void PerformanceBenchmark::closeFile() { m_outFile.close(); }
 
-bool PerformanceBenchmark::isTimeToLog(int frameTimeMs) {
-  m_accumulatedTimeSinceLastLogMs += frameTimeMs;
-  return m_accumulatedTimeSinceLastLogMs >= m_logIntervalMs;
-}
-
 void PerformanceBenchmark::writeHeader() {
   m_outFile << "timestamp" << m_csvDelimiter << "score" << m_csvDelimiter
+            << "avg_fps" << m_csvDelimiter << "min_fps" << m_csvDelimiter
+            << "p95_fps" << m_csvDelimiter << "p99_fps" << m_csvDelimiter
             << "mem_usage\n";
 }
 
-void PerformanceBenchmark::logPerformance(int frameTimeMs, int gameObjectCount,
-                                          int sceneItemCount) {
-  if (isTimeToLog(frameTimeMs)) {
-    if (gameObjectCount >= m_gameObjectThreshold) {
-      float frameTimePerGameObject =
-          gameObjectCount > 0 ? static_cast<float>(frameTimeMs) /
-                                    static_cast<float>(gameObjectCount)
-                              : 0.0f;
-
-      float frameTimePerSceneItem = sceneItemCount > 0
-                                        ? static_cast<float>(frameTimeMs) /
-                                              static_cast<float>(sceneItemCount)
-                                        : 0.0f;
-
-      m_stats.emplace_back(
-          std::make_tuple(frameTimeMs, gameObjectCount, sceneItemCount,
-                          frameTimePerGameObject, frameTimePerSceneItem));
-    }
-    m_accumulatedTimeSinceLastLogMs = 0;
-  }
+void PerformanceBenchmark::recordFrameTime(int frameTimeMs) {
+  m_frameTimesMs.push_back(static_cast<float>(frameTimeMs));
 }
 
 void PerformanceBenchmark::logPerformanceScore() {
   float score = calculateBenchmarkScore();
 
-  // Get the current time
+  std::vector<float> filteredFrameTimes;
+  for (float ft : m_frameTimesMs) {
+    if (ft > 0.0f)
+      filteredFrameTimes.push_back(ft);
+  }
+
+  // Calculate FPS metrics
+  float avgFrameTime = 0.0f;
+  float maxFrameTime = 0.0f;
+  float p95FrameTime = 0.0f;
+  float p99FrameTime = 0.0f;
+
+  if (!filteredFrameTimes.empty()) {
+    float sum = 0.0f;
+    maxFrameTime = filteredFrameTimes[0];
+    for (float ft : filteredFrameTimes) {
+      sum += ft;
+      if (ft > maxFrameTime)
+        maxFrameTime = ft;
+    }
+    avgFrameTime = sum / filteredFrameTimes.size();
+    p95FrameTime = MathFunctions::percentile(filteredFrameTimes, 0.95f);
+    p99FrameTime = MathFunctions::percentile(filteredFrameTimes, 0.99f);
+  } else {
+    avgFrameTime = 0.0f;
+    maxFrameTime = 0.0f;
+    p95FrameTime = 0.0f;
+    p99FrameTime = 0.0f;
+  }
+
+  float avgFps = avgFrameTime > 0.0f ? 1000.0f / avgFrameTime : 0.0f;
+  float minFps = maxFrameTime > 0.0f ? 1000.0f / maxFrameTime : 0.0f;
+  float p95Fps = p95FrameTime > 0.0f ? 1000.0f / p95FrameTime : 0.0f;
+  float p99Fps = p99FrameTime > 0.0f ? 1000.0f / p99FrameTime : 0.0f;
+
+  // Timestamp code (as before)
   auto now = std::chrono::system_clock::now();
   auto now_c = std::chrono::system_clock::to_time_t(now);
-
-  // Convert to broken-down time
   std::tm *broken_down_time = std::gmtime(&now_c);
-
-  // Manually format the datetime
   std::stringstream ss;
   ss << std::setfill('0') << std::setw(4) << broken_down_time->tm_year + 1900
      << '-' << std::setw(2) << broken_down_time->tm_mon + 1 << '-'
@@ -236,13 +240,13 @@ void PerformanceBenchmark::logPerformanceScore() {
 
   float memUsage = getMemUsage();
 
-  // Open the file in append mode
   std::ofstream file(m_filePath, std::ios::app);
   if (file.is_open()) {
-    // Write the timestamp and the score to the file
-    file << ss.str() << m_csvDelimiter << score << m_csvDelimiter << memUsage
-         << std::endl;
+    file << ss.str() << m_csvDelimiter << score << m_csvDelimiter << avgFps
+         << m_csvDelimiter << minFps << m_csvDelimiter << p95Fps
+         << m_csvDelimiter << p99Fps << m_csvDelimiter << memUsage << std::endl;
   }
+  m_frameTimesMs.clear();
 }
 
 } // namespace Utils

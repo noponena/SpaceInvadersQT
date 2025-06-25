@@ -1,5 +1,5 @@
 #include "Formation.h"
-#include "Utils/MathConstants.h"
+#include "Utils/Math/MathConstants.h"
 #include <algorithm>
 
 namespace Game {

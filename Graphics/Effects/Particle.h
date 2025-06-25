@@ -1,7 +1,7 @@
 #ifndef PARTICLE_H
 #define PARTICLE_H
 
-#include "Utils/MathConstants.h"
+#include "Utils/Math/MathConstants.h"
 #include <QDebug>
 #include <QPainter>
 #include <QPointF>

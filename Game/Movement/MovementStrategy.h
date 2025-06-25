@@ -2,7 +2,7 @@
 #define MOVEMENTSTRATEGY_H
 
 #include "AxisMovementStrategy.h"
-#include "Utils/MathConstants.h"
+#include "Utils/Math/MathConstants.h"
 #include <QPointF>
 #include <tuple>
 #include <variant>

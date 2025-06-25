@@ -1,5 +1,5 @@
 #include "Collectable.h"
-#include "Utils/MathConstants.h"
+#include "Utils/Math/MathConstants.h"
 
 namespace GameObjects {
 namespace Collectables {

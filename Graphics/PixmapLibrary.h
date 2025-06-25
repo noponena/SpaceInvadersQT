@@ -24,6 +24,14 @@ public:
     return pixmaps[key];
   }
 
+  static void
+  preloadPixmaps(const QList<std::tuple<QString, float, float, bool>> &list) {
+    for (const auto &tup : list) {
+      getPixmap(std::get<0>(tup), std::get<1>(tup), std::get<2>(tup),
+                std::get<3>(tup));
+    }
+  }
+
 private:
   inline static QPixmap setPixmapSize(QPixmap &pixmap, float width,
                                       float height,
