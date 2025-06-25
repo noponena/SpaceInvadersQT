@@ -3,8 +3,8 @@
 #include <QApplication>
 
 int main(int argc, char *argv[]) {
-  PixmapRegistry::instance().preloadAll();
   QApplication a(argc, argv);
+  PixmapRegistry::instance().preloadAll();
   MainWindow w;
   qRegisterMetaType<Game::Levels::Level>();
   w.show();
