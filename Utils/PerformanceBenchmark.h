@@ -35,7 +35,6 @@ private:
 
   std::vector<float> filteredFrameTimes(float maxAllowedMs = 1000.0f,
                                         size_t skipFirstN = 100) const;
-  float calculateBenchmarkScore(std::vector<float> &frameTimes);
   float getMemUsage();
 
   inline void createFile();

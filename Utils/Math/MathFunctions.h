@@ -13,7 +13,7 @@ float percentile(std::vector<float> vec, float p) {
   size_t i = static_cast<size_t>(idx);
   float frac = idx - i;
   if (i + 1 < vec.size())
-    return vec[i] * (1 - frac) + vec[i + 1] * frac; // Linear interpolate
+    return vec[i] * (1 - frac) + vec[i + 1] * frac;
   else
     return vec[i];
 }

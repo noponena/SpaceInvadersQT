@@ -1,11 +1,12 @@
 #include "PerformanceBenchmark.h"
 #include "GameObjects/Projectiles/ProjectileBuilder.h"
 #include "Utils/Math/MathFunctions.h"
+#include "Utils/Utils.h"
 #include "Weapons/PrimaryWeapon.h"
 #include "Weapons/WeaponBuilder.h"
 #include <QDebug>
-#include <chrono>
-#include <iomanip>
+#include <iostream>
+#include <sstream>
 #ifdef _WIN32
 // clang-format off
 #include <windows.h>
@@ -15,7 +16,6 @@
 #include <sys/resource.h>
 #include <unistd.h>
 #endif
-#include <sstream>
 
 namespace Utils {
 
@@ -153,14 +153,6 @@ void PerformanceBenchmark::initializeBenchmark(
   playerShip->setAutoShoot(true);
 }
 
-float PerformanceBenchmark::calculateBenchmarkScore(
-    std::vector<float> &frameTimes) {
-  if (frameTimes.empty())
-    return 0.0f;
-  float sum = std::accumulate(frameTimes.begin(), frameTimes.end(), 0.0f);
-  return m_gain / (sum / frameTimes.size());
-}
-
 float PerformanceBenchmark::getMemUsage() {
 #ifdef _WIN32
   PROCESS_MEMORY_COUNTERS_EX pmc;
@@ -194,10 +186,9 @@ void PerformanceBenchmark::openFile() {
 void PerformanceBenchmark::closeFile() { m_outFile.close(); }
 
 void PerformanceBenchmark::writeHeader() {
-  m_outFile << "timestamp" << m_csvDelimiter << "score" << m_csvDelimiter
-            << "avg_fps" << m_csvDelimiter << "min_fps" << m_csvDelimiter
-            << "p95_fps" << m_csvDelimiter << "p99_fps" << m_csvDelimiter
-            << "mem_usage\n";
+  m_outFile << "timestamp" << m_csvDelimiter << "avg_fps" << m_csvDelimiter
+            << "min_fps" << m_csvDelimiter << "p95_fps" << m_csvDelimiter
+            << "p99_fps" << m_csvDelimiter << "mem_usage\n";
 }
 
 void PerformanceBenchmark::recordFrameTime(int frameTimeMs) {
@@ -206,7 +197,6 @@ void PerformanceBenchmark::recordFrameTime(int frameTimeMs) {
 
 void PerformanceBenchmark::logPerformanceScore() {
   auto filtered = filteredFrameTimes();
-  float score = calculateBenchmarkScore(filtered);
 
   // Calculate FPS metrics
   float avgFrameTime = 0.0f;
@@ -237,25 +227,15 @@ void PerformanceBenchmark::logPerformanceScore() {
   float p95Fps = p95FrameTime > 0.0f ? 1000.0f / p95FrameTime : 0.0f;
   float p99Fps = p99FrameTime > 0.0f ? 1000.0f / p99FrameTime : 0.0f;
 
-  // Timestamp code (as before)
-  auto now = std::chrono::system_clock::now();
-  auto now_c = std::chrono::system_clock::to_time_t(now);
-  std::tm *broken_down_time = std::gmtime(&now_c);
-  std::stringstream ss;
-  ss << std::setfill('0') << std::setw(4) << broken_down_time->tm_year + 1900
-     << '-' << std::setw(2) << broken_down_time->tm_mon + 1 << '-'
-     << std::setw(2) << broken_down_time->tm_mday << 'T' << std::setw(2)
-     << broken_down_time->tm_hour << ':' << std::setw(2)
-     << broken_down_time->tm_min << ':' << std::setw(2)
-     << broken_down_time->tm_sec << 'Z';
-
   float memUsage = getMemUsage();
 
+  std::stringstream ss;
+  ss << Utils::getTimestampStr();
   std::ofstream file(m_filePath, std::ios::app);
   if (file.is_open()) {
-    file << ss.str() << m_csvDelimiter << score << m_csvDelimiter << avgFps
-         << m_csvDelimiter << minFps << m_csvDelimiter << p95Fps
-         << m_csvDelimiter << p99Fps << m_csvDelimiter << memUsage << std::endl;
+    file << ss.str() << m_csvDelimiter << avgFps << m_csvDelimiter << minFps
+         << m_csvDelimiter << p95Fps << m_csvDelimiter << p99Fps
+         << m_csvDelimiter << memUsage << std::endl;
   }
   m_frameTimesMs.clear();
 }

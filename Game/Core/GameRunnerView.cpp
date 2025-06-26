@@ -7,9 +7,15 @@
 
 namespace Game {
 namespace Core {
+
+constexpr float MAX_FRAME_TIME =
+    0.100f; // 100 ms = 10 FPS min (for game physics clamp)
+constexpr float MIN_FRAME_TIME =
+    0.005f; // 5 ms   = 200 FPS max (FPS cap for rendering/physics)
+
 GameRunnerView::GameRunnerView(QRect screenGeometry, QWidget *parent)
     : QGraphicsView(parent), m_scene(this), m_continuousShoot(false),
-      m_continuousEnemySpawn(true), m_levelFailed(false),
+      m_progressLevel(true), m_levelFailed(false),
       m_levelFailedOrPassedInfoDisplayed(false), m_spawnEventsFinished(false),
       m_benchmarkMode(false) {
   m_gameState = new GameState();
@@ -171,22 +177,31 @@ void GameRunnerView::resumeGame() {
 }
 
 void GameRunnerView::gameLoop() {
-  auto loopStartTime = std::chrono::high_resolution_clock::now();
-
-  float renderTimeUs = calculateRenderTime(loopStartTime);
+  // auto loopStartTime = std::chrono::high_resolution_clock::now();
+  // float renderTimeUs = calculateRenderTime(loopStartTime);
   float deltaTimeInSeconds = calculateDeltaTime();
-  manageEnemySpawn(deltaTimeInSeconds);
+  capFrameRate(MIN_FRAME_TIME, deltaTimeInSeconds);
+
+  if (deltaTimeInSeconds > MAX_FRAME_TIME)
+    deltaTimeInSeconds = MAX_FRAME_TIME;
+
+  manageLevelProgression();
 
   if (!m_benchmarkMode)
     processInput(deltaTimeInSeconds);
 
+  /*
   float updateTimeUs =
       measureFunctionDuration([&]() { updateGameState(deltaTimeInSeconds); });
   float collisionDetectionTimeUs =
       measureFunctionDuration([&]() { m_collisionDetector->detectBVH(); });
-  updateFps();
 
-  // logFrameStatistics(renderTimeUs, updateTimeUs, collisionDetectionTimeUs);
+  logFrameStatistics(renderTimeUs, updateTimeUs, collisionDetectionTimeUs);
+  */
+
+  updateGameState(deltaTimeInSeconds);
+  m_collisionDetector->detectBVH();
+  updateFps();
 
   updateGameCounters();
   checkLevelFailedOrPassed();
@@ -211,12 +226,17 @@ float GameRunnerView::calculateDeltaTime() {
   return static_cast<float>(frameTimeMs) / 1000.0f;
 }
 
-void GameRunnerView::manageEnemySpawn(float deltaTimeInSeconds) {
-  int timeToSleep = deltaTimeInSeconds > 0.005f
-                        ? 0
-                        : 5 - static_cast<int>(deltaTimeInSeconds * 1000);
-  std::this_thread::sleep_for(std::chrono::milliseconds(timeToSleep));
-  if (m_continuousEnemySpawn) {
+void GameRunnerView::capFrameRate(float desiredMinFrameTimeSeconds,
+                                  float frameTimeSeconds) {
+  int msToSleep = static_cast<int>(
+      (desiredMinFrameTimeSeconds - frameTimeSeconds) * 1000.0f);
+  if (msToSleep > 0) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(msToSleep));
+  }
+}
+
+void GameRunnerView::manageLevelProgression() {
+  if (m_progressLevel) {
     m_levelManager->progressLevel();
   }
 }

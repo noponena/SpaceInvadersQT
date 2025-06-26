@@ -49,7 +49,7 @@ private:
   QGraphicsTextItem *m_playerHp;
   QGraphicsTextItem *m_levelEndedInfo;
   bool m_continuousShoot;
-  bool m_continuousEnemySpawn;
+  bool m_progressLevel;
   bool m_levelFailed;
   bool m_levelFailedOrPassedInfoDisplayed;
   bool m_spawnEventsFinished;
@@ -129,7 +129,7 @@ private:
       {Qt::Key_S,
        [&](float dt) {
          Q_UNUSED(dt);
-         m_continuousEnemySpawn = !m_continuousEnemySpawn;
+         m_progressLevel = !m_progressLevel;
          m_pressedKeys.remove(Qt::Key_S);
        }},
   };
@@ -137,7 +137,7 @@ private:
   inline float calculateRenderTime(
       const std::chrono::high_resolution_clock::time_point &loopStartTime);
   inline float calculateDeltaTime();
-  inline void manageEnemySpawn(float deltaTimeInSeconds);
+  inline void manageLevelProgression();
   template <typename Func> inline float measureFunctionDuration(Func &&func);
   inline void logFrameStatistics(float renderTimeUs, float updateTimeUs,
                                  float collisionDetectionTimeUs);
@@ -145,6 +145,7 @@ private:
   inline void checkLevelFailedOrPassed();
   void initializeBenchmark();
   void deinitializeBenchmark();
+  void capFrameRate(float desiredMinFrameTimeSeconds, float frameTimeSeconds);
 signals:
   void fpsUpdated(int fps);
   void gamePaused();

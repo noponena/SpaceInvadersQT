@@ -1,6 +1,10 @@
 #include "Utils.h"
+#include <chrono>
+#include <ctime>
+#include <iomanip>
 #include <iostream>
 #include <random>
+#include <sstream>
 
 namespace Utils {
 
@@ -29,6 +33,21 @@ bool probabilityCheck(float probability) {
   static std::mt19937 gen(rd());
   static std::uniform_real_distribution<float> dis(0.0f, 1.0f);
   return dis(gen) < probability;
+}
+
+std::string getTimestampStr() {
+  auto now = std::chrono::system_clock::now();
+  auto now_c = std::chrono::system_clock::to_time_t(now);
+  std::tm *broken_down_time = std::localtime(&now_c);
+  std::stringstream ss;
+  ss << std::setfill('0') << std::setw(4) << broken_down_time->tm_year + 1900
+     << '-' << std::setw(2) << broken_down_time->tm_mon + 1 << '-'
+     << std::setw(2) << broken_down_time->tm_mday << 'T' << std::setw(2)
+     << broken_down_time->tm_hour << ':' << std::setw(2)
+     << broken_down_time->tm_min << ':' << std::setw(2)
+     << broken_down_time->tm_sec;
+
+  return ss.str();
 }
 
 } // namespace Utils
