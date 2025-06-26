@@ -126,7 +126,7 @@ void MainWindow::onLevelQuit() {
 void MainWindow::adjustGameRunnerSize() {
   if (m_gameRunnerView) {
     QRectF newRect(0, 0, width(), height());
-    m_gameRunnerView->scene()->setSceneRect(newRect);
+    //m_gameRunnerView->scene()->setSceneRect(newRect);
   }
 }
 

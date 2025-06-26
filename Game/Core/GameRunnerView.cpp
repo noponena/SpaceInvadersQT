@@ -8,23 +8,71 @@
 namespace Game {
 namespace Core {
 
+const char* vertexShaderSrc = R"(
+#version 330 core
+layout(location = 0) in vec2 vert;
+layout(location = 1) in vec2 uv;
+
+uniform vec2 spritePos;
+uniform vec2 spriteSize;
+uniform float spriteRotation;
+uniform vec2 viewport;
+
+out vec2 fragUV;
+
+void main() {
+    // centered quad [-0.5, 0.5]
+    vec2 centered = (vert - vec2(0.5, 0.5)) * spriteSize;
+    float c = cos(spriteRotation);
+    float s = sin(spriteRotation);
+    mat2 rot = mat2(c, -s, s, c);
+    vec2 rotated = rot * centered;
+
+    vec2 pos = spritePos + rotated;
+    vec2 ndc = (pos / viewport) * 2.0 - 1.0;
+    ndc.y = -ndc.y; // invert Y for Qt
+    gl_Position = vec4(ndc, 0, 1);
+
+    fragUV = uv;
+}
+)";
+
+const char* fragmentShaderSrc = R"(
+#version 330 core
+in vec2 fragUV;
+out vec4 color;
+uniform sampler2D tex;
+void main() {
+    color = texture(tex, fragUV);
+}
+)";
+
+static const float quad[] = {
+    // vert.x, vert.y, uv.x, uv.y
+    0, 0,   0, 0,
+    1, 0,   1, 0,
+    1, 1,   1, 1,
+    0, 1,   0, 1,
+};
+
+
 constexpr float MAX_FRAME_TIME =
     0.100f; // 100 ms = 10 FPS min (for game physics clamp)
 constexpr float MIN_FRAME_TIME =
     0.005f; // 5 ms   = 200 FPS max (FPS cap for rendering/physics)
 
 GameRunnerView::GameRunnerView(QRect screenGeometry, QWidget *parent)
-    : QGraphicsView(parent), m_scene(this), m_continuousShoot(false),
+    : m_continuousShoot(false),
       m_progressLevel(true), m_levelFailed(false),
       m_levelFailedOrPassedInfoDisplayed(false), m_spawnEventsFinished(false),
-      m_benchmarkMode(false) {
+      m_benchmarkMode(false), m_vbo(QOpenGLBuffer::VertexBuffer)
+ {
   m_gameState = new GameState();
   m_levelManager = std::make_unique<Levels::LevelManager>(m_gameState);
   m_gameObjects = &(m_gameState->gameObjects());
   m_collisionDetector = std::make_unique<CollisionDetection::CollisionDetector>(
       m_gameState->gameObjects(), screenGeometry);
   setupView();
-  scene()->setSceneRect(screenGeometry);
   setupCounters();
   m_elapsedTimer.start();
   m_fpsTimer.start();
@@ -54,21 +102,6 @@ void GameRunnerView::setupView() {
   QOpenGLWidget *glWidget = new QOpenGLWidget;
   glWidget->setFormat(format);
   QSurfaceFormat::setDefaultFormat(format);
-  setViewport(glWidget);
-
-  setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
-  setAlignment(Qt::AlignTop);
-  setInteractive(false);
-  setRenderHints(QPainter::SmoothPixmapTransform);
-  setOptimizationFlags(QGraphicsView::DontAdjustForAntialiasing |
-                       QGraphicsView::DontSavePainterState);
-  setViewportMargins(0, 0, 0, 0);
-  setScene(&m_scene);
-  setStyleSheet("border:0px");
-  m_scene.setItemIndexMethod(QGraphicsScene::BspTreeIndex);
-  m_scene.setBackgroundBrush(QBrush(Qt::black));
-  setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-  setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 }
 
 void GameRunnerView::setupCounters() {
@@ -93,10 +126,12 @@ void GameRunnerView::setupCounters() {
   m_stellarTokens->setPos(0, m_fpsCounter->boundingRect().height() - 10 + 20);
   m_playerHp->setPos(0, m_gameObjectCounter->boundingRect().height() - 10 + 40);
 
+  /*
   scene()->addItem(m_fpsCounter);
   scene()->addItem(m_gameObjectCounter);
   scene()->addItem(m_stellarTokens);
   scene()->addItem(m_playerHp);
+*/
   connect(this, &GameRunnerView::fpsUpdated, m_fpsCounter,
           &UI::FPSCounter::updateFPS);
 }
@@ -163,7 +198,7 @@ void GameRunnerView::quitLevel() {
   m_levelFailed = false;
   m_spawnEventsFinished = false;
   if (m_levelFailedOrPassedInfoDisplayed) {
-    scene()->removeItem(m_levelEndedInfo);
+    //scene()->removeItem(m_levelEndedInfo);
   }
   m_levelFailedOrPassedInfoDisplayed = false;
   m_gameState->deinitialize();
@@ -174,6 +209,77 @@ void GameRunnerView::resumeGame() {
   qDebug() << "resuming game..";
   m_elapsedTimer.start();
   m_gameTimer.start(0);
+}
+
+void GameRunnerView::initializeGL() {
+    initializeOpenGLFunctions();
+
+    // Compile shaders
+    m_program = new QOpenGLShaderProgram();
+    m_program->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSrc);
+    m_program->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSrc);
+    m_program->link();
+
+    // VAO/VBO for quad
+    m_vao.create();
+    m_vao.bind();
+    m_vbo.create();
+    m_vbo.bind();
+    m_vbo.allocate(quad, sizeof(quad));
+
+    m_program->enableAttributeArray(0);
+    m_program->setAttributeBuffer(0, GL_FLOAT, 0, 2, 4 * sizeof(float));
+    m_program->enableAttributeArray(1);
+    m_program->setAttributeBuffer(1, GL_FLOAT, 2 * sizeof(float), 2, 4 * sizeof(float));
+
+    m_vbo.release();
+    m_vao.release();
+
+    QImage img(32, 32, QImage::Format_RGBA8888);
+    img.fill(Qt::white);
+    for (int x = 0; x < 32; ++x) for (int y = 0; y < 32; ++y)
+            if (x == 0 || y == 0 || x == 31 || y == 31) img.setPixelColor(x, y, Qt::red);
+
+    glGenTextures(1, &m_texture);
+    glBindTexture(GL_TEXTURE_2D, m_texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 32, 32, 0, GL_RGBA, GL_UNSIGNED_BYTE, img.bits());
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+}
+
+void GameRunnerView::resizeGL(int w, int h) {
+    QOpenGLWidget::resizeGL(w, h);
+}
+
+void GameRunnerView::paintGL() {
+    glClearColor(0,0,0,1);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    m_program->bind();
+    m_vao.bind();
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, m_texture);
+    m_program->setUniformValue("tex", 0);
+    m_program->setUniformValue("viewport", QVector2D(width(), height()));
+
+    qDebug() << "Rendering objects:" << m_gameObjects->size();
+
+    for (const auto& obj : *m_gameObjects) {
+        const auto& pos = obj->getPosition();
+        QRectF bbox = obj->getBoundingBox();
+        QVector2D size(bbox.width(), bbox.height());
+        float rotation = 0.0f;
+
+        m_program->setUniformValue("spritePos", QVector2D(pos.x(), pos.y()));
+        m_program->setUniformValue("spriteSize", size);
+        m_program->setUniformValue("spriteRotation", rotation);
+
+        glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+    }
+
+    m_vao.release();
+    m_program->release();
 }
 
 void GameRunnerView::gameLoop() {
@@ -206,6 +312,7 @@ void GameRunnerView::gameLoop() {
   updateGameCounters();
   checkLevelFailedOrPassed();
   m_lastFrameEndTime = std::chrono::high_resolution_clock::now();
+  this->update();
 }
 
 float GameRunnerView::calculateRenderTime(
@@ -362,6 +469,7 @@ void GameRunnerView::updateFps() {
 void GameRunnerView::displayLevelFailedInfo() {
   m_levelEndedInfo->setPlainText("LEVEL FAILED");
   QRectF textBoundingRect = m_levelEndedInfo->boundingRect();
+  /*
   QRectF sceneRect = scene()->sceneRect();
   QPointF centerPosition =
       QPointF((sceneRect.width() - textBoundingRect.width()) / 2.0,
@@ -369,11 +477,13 @@ void GameRunnerView::displayLevelFailedInfo() {
   m_levelEndedInfo->setPos(centerPosition);
   m_levelFailedOrPassedInfoDisplayed = true;
   scene()->addItem(m_levelEndedInfo);
+ */
 }
 
 void GameRunnerView::displayLevelPassedInfo() {
   m_levelEndedInfo->setPlainText("LEVEL SUCCESSFUL");
   QRectF textBoundingRect = m_levelEndedInfo->boundingRect();
+  /*
   QRectF sceneRect = scene()->sceneRect();
   QPointF centerPosition =
       QPointF((sceneRect.width() - textBoundingRect.width()) / 2.0,
@@ -381,6 +491,7 @@ void GameRunnerView::displayLevelPassedInfo() {
   m_levelEndedInfo->setPos(centerPosition);
   m_levelFailedOrPassedInfoDisplayed = true;
   scene()->addItem(m_levelEndedInfo);
+ */
 }
 
 void GameRunnerView::keyPressEvent(QKeyEvent *event) {

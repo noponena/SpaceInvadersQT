@@ -1,24 +1,29 @@
 #ifndef GAMERUNNERVIEW_H
 #define GAMERUNNERVIEW_H
 
+#include <QElapsedTimer>
+#include <QGraphicsView>
+#include <QOpenGLWidget>
+#include <QOpenGLFunctions_3_3_Core>
+#include <QOpenGLShaderProgram>
+#include <QOpenGLVertexArrayObject>
+#include <QOpenGLBuffer>
+#include <QKeyEvent>
+#include <QLabel>
+#include <QThread>
+#include <QTimer>
+#include <QWheelEvent>
 #include "Game/CollisionDetection/CollisionDetector.h"
 #include "Game/Core/GameHUD.h"
 #include "Game/Core/GameState.h"
 #include "Game/Levels/LevelManager.h"
 #include "UI/FPSCounter.h"
 #include "UI/GameObjectCounter.h"
-#include <QElapsedTimer>
-#include <QGraphicsView>
-#include <QKeyEvent>
-#include <QLabel>
-#include <QThread>
-#include <QTimer>
-#include <QWheelEvent>
 
 namespace Game {
 namespace Core {
 
-class GameRunnerView : public QGraphicsView {
+class GameRunnerView : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
   Q_OBJECT
 public:
   explicit GameRunnerView(QRect screenGeometry, QWidget *parent = nullptr);
@@ -28,11 +33,15 @@ public:
   void resumeGame();
 
 protected:
+  void initializeGL() override;
+  void resizeGL(int w, int h) override;
+  void paintGL() override;
   void keyPressEvent(QKeyEvent *event) override;
   void keyReleaseEvent(QKeyEvent *event) override;
   void wheelEvent(QWheelEvent *event) override { event->ignore(); }
 
 private:
+  QOpenGLShaderProgram *m_program;
   GameState *m_gameState;
   Core::GameHUD *m_gameHUD;
   std::unique_ptr<Levels::LevelManager> m_levelManager;
@@ -55,6 +64,10 @@ private:
   bool m_spawnEventsFinished;
   bool m_benchmarkMode;
   std::chrono::high_resolution_clock::time_point m_lastFrameEndTime;
+
+  GLuint m_texture = 0;
+  QOpenGLVertexArrayObject m_vao;
+  QOpenGLBuffer m_vbo;
 
   UI::FPSCounter *m_fpsCounter;
   UI::GameObjectCounter *m_gameObjectCounter;
