@@ -47,9 +47,10 @@ BVHTree::build(std::vector<GameObjects::GameObject *> &objects) {
   return node;
 }
 
-void BVHTree::query(std::shared_ptr<BVHNode> node,
-                    GameObjects::GameObject *queryObject,
-                    std::vector<GameObjects::GameObject *> &outResults) {
+void BVHTree::query(
+    std::shared_ptr<BVHNode> node, GameObjects::GameObject *queryObject,
+    std::set<std::pair<std::uint64_t, std::uint64_t>> processedPairs,
+    std::vector<GameObjects::GameObject *> &outResults) {
   QRectF queryBbox = queryObject->getBoundingBox();
   if (!node || !node->bbox.intersects(queryBbox))
     return;
@@ -58,10 +59,10 @@ void BVHTree::query(std::shared_ptr<BVHNode> node,
   // children
   if (node->leftChild && node->rightChild) {
     if (node->leftChild->bbox.intersects(queryBbox)) {
-      query(node->leftChild, queryObject, outResults);
+      query(node->leftChild, queryObject, processedPairs, outResults);
     }
     if (node->rightChild->bbox.intersects(queryBbox)) {
-      query(node->rightChild, queryObject, outResults);
+      query(node->rightChild, queryObject, processedPairs, outResults);
     }
   } else {
     // Leaf node processing
@@ -72,7 +73,7 @@ void BVHTree::query(std::shared_ptr<BVHNode> node,
               ? std::make_pair(queryObject->id(), node->objects[i]->id())
               : std::make_pair(node->objects[i]->id(), queryObject->id());
 
-      if (m_processedPairs.find(sortedPair) == m_processedPairs.end()) {
+      if (processedPairs.find(sortedPair) == processedPairs.end()) {
 
         if (queryObject->isCollidable() && node->objects[i]->isCollidable()) {
           if (canCollide(queryObject->objectTypes(),
@@ -83,7 +84,7 @@ void BVHTree::query(std::shared_ptr<BVHNode> node,
             }
           }
         }
-        m_processedPairs.insert(sortedPair);
+        processedPairs.insert(sortedPair);
       }
     }
   }

@@ -200,7 +200,8 @@ void GameRunnerView::gameLoop() {
   */
 
   updateGameState(deltaTimeInSeconds);
-  m_collisionDetector->detectBVH();
+  // m_collisionDetector->detectBVH();
+  m_collisionDetector->detectBVHParallel();
   updateFps();
 
   updateGameCounters();

@@ -6,7 +6,7 @@
 #include "GameObjects/GameObject.h"
 #include "Quadtree.h"
 #include <memory>
-#include <set>
+#include <mutex>
 
 namespace Game {
 namespace CollisionDetection {
@@ -18,8 +18,8 @@ public:
       QRectF screenRect);
   void detectQuadTree();
   void detectBruteForce();
-
   void detectBVH();
+  void detectBVHParallel();
 
 private:
   using ObjectType = GameObjects::ObjectType;
