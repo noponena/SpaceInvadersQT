@@ -4,6 +4,7 @@
 #include "GameObjects/Collectables/Stellar.h"
 #include "Graphics/PixmapLibrary.h"
 #include "Graphics/PixmapRegistry.h"
+#include "Graphics/TextureRegistry.h"
 #include "Utils/Utils.h"
 #include <QColor>
 #include <QGraphicsScene>
@@ -21,11 +22,6 @@ EnemyShip::EnemyShip(const std::uint32_t maxHp, const Position &position)
   m_pixmapData.onHitPixmapResourcePath = ":/Images/alien_on_hit.png";
   m_pixmapData.pixmapScale = QPointF(50.0, 50.0);
   m_magneticTargets = {ObjectType::PROJECTILE};
-}
-
-void EnemyShip::registerPixmaps() {
-  Graphics::PixmapLibrary::getPixmap(":/Images/alien.png", 50.0, 50.0);
-  Graphics::PixmapLibrary::getPixmap(":/Images/alien_on_hit.png", 50.0, 50.0);
 }
 
 void EnemyShip::initializeObjectType() {
@@ -147,15 +143,5 @@ void EnemyShip::collideWithEnemyShip(EnemyShip &enemyShip) {
   takeDamage(0);
 }
 
-namespace {
-struct PixmapRegistrar {
-  PixmapRegistrar() {
-    PixmapRegistry::instance().add(&EnemyShip::registerPixmaps);
-  }
-};
-static PixmapRegistrar _enemyship_pixmap_registrar;
-} // namespace
-
 } // namespace Ships
-
 } // namespace GameObjects

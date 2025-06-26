@@ -1,9 +1,10 @@
 #include "Game/Core/GameRunnerView.h"
 #include "GameObjects/Ships/PlayerShip.h"
 #include "Utils/PerformanceBenchmark.h"
+#include "Graphics/TextureRegistry.h"
 #include <QOpenGLWidget>
 #include <QTimer>
-#include <thread>
+#include <chrono>
 
 namespace Game {
 namespace Core {
@@ -246,6 +247,11 @@ void GameRunnerView::initializeGL() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    Graphics::TextureRegistry::instance().setGlContext(this);
+    Graphics::TextureRegistry::instance().preloadAllFromDir(":/Images/");
 }
 
 void GameRunnerView::resizeGL(int w, int h) {
@@ -259,17 +265,31 @@ void GameRunnerView::paintGL() {
     m_program->bind();
     m_vao.bind();
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, m_texture);
     m_program->setUniformValue("tex", 0);
     m_program->setUniformValue("viewport", QVector2D(width(), height()));
 
     qDebug() << "Rendering objects:" << m_gameObjects->size();
 
     for (const auto& obj : *m_gameObjects) {
+        // Get position, bounding box, scale
         const auto& pos = obj->getPosition();
-        QRectF bbox = obj->getBoundingBox();
-        QVector2D size(bbox.width(), bbox.height());
-        float rotation = 0.0f;
+
+        // Use PixmapData for texture and custom scale
+        GameObjects::PixmapData pixmapData = obj->getPixmapData();
+        QString texPath = pixmapData.pixmapResourcePath;
+        const auto& texInfo = Graphics::TextureRegistry::instance().getOrCreateTexture(texPath);
+        GLuint texture = texInfo.handle;
+
+        // Use either bounding box size, or custom scale from PixmapData
+        QPointF size = pixmapData.pixmapScale;
+        if (pixmapData.keepAspectRatio && texInfo.height > 0) {
+            float aspect = float(texInfo.width) / texInfo.height;
+            size.setX(size.y() * aspect); // or adjust as fits your logic
+        }
+
+        float rotation = 0.0f; // Or obj->getRotation() if available
+
+        glBindTexture(GL_TEXTURE_2D, texture);
 
         m_program->setUniformValue("spritePos", QVector2D(pos.x(), pos.y()));
         m_program->setUniformValue("spriteSize", size);
@@ -281,6 +301,7 @@ void GameRunnerView::paintGL() {
     m_vao.release();
     m_program->release();
 }
+
 
 void GameRunnerView::gameLoop() {
   // auto loopStartTime = std::chrono::high_resolution_clock::now();

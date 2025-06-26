@@ -75,6 +75,7 @@ set(HEADERS
     Graphics/PixmapRegistry.h
     Graphics/PixmapLibrary.h
     Graphics/ProgressBar.h
+    Graphics/TextureRegistry.h
     UI/FPSCounter.h
     UI/GameObjectCounter.h
     UI/MainWindow.h

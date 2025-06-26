@@ -128,6 +128,7 @@ public:
   Game::Movement::MovementStrategy movementStrategy() const;
 
   void setPixmapData(const PixmapData &newPixmapData);
+  PixmapData getPixmapData() const;
   void setSpawnSoundInfo(const Game::Audio::SoundInfo &newSpawnSoundInfo);
   void setDestructionSoundInfo(
       const Game::Audio::SoundInfo &newDestructionSoundInfo);

@@ -136,6 +136,10 @@ void GameObject::setPixmapData(const PixmapData &newPixmapData) {
   m_pixmapData = newPixmapData;
 }
 
+PixmapData GameObject::getPixmapData() const {
+    return m_pixmapData;
+}
+
 void GameObject::setSpawnSoundInfo(
     const Game::Audio::SoundInfo &newSpawnSoundInfo) {
   m_spawnSoundInfo = newSpawnSoundInfo;

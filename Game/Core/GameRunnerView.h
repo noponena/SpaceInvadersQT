@@ -3,13 +3,13 @@
 
 #include <QElapsedTimer>
 #include <QGraphicsView>
-#include <QOpenGLWidget>
+#include <QKeyEvent>
+#include <QLabel>
+#include <QOpenGLBuffer>
 #include <QOpenGLFunctions_3_3_Core>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLVertexArrayObject>
-#include <QOpenGLBuffer>
-#include <QKeyEvent>
-#include <QLabel>
+#include <QOpenGLWidget>
 #include <QThread>
 #include <QTimer>
 #include <QWheelEvent>
@@ -41,7 +41,7 @@ protected:
   void wheelEvent(QWheelEvent *event) override { event->ignore(); }
 
 private:
-  QOpenGLShaderProgram *m_program;
+  QOpenGLShaderProgram *m_program = nullptr;
   GameState *m_gameState;
   Core::GameHUD *m_gameHUD;
   std::unique_ptr<Levels::LevelManager> m_levelManager;
