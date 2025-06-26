@@ -2,6 +2,7 @@
 #define GAME_COLLISIONDETECTION_BVHTREE_H
 
 #include "GameObjects/GameObject.h"
+#include <set>
 
 namespace Game {
 namespace CollisionDetection {

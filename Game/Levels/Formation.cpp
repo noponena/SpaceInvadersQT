@@ -1,6 +1,7 @@
 #include "Formation.h"
 #include "Utils/Math/MathConstants.h"
 #include <algorithm>
+#include <stdexcept>
 
 namespace Game {
 namespace Levels {
@@ -37,6 +38,8 @@ std::vector<QPoint> Formation::getPoints(QPoint referencePosition) const {
   case Type::CIRCLE:
     return getCirclePoints(referencePosition);
   }
+
+  throw std::invalid_argument("Uknown formation type!");
 }
 
 std::vector<QPoint> Formation::getRectPoints(QPoint referencePosition) const {
