@@ -49,7 +49,7 @@ BVHTree::build(std::vector<GameObjects::GameObject *> &objects) {
 
 void BVHTree::query(
     std::shared_ptr<BVHNode> node, GameObjects::GameObject *queryObject,
-    std::set<std::pair<std::uint64_t, std::uint64_t>> processedPairs,
+    std::set<std::pair<std::uint64_t, std::uint64_t>> &processedPairs,
     std::vector<GameObjects::GameObject *> &outResults) {
   QRectF queryBbox = queryObject->getBoundingBox();
   if (!node || !node->bbox.intersects(queryBbox))

@@ -2,6 +2,7 @@
 #define GAME_COLLISIONDETECTION_BVHTREE_H
 
 #include "GameObjects/GameObject.h"
+#include <set>
 
 namespace Game {
 namespace CollisionDetection {
@@ -26,7 +27,7 @@ public:
   build(std::vector<GameObjects::GameObject *> &objects);
   void query(std::shared_ptr<BVHNode> node,
              GameObjects::GameObject *queryObject,
-             std::set<std::pair<uint64_t, uint64_t>> processedPairs,
+             std::set<std::pair<uint64_t, uint64_t>> &processedPairs,
              std::vector<GameObjects::GameObject *> &outResults);
   void clearProcessedPairs();
 
