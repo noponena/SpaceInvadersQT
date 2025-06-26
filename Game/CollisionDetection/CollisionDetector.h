@@ -27,6 +27,9 @@ private:
   BruteForce m_bruteForce;
   std::unique_ptr<Quadtree> m_quadtree;
   BVHTree m_bvhTree;
+
+  std::vector<std::pair<GameObjects::GameObject *, GameObjects::GameObject *>> m_collisionPairs;
+  std::mutex m_collisionMutex;
 };
 
 } // namespace CollisionDetection
