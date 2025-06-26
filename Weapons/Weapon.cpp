@@ -22,24 +22,6 @@ bool Weapon::fire() {
       createProjectile();
   projectile->initialize();
 
-  const QString ownerPath = m_owner->getPixmapData().pixmapResourcePath;
-  const auto& ownerTexInfo = Graphics::TextureRegistry::instance().getOrCreateTexture(ownerPath);
-  QPointF ownerCenter(ownerTexInfo.width / 2, ownerTexInfo.height / 2);
-
-  const QString projectilePath = projectile->getPixmapData().pixmapResourcePath;
-  const auto& projectileTexInfo = Graphics::TextureRegistry::instance().getOrCreateTexture(projectilePath);
-  QPointF projectileCenter(projectileTexInfo.width / 2, projectileTexInfo.height / 2);
-
-  //QPointF ownerCenter = m_owner->getGraphicsItem()->boundingRect().center();
-
-  //QPointF projectileCenter =
-  //    projectile->getGraphicsItem()->boundingRect().center();
-  QPointF delta = projectileCenter - ownerCenter;
-  float newX = projectile->getPosition().x() - delta.x();
-  float newY = projectile->getPosition().y() - delta.y();
-  GameObjects::Position projectilePosition = projectile->getPosition();
-  projectilePosition.setPos(QPointF(newX, newY));
-  projectile->setPosition(projectilePosition);
   emit projectileFired(std::move(projectile));
   return true;
 }

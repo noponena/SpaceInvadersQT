@@ -1,6 +1,12 @@
 #ifndef GAMERUNNERVIEW_H
 #define GAMERUNNERVIEW_H
 
+#include "Game/CollisionDetection/CollisionDetector.h"
+#include "Game/Core/GameHUD.h"
+#include "Game/Core/GameState.h"
+#include "Game/Levels/LevelManager.h"
+#include "UI/FPSCounter.h"
+#include "UI/GameObjectCounter.h"
 #include <QElapsedTimer>
 #include <QGraphicsView>
 #include <QKeyEvent>
@@ -13,17 +19,12 @@
 #include <QThread>
 #include <QTimer>
 #include <QWheelEvent>
-#include "Game/CollisionDetection/CollisionDetector.h"
-#include "Game/Core/GameHUD.h"
-#include "Game/Core/GameState.h"
-#include "Game/Levels/LevelManager.h"
-#include "UI/FPSCounter.h"
-#include "UI/GameObjectCounter.h"
 
 namespace Game {
 namespace Core {
 
-class GameRunnerView : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core {
+class GameRunnerView : public QOpenGLWidget,
+                       protected QOpenGLFunctions_3_3_Core {
   Q_OBJECT
 public:
   explicit GameRunnerView(QRect screenGeometry, QWidget *parent = nullptr);
