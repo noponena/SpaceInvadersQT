@@ -281,6 +281,7 @@ void GameRunnerView::initializeBenchmark() {
 void GameRunnerView::deinitializeBenchmark() {
   m_benchmarkTimer.disconnect();
   m_benchmarkTimer.stop();
+  m_gameTimer.stop();
   m_benchmarkMode = false;
   emit benchmarkFinished();
 }

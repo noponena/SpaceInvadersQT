@@ -14,6 +14,7 @@ public:
   // GameObject interface
 public:
   void update(const UpdateContext &context) override;
+  virtual bool shouldBeDeleted() override;
 
   void collideWith(GameObject &other) override;
   void collideWithProjectile(Projectiles::Projectile &projectile) override;

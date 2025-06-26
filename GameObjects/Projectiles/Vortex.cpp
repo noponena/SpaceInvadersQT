@@ -16,9 +16,9 @@ Vortex::Vortex() : m_timeToLiveSeconds(5.0f), m_timeSinceSpawnSeconds(0.0f) {
 }
 
 void Vortex::registerPixmaps() {
-    Graphics::PixmapLibrary::getPixmap(":/Images/black_orb.png", 25, 25);
-    Graphics::PixmapLibrary::getPixmap(":/Images/black_hole.png", 25, 25);
-    Graphics::PixmapLibrary::getPixmap(":/Images/black_hole_hud.png", 25, 25);
+  Graphics::PixmapLibrary::getPixmap(":/Images/black_orb.png", 25, 25);
+  Graphics::PixmapLibrary::getPixmap(":/Images/black_hole.png", 25, 25);
+  Graphics::PixmapLibrary::getPixmap(":/Images/black_hole_hud.png", 25, 25);
 }
 
 void Vortex::update(const UpdateContext &context) {
@@ -55,12 +55,12 @@ std::unique_ptr<GameObject> Vortex::clone() const {
 
 namespace {
 struct PixmapRegistrar {
-    PixmapRegistrar() {
-        PixmapRegistry::instance().add(&Vortex::registerPixmaps);
-    }
+  PixmapRegistrar() {
+    PixmapRegistry::instance().add(&Vortex::registerPixmaps);
+  }
 };
 static PixmapRegistrar _vortex_pixmap_registrar;
-}
+} // namespace
 
 } // namespace Projectiles
 } // namespace GameObjects

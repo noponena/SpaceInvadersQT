@@ -1,8 +1,8 @@
 #include "PlayerLaserProjectile.h"
 #include "Game/Audio/SoundInfo.h"
-#include <QPen>
 #include "Graphics/PixmapLibrary.h"
 #include "Graphics/PixmapRegistry.h"
+#include <QPen>
 
 namespace GameObjects {
 namespace Projectiles {
@@ -14,7 +14,8 @@ PlayerLaserProjectile::PlayerLaserProjectile(
 }
 
 void PlayerLaserProjectile::registerPixmaps() {
-    Graphics::PixmapLibrary::getPixmap(":/Images/player_laser_projectile.png", 30, 30);
+  Graphics::PixmapLibrary::getPixmap(":/Images/player_laser_projectile.png", 30,
+                                     30);
 }
 
 std::unique_ptr<Projectile> PlayerLaserProjectile::clone() const {
@@ -38,12 +39,12 @@ void PlayerLaserProjectile::initializeSounds() {
 
 namespace {
 struct PixmapRegistrar {
-    PixmapRegistrar() {
-        PixmapRegistry::instance().add(&PlayerLaserProjectile::registerPixmaps);
-    }
+  PixmapRegistrar() {
+    PixmapRegistry::instance().add(&PlayerLaserProjectile::registerPixmaps);
+  }
 };
 static PixmapRegistrar _playerlaserprojectile_pixmap_registrar;
-}
+} // namespace
 
 } // namespace Projectiles
 } // namespace GameObjects

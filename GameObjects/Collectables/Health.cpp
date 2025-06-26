@@ -11,7 +11,7 @@ Health::Health(const Position &position) : Collectable(position) {
 }
 
 void Health::registerPixmaps() {
-    Graphics::PixmapLibrary::getPixmap(":/Images/health.png", 22.0, 22.0);
+  Graphics::PixmapLibrary::getPixmap(":/Images/health.png", 22.0, 22.0);
 }
 
 void Health::initializeSounds() {
@@ -34,12 +34,12 @@ std::unique_ptr<GameObject> Health::clone() const {
 
 namespace {
 struct PixmapRegistrar {
-    PixmapRegistrar() {
-        PixmapRegistry::instance().add(&Health::registerPixmaps);
-    }
+  PixmapRegistrar() {
+    PixmapRegistry::instance().add(&Health::registerPixmaps);
+  }
 };
 static PixmapRegistrar _health_pixmap_registrar;
-}
+} // namespace
 
 } // namespace Collectables
 } // namespace GameObjects

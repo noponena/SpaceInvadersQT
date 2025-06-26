@@ -2,9 +2,9 @@
 #include "Game/Audio/SoundInfo.h"
 #include "GameObjects/Collectables/Health.h"
 #include "GameObjects/Collectables/Stellar.h"
-#include "Utils/Utils.h"
 #include "Graphics/PixmapLibrary.h"
 #include "Graphics/PixmapRegistry.h"
+#include "Utils/Utils.h"
 #include <QColor>
 #include <QGraphicsScene>
 #include <QPen>
@@ -24,8 +24,8 @@ EnemyShip::EnemyShip(const std::uint32_t maxHp, const Position &position)
 }
 
 void EnemyShip::registerPixmaps() {
-    Graphics::PixmapLibrary::getPixmap(":/Images/alien.png", 50.0, 50.0);
-    Graphics::PixmapLibrary::getPixmap(":/Images/alien_on_hit.png", 50.0, 50.0);
+  Graphics::PixmapLibrary::getPixmap(":/Images/alien.png", 50.0, 50.0);
+  Graphics::PixmapLibrary::getPixmap(":/Images/alien_on_hit.png", 50.0, 50.0);
 }
 
 void EnemyShip::initializeObjectType() {
@@ -149,12 +149,12 @@ void EnemyShip::collideWithEnemyShip(EnemyShip &enemyShip) {
 
 namespace {
 struct PixmapRegistrar {
-    PixmapRegistrar() {
-        PixmapRegistry::instance().add(&EnemyShip::registerPixmaps);
-    }
+  PixmapRegistrar() {
+    PixmapRegistry::instance().add(&EnemyShip::registerPixmaps);
+  }
 };
 static PixmapRegistrar _enemyship_pixmap_registrar;
-}
+} // namespace
 
 } // namespace Ships
 

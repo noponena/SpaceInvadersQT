@@ -1,9 +1,9 @@
 #include "PlayerShip.h"
 #include "GameObjects/Collectables/Collectable.h"
 #include "GameObjects/Projectiles/Projectile.h"
-#include <QPen>
 #include "Graphics/PixmapLibrary.h"
 #include "Graphics/PixmapRegistry.h"
+#include <QPen>
 
 namespace GameObjects {
 namespace Ships {
@@ -15,13 +15,18 @@ PlayerShip::PlayerShip(const float speed, const Position &position)
 }
 
 void PlayerShip::registerPixmaps() {
-    Graphics::PixmapLibrary::getPixmap(":/Images/player_ship.png", 50.0, 50.0);
+  Graphics::PixmapLibrary::getPixmap(":/Images/player_ship.png", 50.0, 50.0);
 }
 
 void PlayerShip::update(const UpdateContext &context) {
   Ship::update(context);
   regenerateEnergy(context.deltaTimeInSeconds);
   emit playerEnergyUpdated(m_currentEnergy);
+}
+
+bool PlayerShip::shouldBeDeleted() {
+  return (isDead() && m_destructionAnimation.animationFinished() &&
+          m_destructionEffect.effectFinished());
 }
 
 void PlayerShip::initializeObjectType() {
@@ -190,12 +195,12 @@ void PlayerShip::disableMovement() {
 
 namespace {
 struct PixmapRegistrar {
-    PixmapRegistrar() {
-        PixmapRegistry::instance().add(&PlayerShip::registerPixmaps);
-    }
+  PixmapRegistrar() {
+    PixmapRegistry::instance().add(&PlayerShip::registerPixmaps);
+  }
 };
 static PixmapRegistrar _playership_pixmap_registrar;
-}
+} // namespace
 } // namespace Ships
 
 } // namespace GameObjects

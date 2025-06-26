@@ -11,7 +11,7 @@ Stellar::Stellar(const Position &position) : Collectable(position) {
 }
 
 void Stellar::registerPixmaps() {
-    Graphics::PixmapLibrary::getPixmap(":/Images/coin.png", 5.0, 5.0);
+  Graphics::PixmapLibrary::getPixmap(":/Images/coin.png", 5.0, 5.0);
 }
 
 void Stellar::initializeSounds() {
@@ -34,12 +34,12 @@ std::unique_ptr<GameObject> Stellar::clone() const {
 
 namespace {
 struct PixmapRegistrar {
-    PixmapRegistrar() {
-        PixmapRegistry::instance().add(&Stellar::registerPixmaps);
-    }
+  PixmapRegistrar() {
+    PixmapRegistry::instance().add(&Stellar::registerPixmaps);
+  }
 };
 static PixmapRegistrar _stellar_pixmap_registrar;
-}
+} // namespace
 
 } // namespace Collectables
 } // namespace GameObjects

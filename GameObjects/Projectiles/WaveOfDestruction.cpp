@@ -14,8 +14,9 @@ WaveOfDestruction::WaveOfDestruction() {
 }
 
 void WaveOfDestruction::registerPixmaps() {
-    Graphics::PixmapLibrary::getPixmap(":/Images/wave.png", 250, 20, false);
-    Graphics::PixmapLibrary::getPixmap(":/Images/wave_of_destruction_hud.png", 250, 20, false);
+  Graphics::PixmapLibrary::getPixmap(":/Images/wave.png", 250, 20, false);
+  Graphics::PixmapLibrary::getPixmap(":/Images/wave_of_destruction_hud.png",
+                                     250, 20, false);
 }
 
 bool WaveOfDestruction::shouldBeDeleted() {
@@ -39,12 +40,12 @@ std::unique_ptr<GameObject> WaveOfDestruction::clone() const {
 
 namespace {
 struct PixmapRegistrar {
-    PixmapRegistrar() {
-        PixmapRegistry::instance().add(&WaveOfDestruction::registerPixmaps);
-    }
+  PixmapRegistrar() {
+    PixmapRegistry::instance().add(&WaveOfDestruction::registerPixmaps);
+  }
 };
 static PixmapRegistrar _waveofdestruction_pixmap_registrar;
-}
+} // namespace
 
 } // namespace Projectiles
 } // namespace GameObjects

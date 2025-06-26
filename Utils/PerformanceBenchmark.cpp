@@ -41,6 +41,22 @@ PerformanceBenchmark::PerformanceBenchmark(int logIntervalMs,
   }
 }
 
+std::vector<float>
+PerformanceBenchmark::filteredFrameTimes(float maxAllowedMs,
+                                         size_t skipFirstN) const {
+  std::vector<float> filtered;
+  filtered.reserve(m_frameTimesMs.size() > skipFirstN
+                       ? m_frameTimesMs.size() - skipFirstN
+                       : 0);
+  for (size_t i = skipFirstN; i < m_frameTimesMs.size(); ++i) {
+    float ft = m_frameTimesMs[i];
+    if (ft > 0.0f && ft <= maxAllowedMs) {
+      filtered.push_back(ft);
+    }
+  }
+  return filtered;
+}
+
 PerformanceBenchmark::~PerformanceBenchmark() {
   if (m_outFile.is_open()) {
     closeFile();
@@ -57,7 +73,7 @@ void PerformanceBenchmark::initializeBenchmark(
       horizontalStrategyLeft + horizontalStrategyRight;
 
   Game::Movement::IntervalMovementStrategy horizontalIntervalStrategy =
-      Game::Movement::IntervalMovementStrategy(horizontalCombined, 10.0f);
+      Game::Movement::IntervalMovementStrategy(horizontalCombined, 12.5f);
 
   Weapons::WeaponBuilder weaponBuilder;
   GameObjects::Projectiles::ProjectileBuilder projectileBuilder;
@@ -129,7 +145,7 @@ void PerformanceBenchmark::initializeBenchmark(
   playerShip->addPrimaryWeapon(std::move(fifthWeapon));
 
   GameObjects::Position position = playerShip->getPosition();
-  position.setX(0);
+  position.setX(0.05);
   playerShip->setPosition(position);
   playerShip->setMovementStrategy(horizontalIntervalStrategy);
   playerShip->updateFireRate(-99999);
@@ -137,12 +153,12 @@ void PerformanceBenchmark::initializeBenchmark(
   playerShip->setAutoShoot(true);
 }
 
-float PerformanceBenchmark::calculateBenchmarkScore() {
-  if (m_frameTimesMs.empty())
+float PerformanceBenchmark::calculateBenchmarkScore(
+    std::vector<float> &frameTimes) {
+  if (frameTimes.empty())
     return 0.0f;
-  float sum =
-      std::accumulate(m_frameTimesMs.begin(), m_frameTimesMs.end(), 0.0f);
-  return m_gain / (sum / m_frameTimesMs.size());
+  float sum = std::accumulate(frameTimes.begin(), frameTimes.end(), 0.0f);
+  return m_gain / (sum / frameTimes.size());
 }
 
 float PerformanceBenchmark::getMemUsage() {
@@ -189,13 +205,8 @@ void PerformanceBenchmark::recordFrameTime(int frameTimeMs) {
 }
 
 void PerformanceBenchmark::logPerformanceScore() {
-  float score = calculateBenchmarkScore();
-
-  std::vector<float> filteredFrameTimes;
-  for (float ft : m_frameTimesMs) {
-    if (ft > 0.0f)
-      filteredFrameTimes.push_back(ft);
-  }
+  auto filtered = filteredFrameTimes();
+  float score = calculateBenchmarkScore(filtered);
 
   // Calculate FPS metrics
   float avgFrameTime = 0.0f;
@@ -203,17 +214,17 @@ void PerformanceBenchmark::logPerformanceScore() {
   float p95FrameTime = 0.0f;
   float p99FrameTime = 0.0f;
 
-  if (!filteredFrameTimes.empty()) {
+  if (!filtered.empty()) {
     float sum = 0.0f;
-    maxFrameTime = filteredFrameTimes[0];
-    for (float ft : filteredFrameTimes) {
+    maxFrameTime = filtered[0];
+    for (float ft : filtered) {
       sum += ft;
       if (ft > maxFrameTime)
         maxFrameTime = ft;
     }
-    avgFrameTime = sum / filteredFrameTimes.size();
-    p95FrameTime = MathFunctions::percentile(filteredFrameTimes, 0.95f);
-    p99FrameTime = MathFunctions::percentile(filteredFrameTimes, 0.99f);
+    avgFrameTime = sum / filtered.size();
+    p95FrameTime = MathFunctions::percentile(filtered, 0.95f);
+    p99FrameTime = MathFunctions::percentile(filtered, 0.99f);
   } else {
     avgFrameTime = 0.0f;
     maxFrameTime = 0.0f;
