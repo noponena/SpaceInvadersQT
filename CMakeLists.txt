@@ -17,6 +17,7 @@ endif()
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets OpenGLWidgets Concurrent)
 
 set(HEADERS
+    Config/GameContext.h
     Game/Audio/SoundBuffer.h
     Game/Audio/SoundDevice.h
     Game/Audio/SoundInfo.h
@@ -28,7 +29,6 @@ set(HEADERS
     Game/CollisionDetection/CollisionDetector.h
     Game/CollisionDetection/Quadtree.h
     Game/CollisionDetection/ThreadedCollisionDetector.h
-    Game/Core/CustomGraphicsItem.h
     Game/Core/GameHUD.h
     Game/Core/GameRunnerView.h
     Game/Core/GameState.h
@@ -53,7 +53,6 @@ set(HEADERS
     GameObjects/Collectables/Stellar.h
     GameObjects/Collectables/StellarPool.h
     GameObjects/GameObject.h
-    GameObjects/Position.h
     GameObjects/Projectiles/EnemyProjectile.h
     GameObjects/Projectiles/PlayerProjectile.h
     GameObjects/Projectiles/Projectile.h
@@ -81,6 +80,7 @@ set(HEADERS
     UI/MainWindow.h
     Utils/Math/MathConstants.h
     Utils/Math/MathFunctions.h
+    Utils/BoundsChecker.h
     Utils/PerformanceBenchmark.h
     Utils/Utils.h
     Weapons/PrimaryWeapon.h
@@ -138,6 +138,7 @@ set(SOURCES
     UI/FPSCounter.cpp
     UI/GameObjectCounter.cpp
     UI/MainWindow.cpp
+    Utils/BoundsChecker.cpp
     Utils/PerformanceBenchmark.cpp
     Utils/Utils.cpp
     Weapons/PrimaryWeapon.cpp

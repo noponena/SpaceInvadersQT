@@ -9,11 +9,12 @@ namespace Utils {
 
 class PerformanceBenchmark {
 public:
-  static PerformanceBenchmark &getInstance(int logIntervalMs = 0,
+  static PerformanceBenchmark &getInstance(Config::GameContext ctx,
+                                           int logIntervalMs = 0,
                                            int gameObjectThreshold = 50,
                                            char csvDelimiter = ';') {
     static PerformanceBenchmark instance(logIntervalMs, gameObjectThreshold,
-                                         csvDelimiter);
+                                         csvDelimiter, ctx);
     return instance;
   }
   ~PerformanceBenchmark();
@@ -24,7 +25,9 @@ public:
 
 private:
   PerformanceBenchmark(int logIntervalMs, int gameObjectThreshold,
-                       char csvDelimiter);
+                       char csvDelimiter, const Config::GameContext ctx);
+
+  Config::GameContext m_gameCtx;
   std::ofstream m_outFile;
   std::filesystem::path m_filePath;
   int m_logIntervalMs;

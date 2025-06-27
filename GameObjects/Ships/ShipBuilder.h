@@ -11,20 +11,20 @@ class ShipBuilder {
 public:
   ShipBuilder();
   template <typename ShipType> ShipBuilder &createShip() {
-    m_ship = std::make_unique<ShipType>(0, 0, Position(0, 0, 0, 0));
+      m_ship = std::make_unique<ShipType>(0, 0, Transform());
     m_ship->setMovementStrategy(Game::Movement::StationaryMovementStrategy());
     return *this;
   }
 
   ShipBuilder &withObjectType(const ObjectType objectType);
-  ShipBuilder &withPosition(const Position &position);
+  ShipBuilder &withPosition(const Transform &transform);
   ShipBuilder &withSpeed(float speed);
   ShipBuilder &withHealth(float health);
   ShipBuilder &withEnergy(float energy);
   ShipBuilder &withEnergyRegenerationRate(float energyRegenerationRate);
   ShipBuilder &
   withMovementStrategy(const Game::Movement::MovementStrategy &strategy);
-  ShipBuilder &withGrahpics(const PixmapData pixmapData);
+  ShipBuilder &withGrahpics(const RenderDataMap renderDataMap);
   ShipBuilder &withSpawnSound(const Game::Audio::SoundInfo spawnSound);
   ShipBuilder &
   withDestructionSound(const Game::Audio::SoundInfo destructionSound);

@@ -59,7 +59,7 @@ Weapon::createProjectile() {
           static_cast<GameObjects::Projectiles::Projectile *>(
               m_projectilePrototype->clone().release()));
 
-  projectile->setPosition(m_owner->getPosition());
+  projectile->moveAbsolute(m_owner->getPosition());
   projectile->setSoundEnabled(m_soundEnabled);
   return projectile;
 }

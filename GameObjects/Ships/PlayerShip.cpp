@@ -1,21 +1,26 @@
 #include "PlayerShip.h"
 #include "GameObjects/Collectables/Collectable.h"
 #include "GameObjects/Projectiles/Projectile.h"
-#include "Graphics/PixmapLibrary.h"
-#include "Graphics/PixmapRegistry.h"
 #include <QPen>
 
 namespace GameObjects {
 namespace Ships {
-PlayerShip::PlayerShip(const float speed, const Position &position)
-    : Ship(0, speed, position) {
+PlayerShip::PlayerShip(const float speed, const Transform &transform,
+                       const Config::GameContext ctx)
+    : Ship(0, speed, transform, ctx) {
   m_magnetism = {true, true, 100.0f, 100.0f};
-  m_pixmapData.pixmapResourcePath = ":/Images/player_ship.png";
-  m_pixmapData.pixmapScale = QPointF(50.0, 50.0);
-}
 
-void PlayerShip::registerPixmaps() {
-  Graphics::PixmapLibrary::getPixmap(":/Images/player_ship.png", 50.0, 50.0);
+  RenderData normalData;
+  normalData.size = QVector2D(50, 50);
+  normalData.imagePath = ":/Images/player_ship.png";
+  addRenderData(RenderState::Normal, normalData);
+
+  /*
+  RenderData onHitData;
+  onHitData.size = QVector2D(100, 100);
+  onHitData.imagePath = ":/Images/player_ship.png";
+  addRenderData(RenderState::OnHit, onHitData);
+ */
 }
 
 void PlayerShip::update(const UpdateContext &context) {
@@ -41,8 +46,8 @@ void PlayerShip::initializeSounds() {
 
 std::unique_ptr<GameObject> PlayerShip::clone() const {
   std::unique_ptr<PlayerShip> playerShip =
-      std::make_unique<PlayerShip>(m_speed, m_position);
-  playerShip->m_pixmapData = m_pixmapData;
+      std::make_unique<PlayerShip>(m_speed, m_transform, m_gameContext);
+  playerShip->m_renderDataByState = m_renderDataByState;
   playerShip->m_destructionSoundInfo = m_destructionSoundInfo;
   playerShip->m_objectTypes = m_objectTypes;
   playerShip->m_magnetism = m_magnetism;
@@ -57,11 +62,11 @@ std::unique_ptr<GameObject> PlayerShip::clone() const {
 }
 
 void PlayerShip::moveHorizontal(float deltaTimeInSeconds) {
-  moveX(m_currentSpeedX * deltaTimeInSeconds);
+  moveRelativeX(m_currentSpeedX * deltaTimeInSeconds);
 }
 
 void PlayerShip::moveVertical(float deltaTimeInSeconds) {
-  moveY(m_currentSpeedY * deltaTimeInSeconds);
+  moveRelativeY(m_currentSpeedY * deltaTimeInSeconds);
 }
 
 void PlayerShip::accelerateLeft(float deltaTimeInSeconds) {
@@ -151,15 +156,13 @@ bool PlayerShip::fireSecondaryWeapon(std::uint32_t weaponIndex) {
   return success;
 }
 
-void PlayerShip::moveX(float amount) {
-  float current = m_position.x();
-  m_position.setX(current + amount);
+void PlayerShip::moveRelativeX(float displacement) {
+  moveRelative({displacement, 0});
   clampToXBounds();
 }
 
-void PlayerShip::moveY(float amount) {
-  float current = m_position.y();
-  m_position.setY(current + amount);
+void PlayerShip::moveRelativeY(float displacement) {
+  moveRelative({0, displacement});
   clampToYBounds();
 }
 
@@ -193,14 +196,5 @@ void PlayerShip::disableMovement() {
   m_acceleration = 0;
 }
 
-namespace {
-struct PixmapRegistrar {
-  PixmapRegistrar() {
-    PixmapRegistry::instance().add(&PlayerShip::registerPixmaps);
-  }
-};
-static PixmapRegistrar _playership_pixmap_registrar;
-} // namespace
 } // namespace Ships
-
 } // namespace GameObjects

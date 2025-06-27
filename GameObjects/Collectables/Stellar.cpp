@@ -1,17 +1,14 @@
 #include "Stellar.h"
 #include "Game/Audio/SoundInfo.h"
-#include "Graphics/PixmapLibrary.h"
-#include "Graphics/PixmapRegistry.h"
 
 namespace GameObjects {
 namespace Collectables {
-Stellar::Stellar(const Position &position) : Collectable(position) {
-  m_pixmapData.pixmapResourcePath = ":/Images/coin.png";
-  m_pixmapData.pixmapScale = QPointF(5.0, 5.0);
-}
-
-void Stellar::registerPixmaps() {
-  Graphics::PixmapLibrary::getPixmap(":/Images/coin.png", 5.0, 5.0);
+Stellar::Stellar(const Transform &transform, const Config::GameContext ctx)
+    : Collectable(transform, ctx) {
+  RenderData normalData;
+  normalData.size = QVector2D(5, 5);
+  normalData.imagePath = ":/Images/coin.png";
+  addRenderData(RenderState::Normal, normalData);
 }
 
 void Stellar::initializeSounds() {
@@ -25,21 +22,13 @@ void Stellar::initializeObjectType() {
 }
 
 std::unique_ptr<GameObject> Stellar::clone() const {
-  std::unique_ptr<Stellar> stellar = std::make_unique<Stellar>(m_position);
-  stellar->m_pixmapData = m_pixmapData;
+  std::unique_ptr<Stellar> stellar =
+      std::make_unique<Stellar>(m_transform, m_gameContext);
   stellar->m_destructionSoundInfo = m_destructionSoundInfo;
   stellar->m_objectTypes = m_objectTypes;
+  stellar->m_renderDataByState = m_renderDataByState;
   return stellar;
 }
-
-namespace {
-struct PixmapRegistrar {
-  PixmapRegistrar() {
-    PixmapRegistry::instance().add(&Stellar::registerPixmaps);
-  }
-};
-static PixmapRegistrar _stellar_pixmap_registrar;
-} // namespace
 
 } // namespace Collectables
 } // namespace GameObjects

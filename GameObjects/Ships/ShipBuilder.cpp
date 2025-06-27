@@ -11,10 +11,11 @@ ShipBuilder &ShipBuilder::withObjectType(const ObjectType objectType) {
   return *this;
 }
 
-ShipBuilder &ShipBuilder::withPosition(const Position &position) {
-  if (m_ship)
-    m_ship->setPosition(position);
-  return *this;
+ShipBuilder &ShipBuilder::withPosition(const Transform &transform)
+{
+    if (m_ship)
+        m_ship->moveAbsolute(transform.position);
+    return *this;
 }
 
 ShipBuilder &ShipBuilder::withSpeed(float speed) {
@@ -72,10 +73,11 @@ std::unique_ptr<Ship> ShipBuilder::build() {
       static_cast<Ship *>(this->m_ship->clone().release()));
 }
 
-ShipBuilder &ShipBuilder::withGrahpics(const PixmapData pixmapData) {
-  if (m_ship)
-    m_ship->setPixmapData(pixmapData);
-  return *this;
+ShipBuilder &ShipBuilder::withGrahpics(const RenderDataMap renderDataMap)
+{
+    if (m_ship)
+        m_ship->setRenderDataByState(renderDataMap);
+    return *this;
 }
 
 } // namespace Ships

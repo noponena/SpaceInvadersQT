@@ -7,18 +7,17 @@
 
 namespace Game {
 namespace Core {
-GameState::GameState(QObject *parent)
-    : QObject(parent), m_playerShipDeletedFromScene(false) {
+GameState::GameState(Config::GameContext gameCtx, QObject *parent)
+    : QObject(parent), m_gameCtx(gameCtx), m_playerShipDeletedFromScene(false) {
   m_playersShipStartSpeed = 500;
 }
 
 void GameState::createPlayerShip() {
   m_playerShip = std::make_shared<GameObjects::Ships::PlayerShip>(
-      m_playersShipStartSpeed, GameObjects::Position(0, 0));
+      m_playersShipStartSpeed, GameObjects::Transform(), m_gameCtx);
 }
 
 void GameState::initialize() {
-  initMovementConstrains();
   initPlayerShip();
   m_stellarTokens = 0;
   m_enemyShipsReachedBottomLimit = 0;
@@ -56,12 +55,6 @@ void GameState::addGameObject(std::shared_ptr<GameObjects::GameObject> object) {
   m_gameObjects.emplace_back(object);
   if (object->magnetism().isMagnetic)
     m_magneticGameObjectMap[object->id()] = object;
-  emit objectAdded(object->getGraphicsItem());
-}
-
-void GameState::setSize(int width, int height) {
-  m_windowWidth = width;
-  m_windowHeight = height;
 }
 
 void GameState::update(float deltaTimeInSeconds) {
@@ -92,12 +85,18 @@ void GameState::initPlayerShip() {
           &GameState::onPlayerShipDestroyed);
 
   m_playerShip->initialize();
-  GameObjects::Position pos(m_windowWidth / 2, m_maxY, m_minX, m_maxX, m_minY,
-                            m_maxY);
-  m_playerShip->setPosition(pos);
+  QVector2D posVec(m_gameCtx.screenGeometry.center().x(),
+                   m_gameCtx.movementBounds.bottom());
+  m_playerShip->moveAbsolute(posVec);
+
+  GameObjects::RenderDataMap renderDataMap{
+      {GameObjects::RenderState::Normal,
+       GameObjects::RenderData({30, 30},
+                               ":/Images/player_laser_projectile.png")}};
 
   std::unique_ptr<GameObjects::Projectiles::Projectile> vortexProjectile =
-      m_projectileBuilder.createProjectile<GameObjects::Projectiles::Vortex>()
+      m_projectileBuilder
+          .createProjectile<GameObjects::Projectiles::Vortex>(m_gameCtx)
           .withObjectType(GameObjects::ObjectType::PLAYER_PROJECTILE)
           .withDamage(0)
           .withMovementStrategy(
@@ -107,7 +106,8 @@ void GameState::initPlayerShip() {
   std::unique_ptr<GameObjects::Projectiles::Projectile>
       waveOfDestructionProjectile =
           m_projectileBuilder
-              .createProjectile<GameObjects::Projectiles::WaveOfDestruction>()
+              .createProjectile<GameObjects::Projectiles::WaveOfDestruction>(
+                  m_gameCtx)
               .withObjectType(GameObjects::ObjectType::PLAYER_PROJECTILE)
               .withDamage(1000)
               .withMovementStrategy(
@@ -130,14 +130,13 @@ void GameState::initPlayerShip() {
 
   std::unique_ptr<GameObjects::Projectiles::Projectile> primaryProjectile =
       m_projectileBuilder
-          .createProjectile<GameObjects::Projectiles::Projectile>()
+          .createProjectile<GameObjects::Projectiles::Projectile>(m_gameCtx)
           .withObjectType(GameObjects::ObjectType::PLAYER_PROJECTILE)
           .withDamage(1)
           .withMovementStrategy(
               Game::Movement::VerticalMovementStrategy(1000, -1))
           //.withProperty(GameObjects::Projectiles::ProjectileProperty::PIERCING)
-          .withGrahpics(GameObjects::PixmapData{
-              QPointF(30, 30), ":/Images/player_laser_projectile.png", "", ""})
+          .withGrahpics(renderDataMap)
           .withSpawnSound(
               Audio::SoundInfo({true, Game::Audio::SoundEffect::LASER}))
           .build();
@@ -181,13 +180,6 @@ void GameState::initPlayerShip() {
   m_playerShip->setEnergyRegenerationRate(5);
 
   addGameObject(m_playerShip);
-}
-
-void GameState::initMovementConstrains() {
-  m_minX = 0;
-  m_maxX = m_windowWidth * 0.98;
-  m_minY = 0;
-  m_maxY = m_windowHeight * 0.865;
 }
 
 std::shared_ptr<GameObjects::Ships::PlayerShip> GameState::playerShip() const {

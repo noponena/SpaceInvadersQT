@@ -18,8 +18,8 @@ public:
   bool isFinished() const;
 
   SpawnEvent &withTriggerTime(int triggerTimeMs);
-  SpawnEvent &withPosition(QPoint position);
-  SpawnEvent &withPositionRange(QPoint minPosition, QPoint maxPosition);
+  SpawnEvent &withPosition(QVector2D position);
+  SpawnEvent &withPositionRange(QVector2D minPosition, QVector2D maxPosition);
   SpawnEvent &withCount(int count);
   SpawnEvent &withInterval(int intervalMs);
   SpawnEvent &withFormation(const Formation formation);
@@ -29,7 +29,7 @@ public:
 private:
   std::shared_ptr<GameObjects::GameObject> m_gameObject;
   Formation m_formation;
-  std::pair<QPoint, QPoint> m_positionRange;
+  std::pair<QVector2D, QVector2D> m_positionRange;
   int m_triggerTimeMs;
   int m_count;
   int m_intervalMs;

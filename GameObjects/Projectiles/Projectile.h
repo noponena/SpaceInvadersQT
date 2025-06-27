@@ -16,7 +16,7 @@ enum class ProjectileProperty { PIERCING, HOMING };
 
 class Projectile : public GameObject {
 public:
-  Projectile();
+  Projectile(Config::GameContext ctx);
   virtual ~Projectile() = default;
   virtual std::unique_ptr<GameObject> clone() const override;
 

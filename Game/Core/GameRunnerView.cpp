@@ -59,28 +59,27 @@ constexpr float MAX_FRAME_TIME =
 constexpr float MIN_FRAME_TIME =
     0.005f; // 5 ms   = 200 FPS max (FPS cap for rendering/physics)
 
-GameRunnerView::GameRunnerView(QRect screenGeometry, QWidget *parent)
-    : m_continuousShoot(false), m_progressLevel(true), m_levelFailed(false),
-      m_levelFailedOrPassedInfoDisplayed(false), m_spawnEventsFinished(false),
-      m_benchmarkMode(false), m_vbo(QOpenGLBuffer::VertexBuffer) {
-  m_gameState = new GameState();
+GameRunnerView::GameRunnerView(Config::GameContext ctx, QWidget *parent)
+    : m_gameCtx(ctx), m_continuousShoot(false), m_progressLevel(true),
+      m_levelFailed(false), m_levelFailedOrPassedInfoDisplayed(false),
+      m_spawnEventsFinished(false), m_benchmarkMode(false),
+      m_vbo(QOpenGLBuffer::VertexBuffer) {
+  m_gameState = new GameState(ctx);
   m_levelManager = std::make_unique<Levels::LevelManager>(m_gameState);
   m_gameObjects = &(m_gameState->gameObjects());
   m_collisionDetector = std::make_unique<CollisionDetection::CollisionDetector>(
-      m_gameState->gameObjects(), screenGeometry);
+      m_gameState->gameObjects(), ctx.screenGeometry);
   setupView();
   setupCounters();
   m_elapsedTimer.start();
   m_fpsTimer.start();
 
-  m_gameHUD =
-      new Core::GameHUD(screenGeometry.width(), screenGeometry.height());
+  m_gameHUD = new Core::GameHUD(ctx.screenGeometry.width(),
+                                ctx.screenGeometry.height());
   m_scene.addItem(m_gameHUD);
-  m_gameHUD->setPos(0, screenGeometry.height() * 0.9);
+  m_gameHUD->setPos(0, ctx.screenGeometry.height() * 0.9);
 
   setupConnections();
-
-  m_gameState->setSize(screenGeometry.width(), screenGeometry.height());
 }
 
 GameRunnerView::~GameRunnerView() {
@@ -133,10 +132,6 @@ void GameRunnerView::setupCounters() {
 }
 
 void GameRunnerView::setupConnections() {
-  connect(m_gameState, &GameState::objectAdded, this,
-          &GameRunnerView::onObjectAdded);
-  connect(m_gameState, &GameState::objectDeleted, this,
-          &GameRunnerView::onObjectDeleted);
   connect(m_gameState, &GameState::playerShipDestroyed, this,
           &GameRunnerView::onPlayerShipDestroyed);
 
@@ -266,31 +261,29 @@ void GameRunnerView::paintGL() {
   m_program->setUniformValue("tex", 0);
   m_program->setUniformValue("viewport", QVector2D(width(), height()));
 
-  qDebug() << "Rendering objects:" << m_gameObjects->size();
+  // qDebug() << "Rendering objects:" << m_gameObjects->size();
 
   for (const auto &obj : *m_gameObjects) {
+    if (!obj->isVisible()) {
+      continue;
+    }
     // Get position, bounding box, scale
     const auto &pos = obj->getPosition();
 
     // Use PixmapData for texture and custom scale
-    GameObjects::PixmapData pixmapData = obj->getPixmapData();
-    QString texPath = pixmapData.pixmapResourcePath;
+    GameObjects::RenderData renderData = obj->getRenderData();
+    QString texPath = renderData.imagePath;
     const auto &texInfo =
         Graphics::TextureRegistry::instance().getOrCreateTexture(texPath);
     GLuint texture = texInfo.handle;
 
     // Use either bounding box size, or custom scale from PixmapData
-    QPointF size = pixmapData.pixmapScale;
-    if (pixmapData.keepAspectRatio && texInfo.height > 0) {
-      float aspect = float(texInfo.width) / texInfo.height;
-      size.setX(size.y() * aspect); // or adjust as fits your logic
-    }
-
-    float rotation = 0.0f; // Or obj->getRotation() if available
+    QVector2D size = renderData.size;
+    float rotation = renderData.rotation;
 
     glBindTexture(GL_TEXTURE_2D, texture);
 
-    m_program->setUniformValue("spritePos", QVector2D(pos.x(), pos.y()));
+    m_program->setUniformValue("spritePos", pos);
     m_program->setUniformValue("spriteSize", size);
     m_program->setUniformValue("spriteRotation", rotation);
 
@@ -348,7 +341,8 @@ float GameRunnerView::calculateRenderTime(
 float GameRunnerView::calculateDeltaTime() {
   int frameTimeMs = m_elapsedTimer.restart();
   if (m_benchmarkMode) {
-    Utils::PerformanceBenchmark::getInstance().recordFrameTime(frameTimeMs);
+    Utils::PerformanceBenchmark::getInstance(m_gameCtx).recordFrameTime(
+        frameTimeMs);
   }
   return static_cast<float>(frameTimeMs) / 1000.0f;
 }
@@ -416,9 +410,10 @@ void GameRunnerView::checkLevelFailedOrPassed() {
 }
 
 void GameRunnerView::initializeBenchmark() {
-  Utils::PerformanceBenchmark::getInstance().initializeBenchmark(m_playerShip);
+  Utils::PerformanceBenchmark::getInstance(m_gameCtx).initializeBenchmark(
+      m_playerShip);
   connect(&m_benchmarkTimer, &QTimer::timeout, this, ([this]() {
-    Utils::PerformanceBenchmark::getInstance().logPerformanceScore();
+    Utils::PerformanceBenchmark::getInstance(m_gameCtx).logPerformanceScore();
     onBenchmarkFinished();
   }));
   m_benchmarkMode = true;

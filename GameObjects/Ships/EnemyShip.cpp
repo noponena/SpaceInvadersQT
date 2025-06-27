@@ -2,9 +2,6 @@
 #include "Game/Audio/SoundInfo.h"
 #include "GameObjects/Collectables/Health.h"
 #include "GameObjects/Collectables/Stellar.h"
-#include "Graphics/PixmapLibrary.h"
-#include "Graphics/PixmapRegistry.h"
-#include "Graphics/TextureRegistry.h"
 #include "Utils/Utils.h"
 #include <QColor>
 #include <QGraphicsScene>
@@ -14,13 +11,23 @@
 
 namespace GameObjects {
 namespace Ships {
-EnemyShip::EnemyShip(const std::uint32_t maxHp, const Position &position)
-    : ShipWithHealthBar(maxHp, 0, position), m_bottomEdgeSignalEmitted(false) {
+EnemyShip::EnemyShip(const std::uint32_t maxHp, const Transform &transoform,
+                     const Config::GameContext ctx)
+    : ShipWithHealthBar(maxHp, 0, transoform, ctx),
+      m_bottomEdgeSignalEmitted(false) {
   m_stellarCoinSpawnRange = QPoint(2, 5);
   m_healthSpawnProbability = 0.10;
-  m_pixmapData.pixmapResourcePath = ":/Images/alien.png";
-  m_pixmapData.onHitPixmapResourcePath = ":/Images/alien_on_hit.png";
-  m_pixmapData.pixmapScale = QPointF(50.0, 50.0);
+
+  RenderData normalData;
+  normalData.size = QVector2D(50, 50);
+  normalData.imagePath = ":/Images/alien.png";
+  addRenderData(RenderState::Normal, normalData);
+
+  RenderData onHitData;
+  onHitData.size = QVector2D(50, 50);
+  onHitData.imagePath = ":/Images/alien_on_hit.png";
+  addRenderData(RenderState::OnHit, onHitData);
+
   m_magneticTargets = {ObjectType::PROJECTILE};
 }
 
@@ -44,11 +51,11 @@ void EnemyShip::spawnStellarCoins() {
   int amount = QRandomGenerator::global()->bounded(m_stellarCoinSpawnRange.x(),
                                                    m_stellarCoinSpawnRange.y());
   QPointF center = getBoundingBox().center();
-  GameObjects::Position position(center.x(), center.y());
-  position.setBounds(getPosition().getBounds());
+  QVector2D position(center.x(), center.y());
   for (int i = 0; i < amount; i++) {
     std::unique_ptr<GameObjects::Collectables::Stellar> stellar =
-        std::make_unique<GameObjects::Collectables::Stellar>(position);
+        std::make_unique<GameObjects::Collectables::Stellar>(position,
+                                                             m_gameContext);
     stellar->initialize();
     emit objectCreated(std::move(stellar));
   }
@@ -57,11 +64,11 @@ void EnemyShip::spawnStellarCoins() {
 void EnemyShip::spawnHealth() {
   if (Utils::probabilityCheck(m_healthSpawnProbability)) {
     QPointF center = getBoundingBox().center();
-    GameObjects::Position position(center.x(), center.y());
-    position.setBounds(getPosition().getBounds());
+    QVector2D position(center.x(), center.y());
 
     std::unique_ptr<GameObjects::Collectables::Health> health =
-        std::make_unique<GameObjects::Collectables::Health>(position);
+        std::make_unique<GameObjects::Collectables::Health>(position,
+                                                            m_gameContext);
     health->initialize();
     emit objectCreated(std::move(health));
   }
@@ -90,8 +97,7 @@ void EnemyShip::clampHealthSpawnProbability() {
 
 std::unique_ptr<GameObject> EnemyShip::clone() const {
   std::unique_ptr<EnemyShip> enemyShip =
-      std::make_unique<EnemyShip>(m_maxHealth, m_position);
-  enemyShip->m_pixmapData = m_pixmapData;
+      std::make_unique<EnemyShip>(m_maxHealth, m_transform, m_gameContext);
   enemyShip->m_destructionSoundInfo = m_destructionSoundInfo;
   enemyShip->m_objectTypes = m_objectTypes;
   enemyShip->m_healthSpawnProbability = m_healthSpawnProbability;
@@ -117,7 +123,9 @@ std::unique_ptr<GameObject> EnemyShip::clone() const {
 }
 
 bool EnemyShip::shouldBeDeleted() {
-  if (m_position.isBeyondScreenBottomLimit() && !m_bottomEdgeSignalEmitted) {
+  if (Utils::BoundsChecker::isBeyondScreenBottom(
+          m_transform.position, m_gameContext.movementBounds) &&
+      !m_bottomEdgeSignalEmitted) {
     emit bottomEdgeReached();
     m_bottomEdgeSignalEmitted = true;
   }

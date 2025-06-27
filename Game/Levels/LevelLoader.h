@@ -13,27 +13,19 @@ namespace Levels {
 
 class LevelLoader {
 public:
-  LevelLoader();
+  LevelLoader() = default;
   void initialize();
   Level loadLevel(const std::string &filepath);
   std::map<int, Level> loadLevels();
-  void setScreenSize(QPoint screenSize);
-  void setPositionConstraints(QPoint positionConstraintMin,
-                              QPoint positionConstraintMax);
-
   Level loadBenchmarkLevel();
+  void setGameCtx(Config::GameContext &ctx);
 
 private:
+  std::unique_ptr<Config::GameContext> m_gameCtx;
   std::unique_ptr<GameObjects::Ships::EnemyShip> m_enemyShip;
   Weapons::WeaponBuilder m_weaponBuilder;
   GameObjects::Projectiles::ProjectileBuilder m_projectileBuilder;
   GameObjects::Ships::ShipBuilder m_shipBuilder;
-  int m_screenWidth;
-  int m_screenHeight;
-  int m_minX;
-  int m_maxX;
-  int m_minY;
-  int m_maxY;
 
   Formation::Type stringToFormationType(std::string formationTypeStr);
 };

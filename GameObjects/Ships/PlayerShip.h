@@ -8,8 +8,8 @@ namespace Ships {
 class PlayerShip : public Ship {
   Q_OBJECT
 public:
-  PlayerShip(const float speed, const Position &position);
-  static void registerPixmaps();
+  PlayerShip(const float speed, const Transform &transform,
+             const Config::GameContext ctx);
 
   // GameObject interface
 public:
@@ -33,8 +33,8 @@ public:
                           std::uint32_t weaponIndex) override;
   bool fireSecondaryWeapon(std::uint32_t weaponIndex) override;
 
-  inline void moveX(float amount);
-  inline void moveY(float amount);
+  inline void moveRelativeX(float displacement);
+  inline void moveRelativeY(float displacement);
 
   float maxEnergy() const;
   void setMaxEnergy(float newMaxEnergy);

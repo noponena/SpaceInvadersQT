@@ -2,6 +2,7 @@
 #define GAMEOBJECTS_SHIP_H
 
 #include "GameObjects/AttractableGameObject.h"
+#include "Utils/BoundsChecker.h"
 #include "Weapons/Weapon.h"
 #include <QElapsedTimer>
 #include <QTimer>
@@ -16,7 +17,8 @@ namespace Ships {
 class Ship : public AttractableGameObject {
   Q_OBJECT
 public:
-  Ship(const std::uint32_t maxHp, const float speed, const Position &position);
+  Ship(const std::uint32_t maxHp, const float speed, const Transform &transform,
+       const Config::GameContext ctx);
   virtual ~Ship();
   virtual void update(const UpdateContext &context) override;
   virtual bool shouldBeDeleted() override;

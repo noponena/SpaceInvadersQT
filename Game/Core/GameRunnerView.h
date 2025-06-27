@@ -27,7 +27,8 @@ class GameRunnerView : public QOpenGLWidget,
                        protected QOpenGLFunctions_3_3_Core {
   Q_OBJECT
 public:
-  explicit GameRunnerView(QRect screenGeometry, QWidget *parent = nullptr);
+  explicit GameRunnerView(Config::GameContext gameCtx,
+                          QWidget *parent = nullptr);
   ~GameRunnerView();
   void startLevel(const Levels::Level &level, bool benchmarkMode = false);
   void quitLevel();
@@ -42,6 +43,7 @@ protected:
   void wheelEvent(QWheelEvent *event) override { event->ignore(); }
 
 private:
+  Config::GameContext m_gameCtx;
   QOpenGLShaderProgram *m_program = nullptr;
   GameState *m_gameState;
   Core::GameHUD *m_gameHUD;
@@ -167,8 +169,6 @@ signals:
   void benchmarkFinished();
 
 private slots:
-  void onObjectAdded(QGraphicsItem *object) { m_scene.addItem(object); }
-  void onObjectDeleted(QGraphicsItem *object) { m_scene.removeItem(object); }
   void onPlayerShipDestroyed() {
     m_levelFailed = true;
     m_playerShip = nullptr;

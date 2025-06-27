@@ -12,20 +12,17 @@ namespace Core {
 class GameState : public QObject {
   Q_OBJECT
 public:
-  GameState(QObject *parent = nullptr);
+  GameState(Config::GameContext gameCtx, QObject *parent = nullptr);
 
   void createPlayerShip();
   void initialize();
   void deinitialize();
   void addGameObject(std::shared_ptr<GameObjects::GameObject> object);
-  void setSize(int width, int height);
   void update(float deltaTimeInSeconds);
 
   const std::vector<std::shared_ptr<GameObjects::GameObject>> &
   gameObjects() const;
   std::shared_ptr<GameObjects::Ships::PlayerShip> playerShip() const;
-
-  int m_minX, m_minY, m_maxX, m_maxY, m_windowWidth, m_windowHeight;
 
   const std::uint32_t &stellarTokens() const;
   int enemyShipsReachedBottomLimit() const;
@@ -33,6 +30,7 @@ public:
   int enemyShipCount() const;
 
 private:
+  Config::GameContext m_gameCtx;
   std::vector<std::shared_ptr<GameObjects::GameObject>> m_gameObjects;
   std::unordered_map<std::uint64_t, std::shared_ptr<GameObjects::GameObject>>
       m_magneticGameObjectMap;
@@ -42,7 +40,6 @@ private:
   int m_enemyShipsReachedBottomLimit;
   int m_enemyShipCount;
   void initPlayerShip();
-  void initMovementConstrains();
   std::shared_ptr<GameObjects::Ships::PlayerShip> m_playerShip;
   Weapons::WeaponBuilder m_weaponBuilder;
   GameObjects::Projectiles::ProjectileBuilder m_projectileBuilder;

@@ -8,8 +8,7 @@ namespace Collectables {
 
 class Health : public Collectable {
 public:
-  Health(const Position &position);
-  static void registerPixmaps();
+  Health(const Transform &transform, const Config::GameContext ctx);
 
   // GameObject interface
 protected:

@@ -21,8 +21,9 @@ namespace Utils {
 
 PerformanceBenchmark::PerformanceBenchmark(int logIntervalMs,
                                            int gameObjectThreshold,
-                                           char csvDelimiter)
-    : m_logIntervalMs(logIntervalMs),
+                                           char csvDelimiter,
+                                           const Config::GameContext ctx)
+    : m_gameCtx(ctx), m_logIntervalMs(logIntervalMs),
       m_gameObjectThreshold(gameObjectThreshold), m_csvDelimiter(csvDelimiter) {
 
   std::filesystem::path exePath = std::filesystem::current_path();
@@ -78,12 +79,17 @@ void PerformanceBenchmark::initializeBenchmark(
   Weapons::WeaponBuilder weaponBuilder;
   GameObjects::Projectiles::ProjectileBuilder projectileBuilder;
 
+  GameObjects::RenderDataMap renderDataMap{
+      {GameObjects::RenderState::Normal,
+       GameObjects::RenderData({30, 30},
+                               ":/Images/player_laser_projectile.png")}};
+
   std::unique_ptr<GameObjects::Projectiles::Projectile> primaryProjectile =
-      projectileBuilder.createProjectile<GameObjects::Projectiles::Projectile>()
+      projectileBuilder
+          .createProjectile<GameObjects::Projectiles::Projectile>(m_gameCtx)
           .withDamage(999)
           .withObjectType(GameObjects::ObjectType::PLAYER_PROJECTILE)
-          .withGrahpics(GameObjects::PixmapData{
-              QPointF(30, 30), ":/Images/player_laser_projectile.png", "", ""})
+          .withGrahpics(renderDataMap)
           .withSpawnSound(
               Game::Audio::SoundInfo({true, Game::Audio::SoundEffect::LASER}))
           .withMovementStrategy(
@@ -144,9 +150,9 @@ void PerformanceBenchmark::initializeBenchmark(
   playerShip->addPrimaryWeapon(std::move(fourthWeapon));
   playerShip->addPrimaryWeapon(std::move(fifthWeapon));
 
-  GameObjects::Position position = playerShip->getPosition();
+  QVector2D position = playerShip->getPosition();
   position.setX(0.05);
-  playerShip->setPosition(position);
+  playerShip->moveAbsolute(position);
   playerShip->setMovementStrategy(horizontalIntervalStrategy);
   playerShip->updateFireRate(-99999);
   playerShip->setImmortal(true);

@@ -10,9 +10,9 @@ namespace GameObjects {
 namespace Ships {
 
 Ship::Ship(const std::uint32_t maxHp, const float speed,
-           const Position &position)
-    : AttractableGameObject(position), m_immortal(false), m_pixelWidth(50),
-      m_pixelHeight(50), m_destructionParticleCount(200),
+           const Transform &transform, const Config::GameContext ctx)
+    : AttractableGameObject(transform, ctx), m_immortal(false),
+      m_pixelWidth(50), m_pixelHeight(50), m_destructionParticleCount(200),
       m_currentHealth(maxHp), m_maxHealth(maxHp), m_speed(speed),
       m_energyRegenerationRate(0) {}
 
@@ -44,6 +44,9 @@ void Ship::takeDamage(std::uint32_t amount) {
       m_currentHealth = 0;
     else
       m_currentHealth -= amount;
+
+    qDebug() << "A ship took dmg for " << amount
+             << ". HP remaining: " << m_currentHealth;
   }
 }
 
@@ -169,9 +172,8 @@ void Ship::playOnHitAnimation() {
   if (m_onHitAnimationInProgress)
     return;
 
-  QPixmap onHitPixmap = getOnHitPixmap();
+  setRenderState(RenderState::OnHit);
   m_onHitAnimationInProgress = true;
-  m_graphicsItem->setPixmap(onHitPixmap);
   m_onHitTimerId = startTimer(100);
 }
 
@@ -186,7 +188,7 @@ void Ship::regenerateEnergy(float deltaTimeInSeconds) {
 void Ship::timerEvent(QTimerEvent *event) {
   if (event->timerId() == m_onHitTimerId) {
     killTimer(m_onHitTimerId);
-    m_graphicsItem->setPixmap(getPixmap());
+    setRenderState(RenderState::Normal);
     m_onHitAnimationInProgress = false;
     m_onHitTimerId = -1;
   }

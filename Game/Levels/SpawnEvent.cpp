@@ -23,11 +23,14 @@ void SpawnEvent::execute(
 
     int x = Utils::randi(m_positionRange.first.x(), m_positionRange.second.x());
     int y = Utils::randi(m_positionRange.first.y(), m_positionRange.second.y());
-    std::vector<QPoint> coordinates = m_formation.getPoints(QPoint(x, y));
-    for (QPoint &point : coordinates) {
+    qDebug() << "x=" << x;
+    qDebug() << "y=" << y;
+    std::vector<QVector2D> coordinates = m_formation.getPoints(QVector2D(x, y));
+    for (QVector2D &point : coordinates) {
       std::unique_ptr<GameObjects::GameObject> clonedObject =
           m_gameObject->clone();
-      clonedObject->setPosition(point);
+      clonedObject->moveAbsolute(QVector2D(point));
+      qDebug() << "spawned enemy at " << point;
       addGameObjectFunc(std::move(clonedObject));
     }
     m_lastSpawnTimeMs = elapsedTimeMs;
@@ -44,13 +47,13 @@ SpawnEvent &SpawnEvent::withTriggerTime(int triggerTimeMs) {
   return *this;
 }
 
-SpawnEvent &SpawnEvent::withPosition(QPoint position) {
+SpawnEvent &SpawnEvent::withPosition(QVector2D position) {
   m_positionRange = {position, position};
   return *this;
 }
 
-SpawnEvent &SpawnEvent::withPositionRange(QPoint minPosition,
-                                          QPoint maxPosition) {
+SpawnEvent &SpawnEvent::withPositionRange(QVector2D minPosition,
+                                          QVector2D maxPosition) {
   m_positionRange = {minPosition, maxPosition};
   return *this;
 }

@@ -1,4 +1,5 @@
 #include "MainWindow.h"
+#include "Config/GameContext.h"
 #include "Game/Core/GameRunnerView.h"
 #include "ui_MainWindow.h"
 #include <QTimer>
@@ -13,9 +14,10 @@ MainWindow::MainWindow(QWidget *parent)
 
   QScreen *screen = QGuiApplication::primaryScreen();
   QRect screenGeometry = screen->geometry();
+  auto gameCtx = Config::GameContext(screenGeometry);
 
   // Create the game runner scene and view
-  m_gameRunnerView = new Game::Core::GameRunnerView(screenGeometry);
+  m_gameRunnerView = new Game::Core::GameRunnerView(gameCtx);
   m_gameRunnerView->setSizePolicy(QSizePolicy::Expanding,
                                   QSizePolicy::Expanding);
 
@@ -79,11 +81,7 @@ MainWindow::MainWindow(QWidget *parent)
 
   m_stackedWidget->setCurrentWidget(m_mainMenuView);
 
-  m_levelLoader.setScreenSize(
-      QPoint(screenGeometry.width(), screenGeometry.height()));
-  m_levelLoader.setPositionConstraints(
-      QPoint(0, 0),
-      QPoint(screenGeometry.width() * 0.98, screenGeometry.height() * 0.865));
+  m_levelLoader.setGameCtx(gameCtx);
   m_levelLoader.initialize();
   m_levels = m_levelLoader.loadLevels();
   m_benchmarkLevel = m_levelLoader.loadBenchmarkLevel();

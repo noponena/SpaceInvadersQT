@@ -3,8 +3,9 @@
 
 namespace GameObjects {
 
-AttractableGameObject::AttractableGameObject(const Position &position)
-    : GameObject(position), m_attractionEnabled(true),
+AttractableGameObject::AttractableGameObject(const Transform &transform,
+                                             const Config::GameContext ctx)
+    : GameObject(transform, ctx), m_attractionEnabled(true),
       m_magneticVelocity(QPointF(0, 0)) {}
 
 void AttractableGameObject::update(const UpdateContext &context) {
@@ -43,10 +44,10 @@ void AttractableGameObject::updateMovement(const UpdateContext &context) {
 
 void AttractableGameObject::applyMovement(float deltaTimeInSeconds,
                                           const QPointF &velocity) {
-  Position currentPosition = getPosition();
+  QVector2D currentPosition = getPosition();
   currentPosition.setX(currentPosition.x() + velocity.x() * deltaTimeInSeconds);
   currentPosition.setY(currentPosition.y() + velocity.y() * deltaTimeInSeconds);
-  setPosition(currentPosition);
+  moveAbsolute(currentPosition);
 }
 
 void AttractableGameObject::handleMagneticMovement(

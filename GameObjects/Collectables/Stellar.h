@@ -8,8 +8,7 @@ namespace Collectables {
 
 class Stellar : public Collectable {
 public:
-  Stellar(const Position &position);
-  static void registerPixmaps();
+  Stellar(const Transform &transform, const Config::GameContext ctx);
 
   // GameObject interface
 protected:

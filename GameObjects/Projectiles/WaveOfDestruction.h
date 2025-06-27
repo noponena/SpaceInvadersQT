@@ -8,8 +8,7 @@ namespace Projectiles {
 
 class WaveOfDestruction : public Projectile {
 public:
-  WaveOfDestruction();
-  static void registerPixmaps();
+  WaveOfDestruction(Config::GameContext ctx);
 
   // GameObject interface
 public:
