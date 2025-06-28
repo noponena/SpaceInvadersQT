@@ -3,7 +3,7 @@
 
 #include "AxisMovementStrategy.h"
 #include "Utils/Math/MathConstants.h"
-#include <QPointF>
+#include <QVector2D>
 #include <tuple>
 #include <variant>
 #include <vector>
@@ -19,8 +19,8 @@ public:
     m_yAxisMovementStrategies.reserve(m_maxStrategies);
   }
 
-  std::pair<QPointF, QPointF> move(QPointF pos, QPointF anchorPos,
-                                   float deltaTimeInSeconds) {
+  std::pair<QVector2D, QVector2D> move(QVector2D pos, QVector2D anchorPos,
+                                       float deltaTimeInSeconds) {
     float x = pos.x();
     float y = pos.y();
     float anchorX = anchorPos.x();
@@ -35,7 +35,7 @@ public:
           [&](auto &&arg) { return arg.move(y, anchorY, deltaTimeInSeconds); },
           strategy);
     }
-    return {QPointF(x, y), QPointF(anchorX, anchorY)};
+    return {QVector2D(x, y), QVector2D(anchorX, anchorY)};
   }
 
   void clear() {
@@ -119,8 +119,8 @@ public:
   AngledMovementStrategy(float speed = 1, int direction = 1, int angleDeg = 0) {
 
     float angleRad = angleDeg * PI / 180.0;
-    float speedX = cos(angleRad) * speed;
-    float speedY = sin(angleRad) * speed;
+    float speedX = sin(angleRad) * speed;
+    float speedY = -cos(angleRad) * speed;
 
     m_xAxisMovementStrategies.push_back(
         Movement::LinearMovement(speedX, direction));

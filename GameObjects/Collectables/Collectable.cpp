@@ -4,8 +4,8 @@
 namespace GameObjects {
 namespace Collectables {
 
-Collectable::Collectable(const Position &position)
-    : AttractableGameObject(position) {
+Collectable::Collectable(const Config::GameContext &ctx)
+    : AttractableGameObject(ctx) {
   m_magneticTargets = {ObjectType::PLAYER_SHIP};
   m_attractionEnabled = false;
 }
@@ -41,7 +41,11 @@ void Collectable::handleBlinking(float deltaTimeInSeconds) {
   if (remainingLifePercent <= startBlinkingAt) {
     m_blinkAccumulator += deltaTimeInSeconds;
     bool visible = shouldBlinkVisible(remainingLifePercent, m_blinkAccumulator);
-    m_graphicsItem->setVisible(visible);
+    if (visible) {
+      show();
+    } else {
+      hide();
+    }
   }
 }
 

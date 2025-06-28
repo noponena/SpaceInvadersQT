@@ -4,18 +4,20 @@
 namespace GameObjects {
 namespace Projectiles {
 
-Projectile::Projectile()
-    : GameObject(Position(0, 0)), m_damage(1), m_properties({}) {}
+Projectile::Projectile(const Config::GameContext &ctx)
+    : GameObject(ctx), m_damage(1), m_properties({}) {}
 
 std::unique_ptr<GameObject> Projectile::clone() const {
-  std::unique_ptr<Projectile> projectile = std::make_unique<Projectile>();
+  std::unique_ptr<Projectile> projectile =
+      std::make_unique<Projectile>(m_gameContext);
+  projectile->setTransform(m_transform);
   projectile->m_objectTypes = m_objectTypes;
   projectile->m_magnetism = m_magnetism;
   projectile->setSpawnSoundInfo(m_spawnSoundInfo);
   projectile->setDestructionSoundInfo(m_destructionSoundInfo);
   projectile->setDamage(m_damage);
   projectile->setProperties(m_properties);
-  projectile->setPixmapData(m_pixmapData);
+  projectile->setRenderDataByState(renderDataByState());
   projectile->setMovementStrategy(movementStrategy());
   return projectile;
 }

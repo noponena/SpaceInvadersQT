@@ -6,9 +6,9 @@
 namespace GameObjects {
 namespace Projectiles {
 
-class EnemyProjectile : public GameObjects::Projectiles::Projectile {
+class EnemyProjectile : public Projectile {
 public:
-  EnemyProjectile();
+  EnemyProjectile(Config::GameContext ctx);
 };
 
 } // namespace Projectiles

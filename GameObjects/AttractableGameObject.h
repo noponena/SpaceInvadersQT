@@ -7,7 +7,7 @@ namespace GameObjects {
 
 class AttractableGameObject : public GameObject {
 public:
-  AttractableGameObject(const Position &position);
+  AttractableGameObject(const Config::GameContext &ctx);
   void update(const UpdateContext &context) override;
   void updateMovement(const UpdateContext &context);
   void applyMovement(float deltaTimeInSeconds, const QPointF &velocity);

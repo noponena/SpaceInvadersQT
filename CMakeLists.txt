@@ -14,9 +14,19 @@ if(POLICY CMP0135)
   cmake_policy(SET CMP0135 NEW)
 endif()
 
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    add_compile_definitions(
+        QT_NO_DEBUG_OUTPUT
+        QT_NO_INFO_OUTPUT
+        QT_NO_WARNING_OUTPUT
+        QT_NO_CRITICAL_OUTPUT
+    )
+endif()
+
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets OpenGLWidgets Concurrent)
 
 set(HEADERS
+    Config/GameContext.h
     Game/Audio/SoundBuffer.h
     Game/Audio/SoundDevice.h
     Game/Audio/SoundInfo.h
@@ -28,7 +38,6 @@ set(HEADERS
     Game/CollisionDetection/CollisionDetector.h
     Game/CollisionDetection/Quadtree.h
     Game/CollisionDetection/ThreadedCollisionDetector.h
-    Game/Core/CustomGraphicsItem.h
     Game/Core/GameHUD.h
     Game/Core/GameRunnerView.h
     Game/Core/GameState.h
@@ -53,7 +62,8 @@ set(HEADERS
     GameObjects/Collectables/Stellar.h
     GameObjects/Collectables/StellarPool.h
     GameObjects/GameObject.h
-    GameObjects/Position.h
+    GameObjects/GameObjectBuilder.h
+    GameObjects/PrototypeRegistry.h
     GameObjects/Projectiles/EnemyProjectile.h
     GameObjects/Projectiles/PlayerProjectile.h
     GameObjects/Projectiles/Projectile.h
@@ -75,11 +85,13 @@ set(HEADERS
     Graphics/PixmapRegistry.h
     Graphics/PixmapLibrary.h
     Graphics/ProgressBar.h
+    Graphics/TextureRegistry.h
     UI/FPSCounter.h
     UI/GameObjectCounter.h
     UI/MainWindow.h
     Utils/Math/MathConstants.h
     Utils/Math/MathFunctions.h
+    Utils/BoundsChecker.h
     Utils/PerformanceBenchmark.h
     Utils/Utils.h
     Weapons/PrimaryWeapon.h
@@ -118,6 +130,7 @@ set(SOURCES
     GameObjects/Collectables/Stellar.cpp
     GameObjects/Collectables/StellarPool.cpp
     GameObjects/GameObject.cpp
+    GameObjects/GameObjectBuilder.cpp
     GameObjects/Projectiles/EnemyProjectile.cpp
     GameObjects/Projectiles/PlayerProjectile.cpp
     GameObjects/Projectiles/Projectile.cpp
@@ -137,6 +150,7 @@ set(SOURCES
     UI/FPSCounter.cpp
     UI/GameObjectCounter.cpp
     UI/MainWindow.cpp
+    Utils/BoundsChecker.cpp
     Utils/PerformanceBenchmark.cpp
     Utils/Utils.cpp
     Weapons/PrimaryWeapon.cpp

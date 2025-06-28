@@ -11,8 +11,8 @@ public:
   ProjectileBuilder();
   ProjectileBuilder clone() const;
 
-  template <typename ProjectileType> ProjectileBuilder &createProjectile() {
-    m_projectile = std::make_unique<ProjectileType>();
+  template <typename ProjectileType> ProjectileBuilder &createProjectile(Config::GameContext ctx) {
+    m_projectile = std::make_unique<ProjectileType>(ctx);
     m_projectile->setMovementStrategy(
         Game::Movement::StationaryMovementStrategy());
     m_projectile->setDamage(1);
@@ -27,7 +27,7 @@ public:
   ProjectileBuilder &withSpawnSound(const Game::Audio::SoundInfo spawnSound);
   ProjectileBuilder &
   withDestructionSound(const Game::Audio::SoundInfo destructionSound);
-  ProjectileBuilder &withGrahpics(const GameObjects::PixmapData pixmapData);
+  ProjectileBuilder &withGrahpics(const RenderDataMap renderDataMap);
   std::unique_ptr<Projectile> build();
 
 private:

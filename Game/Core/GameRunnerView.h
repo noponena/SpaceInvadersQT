@@ -11,6 +11,11 @@
 #include <QGraphicsView>
 #include <QKeyEvent>
 #include <QLabel>
+#include <QOpenGLBuffer>
+#include <QOpenGLFunctions_3_3_Core>
+#include <QOpenGLShaderProgram>
+#include <QOpenGLVertexArrayObject>
+#include <QOpenGLWidget>
 #include <QThread>
 #include <QTimer>
 #include <QWheelEvent>
@@ -18,21 +23,28 @@
 namespace Game {
 namespace Core {
 
-class GameRunnerView : public QGraphicsView {
+class GameRunnerView : public QOpenGLWidget,
+                       protected QOpenGLFunctions_3_3_Core {
   Q_OBJECT
 public:
-  explicit GameRunnerView(QRect screenGeometry, QWidget *parent = nullptr);
+  explicit GameRunnerView(Config::GameContext gameCtx,
+                          QWidget *parent = nullptr);
   ~GameRunnerView();
   void startLevel(const Levels::Level &level, bool benchmarkMode = false);
   void quitLevel();
   void resumeGame();
 
 protected:
+  void initializeGL() override;
+  void resizeGL(int w, int h) override;
+  void paintGL() override;
   void keyPressEvent(QKeyEvent *event) override;
   void keyReleaseEvent(QKeyEvent *event) override;
   void wheelEvent(QWheelEvent *event) override { event->ignore(); }
 
 private:
+  Config::GameContext m_gameCtx;
+  QOpenGLShaderProgram *m_program = nullptr;
   GameState *m_gameState;
   Core::GameHUD *m_gameHUD;
   std::unique_ptr<Levels::LevelManager> m_levelManager;
@@ -55,6 +67,10 @@ private:
   bool m_spawnEventsFinished;
   bool m_benchmarkMode;
   std::chrono::high_resolution_clock::time_point m_lastFrameEndTime;
+
+  GLuint m_texture = 0;
+  QOpenGLVertexArrayObject m_vao;
+  QOpenGLBuffer m_vbo;
 
   UI::FPSCounter *m_fpsCounter;
   UI::GameObjectCounter *m_gameObjectCounter;
@@ -153,8 +169,6 @@ signals:
   void benchmarkFinished();
 
 private slots:
-  void onObjectAdded(QGraphicsItem *object) { m_scene.addItem(object); }
-  void onObjectDeleted(QGraphicsItem *object) { m_scene.removeItem(object); }
   void onPlayerShipDestroyed() {
     m_levelFailed = true;
     m_playerShip = nullptr;

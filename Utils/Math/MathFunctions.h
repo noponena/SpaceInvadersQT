@@ -18,6 +18,18 @@ float percentile(std::vector<float> vec, float p) {
     return vec[i];
 }
 
+template <typename T> T moveTowardZero(T value, T step) {
+  if (step < 0)
+    step = -step;
+
+  if (value > 0)
+    return std::max(value - step, T(0));
+  else if (value < 0)
+    return std::min(value + step, T(0));
+  else
+    return 0;
+}
+
 } // namespace Utils::MathFunctions
 
 #endif // MATHFUNCTIONS_H

@@ -3,7 +3,7 @@
 namespace GameObjects {
 namespace Projectiles {
 
-PlayerProjectile::PlayerProjectile() {}
+PlayerProjectile::PlayerProjectile(Config::GameContext ctx) : Projectile(ctx) {}
 
 } // namespace Projectiles
 } // namespace GameObjects

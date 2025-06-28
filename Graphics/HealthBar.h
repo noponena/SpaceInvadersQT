@@ -8,8 +8,7 @@ namespace Graphics {
 class HealthBar : public ProgressBar {
 public:
   HealthBar(float maxHealth, float width, float height,
-            bool showNumericProgression = false,
-            QGraphicsItem *parent = nullptr);
+            bool showNumericProgression = false);
 
   // ProgressBar interface
 private:

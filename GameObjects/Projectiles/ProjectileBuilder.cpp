@@ -62,11 +62,11 @@ ProjectileBuilder &ProjectileBuilder::withDestructionSound(
   return *this;
 }
 
-ProjectileBuilder &
-ProjectileBuilder::withGrahpics(const PixmapData pixmapData) {
-  if (m_projectile)
-    m_projectile->setPixmapData(pixmapData);
-  return *this;
+ProjectileBuilder &ProjectileBuilder::withGrahpics(const RenderDataMap renderDataMap)
+{
+    if (m_projectile)
+        m_projectile->setRenderDataByState(renderDataMap);
+    return *this;
 }
 
 std::unique_ptr<Projectile> ProjectileBuilder::build() {

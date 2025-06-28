@@ -21,15 +21,6 @@ bool Weapon::fire() {
       createProjectile();
   projectile->initialize();
 
-  QPointF ownerCenter = m_owner->getGraphicsItem()->boundingRect().center();
-  QPointF projectileCenter =
-      projectile->getGraphicsItem()->boundingRect().center();
-  QPointF delta = projectileCenter - ownerCenter;
-  float newX = projectile->getPosition().x() - delta.x();
-  float newY = projectile->getPosition().y() - delta.y();
-  GameObjects::Position projectilePosition = projectile->getPosition();
-  projectilePosition.setPos(QPointF(newX, newY));
-  projectile->setPosition(projectilePosition);
   emit projectileFired(std::move(projectile));
   return true;
 }
@@ -67,7 +58,7 @@ Weapon::createProjectile() {
           static_cast<GameObjects::Projectiles::Projectile *>(
               m_projectilePrototype->clone().release()));
 
-  projectile->setPosition(m_owner->getPosition());
+  projectile->moveAbsolute(m_owner->getPosition());
   projectile->setSoundEnabled(m_soundEnabled);
   return projectile;
 }

@@ -8,8 +8,7 @@ namespace Projectiles {
 
 class Vortex : public Projectile {
 public:
-  Vortex();
-  static void registerPixmaps();
+  Vortex(Config::GameContext ctx);
 
 private:
   float m_timeToLiveSeconds;

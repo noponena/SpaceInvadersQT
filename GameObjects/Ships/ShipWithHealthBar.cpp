@@ -3,15 +3,14 @@
 namespace GameObjects {
 namespace Ships {
 
-ShipWithHealthBar::ShipWithHealthBar(const std::uint32_t maxHp,
-                                     const float speed,
-                                     const Position &position)
-    : Ship(maxHp, speed, position) {}
+ShipWithHealthBar::ShipWithHealthBar(const Config::GameContext &ctx)
+    : Ship(ctx) {}
 
 void ShipWithHealthBar::initialize() {
+  m_currentHealth = m_maxHealth;
   GameObject::initialize();
-  m_healthBar = std::make_unique<Graphics::HealthBar>(
-      m_currentHealth, 50, 5, false, m_graphicsItem.get());
+  m_healthBar =
+      std::make_unique<Graphics::HealthBar>(m_currentHealth, 50, 5, false);
   m_healthBar->setPos(0, 45); // Position it below the ship
 }
 
