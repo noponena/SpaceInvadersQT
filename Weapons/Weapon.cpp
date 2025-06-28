@@ -1,6 +1,5 @@
 #include "Weapon.h"
 #include "GameObjects/Ships/Ship.h"
-#include "Graphics/TextureRegistry.h"
 
 namespace Weapons {
 

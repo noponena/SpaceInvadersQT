@@ -11,22 +11,27 @@
 
 namespace GameObjects {
 namespace Ships {
-EnemyShip::EnemyShip(const std::uint32_t maxHp, const Transform &transoform,
-                     const Config::GameContext ctx)
-    : ShipWithHealthBar(maxHp, 0, transoform, ctx),
-      m_bottomEdgeSignalEmitted(false) {
+EnemyShip::EnemyShip(const Config::GameContext &ctx)
+    : ShipWithHealthBar(ctx), m_bottomEdgeSignalEmitted(false) {
   m_stellarCoinSpawnRange = QPoint(2, 5);
   m_healthSpawnProbability = 0.10;
 
   RenderData normalData;
   normalData.size = QVector2D(50, 50);
   normalData.imagePath = ":/Images/alien.png";
-  addRenderData(RenderState::Normal, normalData);
+  addRenderData(State::Normal, normalData);
 
   RenderData onHitData;
   onHitData.size = QVector2D(50, 50);
   onHitData.imagePath = ":/Images/alien_on_hit.png";
-  addRenderData(RenderState::OnHit, onHitData);
+  addRenderData(State::OnHit, onHitData);
+
+  RenderData onDestructionData;
+  onHitData.size = QVector2D(50, 50);
+  onHitData.imagePath = ":/Images/explosion.png";
+  addRenderData(State::OnDestruction, onDestructionData);
+
+  m_transform.colliderSize = {30, 30};
 
   m_magneticTargets = {ObjectType::PROJECTILE};
 }
@@ -54,8 +59,8 @@ void EnemyShip::spawnStellarCoins() {
   QVector2D position(center.x(), center.y());
   for (int i = 0; i < amount; i++) {
     std::unique_ptr<GameObjects::Collectables::Stellar> stellar =
-        std::make_unique<GameObjects::Collectables::Stellar>(position,
-                                                             m_gameContext);
+        std::make_unique<GameObjects::Collectables::Stellar>(m_gameContext);
+    stellar->moveAbsolute(position);
     stellar->initialize();
     emit objectCreated(std::move(stellar));
   }
@@ -67,8 +72,8 @@ void EnemyShip::spawnHealth() {
     QVector2D position(center.x(), center.y());
 
     std::unique_ptr<GameObjects::Collectables::Health> health =
-        std::make_unique<GameObjects::Collectables::Health>(position,
-                                                            m_gameContext);
+        std::make_unique<GameObjects::Collectables::Health>(m_gameContext);
+    health->moveAbsolute(position);
     health->initialize();
     emit objectCreated(std::move(health));
   }
@@ -97,7 +102,10 @@ void EnemyShip::clampHealthSpawnProbability() {
 
 std::unique_ptr<GameObject> EnemyShip::clone() const {
   std::unique_ptr<EnemyShip> enemyShip =
-      std::make_unique<EnemyShip>(m_maxHealth, m_transform, m_gameContext);
+      std::make_unique<EnemyShip>(m_gameContext);
+
+  enemyShip->setTransform(m_transform);
+  enemyShip->setMaxHealth(m_maxHealth);
   enemyShip->m_destructionSoundInfo = m_destructionSoundInfo;
   enemyShip->m_objectTypes = m_objectTypes;
   enemyShip->m_healthSpawnProbability = m_healthSpawnProbability;
@@ -107,7 +115,6 @@ std::unique_ptr<GameObject> EnemyShip::clone() const {
   enemyShip->setMovementStrategy(movementStrategy());
 
   enemyShip->m_energyRegenerationRate = m_energyRegenerationRate;
-  enemyShip->m_currentHealth = m_currentHealth;
   enemyShip->m_currentEnergy = m_currentEnergy;
   enemyShip->m_currentHealth = m_currentHealth;
   enemyShip->m_maxEnergy = m_maxEnergy;

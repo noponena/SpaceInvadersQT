@@ -8,7 +8,7 @@ namespace Collectables {
 
 class Health : public Collectable {
 public:
-  Health(const Transform &transform, const Config::GameContext ctx);
+  Health(const Config::GameContext &ctx);
 
   // GameObject interface
 protected:

@@ -2,12 +2,12 @@
 namespace GameObjects {
 namespace Collectables {
 
-Health::Health(const Transform &transform, const Config::GameContext ctx)
-    : Collectable(transform, ctx) {
+Health::Health(const Config::GameContext &ctx) : Collectable(ctx) {
   RenderData normalData;
   normalData.size = QVector2D(22, 22);
   normalData.imagePath = ":/Images/health.png";
-  addRenderData(RenderState::Normal, normalData);
+  addRenderData(State::Normal, normalData);
+  m_transform.colliderSize = {5, 5};
 }
 
 void Health::initializeSounds() {
@@ -21,8 +21,8 @@ void Health::initializeObjectType() {
 }
 
 std::unique_ptr<GameObject> Health::clone() const {
-  std::unique_ptr<Health> health =
-      std::make_unique<Health>(m_transform, m_gameContext);
+  std::unique_ptr<Health> health = std::make_unique<Health>(m_gameContext);
+  health->setTransform(m_transform);
   health->m_destructionSoundInfo = m_destructionSoundInfo;
   health->m_objectTypes = m_objectTypes;
   health->m_renderDataByState = m_renderDataByState;

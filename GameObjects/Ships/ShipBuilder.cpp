@@ -18,12 +18,6 @@ ShipBuilder &ShipBuilder::withPosition(const Transform &transform)
     return *this;
 }
 
-ShipBuilder &ShipBuilder::withSpeed(float speed) {
-  if (m_ship)
-    m_ship->setSpeed(speed);
-  return *this;
-}
-
 ShipBuilder &ShipBuilder::withHealth(float health) {
   if (m_ship) {
     m_ship->setMaxHealth(health);

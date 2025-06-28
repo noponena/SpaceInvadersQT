@@ -5,17 +5,15 @@
 
 namespace GameObjects {
 
-std::uint64_t GameObject::counter = 0;
+std::uint32_t GameObject::counter = 0;
 
-GameObject::GameObject(const Transform &transform,
-                       const Config::GameContext ctx)
+GameObject::GameObject(const Config::GameContext &ctx)
     : m_hasCollided(false), m_collidable(true), m_soundEnabled(true),
       m_magnetism({false, 0, 0}), m_id(counter++),
       m_destructionInitiated(false), m_gameContext(ctx) {
 
-  m_renderState = RenderState::Normal;
+  m_state = State::Normal;
   m_objectTypes = {ObjectType::BASE};
-  setTransform(transform);
 }
 
 void GameObject::initialize() {
@@ -34,10 +32,29 @@ bool GameObject::shouldBeDeleted() {
 void GameObject::update(const UpdateContext &context) {
   if (isDead() && !m_destructionInitiated)
     executeDestructionProcedure();
+
   applyMovementStrategy(context.deltaTimeInSeconds);
-  if (m_destructionInitiated) {
-    m_destructionAnimation.showNextFrame();
-    m_destructionEffect.update(context.deltaTimeInSeconds);
+
+  // Animation advance (unified for all states)
+  auto animIt = m_animationInfoByState.find(m_state);
+  if (animIt != m_animationInfoByState.end()) {
+    // There's an animation for this state
+    AnimationInfo &anim = animIt->second;
+
+    // Advance animation timer/frame index
+    m_animFrameTimerMs += static_cast<int>(context.deltaTimeInSeconds * 1000);
+    if (m_animFrameTimerMs >= anim.frameDurationsMs[m_currentAnimFrame]) {
+      m_animFrameTimerMs = 0;
+      m_currentAnimFrame++;
+      if (m_currentAnimFrame >= anim.frameCount())
+        m_currentAnimFrame = 0; // or hold at last frame, or switch state
+    }
+
+    // Update RenderData for this frame
+    auto &renderData = m_renderDataByState[m_state];
+    auto uvPair = anim.frameUVs[m_currentAnimFrame];
+    renderData.uvMin = uvPair.first;
+    renderData.uvMax = uvPair.second;
   }
 }
 
@@ -47,8 +64,8 @@ void GameObject::hide() { m_visible = false; }
 
 void GameObject::playDestructionAnimation() {
   hide();
-  //m_destructionAnimation.setPos(m_graphicsItem->pos());
-  //getScene()->addItem(&m_destructionAnimation);
+  // m_destructionAnimation.setPos(m_graphicsItem->pos());
+  // getScene()->addItem(&m_destructionAnimation);
   m_destructionAnimation.start();
 }
 
@@ -114,24 +131,26 @@ void GameObject::setDestructionSoundInfo(
   m_destructionSoundInfo = newDestructionSoundInfo;
 }
 
-void GameObject::setRenderState(RenderState newRenderState) {
-  m_renderState = newRenderState;
+void GameObject::setState(State newState) {
+  m_state = newState;
+  m_currentAnimFrame = 0;
+  m_animFrameTimerMs = 0;
 }
 
-RenderState GameObject::renderState() const { return m_renderState; }
+State GameObject::state() const { return m_state; }
 
 const RenderData &GameObject::getRenderData() const {
-  auto it = m_renderDataByState.find(m_renderState);
+  auto it = m_renderDataByState.find(m_state);
   if (it != m_renderDataByState.end())
     return it->second;
-  return m_renderDataByState.at(RenderState::Normal);
+  return m_renderDataByState.at(State::Normal);
 }
 
-const RenderData &GameObject::getRenderData(RenderState state) const {
+const RenderData &GameObject::getRenderData(State state) const {
   auto it = m_renderDataByState.find(state);
   if (it != m_renderDataByState.end())
     return it->second;
-  return m_renderDataByState.at(RenderState::Normal);
+  return m_renderDataByState.at(State::Normal);
 }
 
 RenderDataMap GameObject::renderDataByState() const {
@@ -153,7 +172,7 @@ void GameObject::setGameContext(const Config::GameContext &newGameContext) {
 
 Config::GameContext GameObject::gameContext() const { return m_gameContext; }
 
-void GameObject::addRenderData(RenderState state, const RenderData &data) {
+void GameObject::addRenderData(State state, const RenderData &data) {
   m_renderDataByState[state] = data;
 }
 
@@ -189,6 +208,11 @@ void GameObject::clampToYBounds() {
   else if (Utils::BoundsChecker::isBeyondScreenBottom(
                m_transform.position, m_gameContext.movementBounds))
     m_transform.position.setY(m_gameContext.movementBounds.bottom());
+}
+
+bool GameObject::hasDestructionAnimation() const {
+  return m_animationInfoByState.find(State::OnDestruction) !=
+         m_animationInfoByState.end();
 }
 
 bool GameObject::isCollidable() const { return m_collidable; }
@@ -233,6 +257,7 @@ void GameObject::moveRelative(const QVector2D &displacement) {
 
 void GameObject::setSoundEnabled(const bool newSoundEnabled) {
   m_spawnSoundInfo.enabled = newSoundEnabled;
+  m_destructionSoundInfo.enabled = newSoundEnabled;
 }
 
 void GameObject::addObjectType(const ObjectType objectType) {

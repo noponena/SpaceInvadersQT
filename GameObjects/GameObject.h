@@ -58,34 +58,44 @@ struct UpdateContext {
       &magneticGameObjects;
 };
 
-enum class RenderState {
+enum class State {
   Normal,
   OnHit,
   OnDestruction,
 };
 
-struct RenderData {
-  QVector2D size;        // Floating-point width/height
-  QString imagePath;     // Path or key to look up the texture
-  float rotation = 0.0f; // Radians
+struct AnimationInfo {
+  QSize sheetSize;
+  int columns;
+  int rows;
+  std::vector<std::pair<QVector2D, QVector2D>> frameUVs;
+  int frameCount() const { return frameUVs.size(); }
+  std::vector<int> frameDurationsMs;
+};
 
-  RenderData(const QVector2D &sz = QVector2D(1.0f, 1.0f),
-             const QString &path = QString(), float rot = 0.0f)
+struct RenderData {
+  QVector2D size;    // Floating-point width/height
+  QString imagePath; // Path or key to look up the texture
+  float rotation;    // Radians
+
+  QVector2D uvMin = QVector2D(0.0f, 0.0f); // lower-left
+  QVector2D uvMax = QVector2D(1.0f, 1.0f); // upper-right
+
+  RenderData(const QVector2D &sz = QVector2D(10.0f, 10.0f),
+             const QString &path = QString(":/Images/placeholder.png"), float rot = 0.0f)
       : size(sz), imagePath(path), rotation(rot) {}
 };
 
 struct Transform {
   QVector2D position;
   QVector2D anchorPosition;
-  QVector2D scale;
   QVector2D colliderSize; // Width/height of the collision box
   float rotation;
 
   Transform(const QVector2D &pos = QVector2D(0.0f, 0.0f),
             const QVector2D &anchor = QVector2D(0.0f, 0.0f),
-            const QVector2D &scl = QVector2D(1.0f, 1.0f),
-            const QVector2D &csize = QVector2D(1.0f, 1.0f), float rot = 0.0f)
-      : position(pos), anchorPosition(anchor), scale(scl), colliderSize(csize),
+            const QVector2D &csize = QVector2D(10.0f, 10.0f), float rot = 0.0f)
+      : position(pos), anchorPosition(anchor), colliderSize(csize),
         rotation(rot) {}
 
   QRectF colliderRect() const {
@@ -95,14 +105,15 @@ struct Transform {
   }
 };
 
-using RenderDataMap = std::unordered_map<RenderState, RenderData>;
+using RenderDataMap = std::unordered_map<State, RenderData>;
+using AnimationDataMap = std::unordered_map<State, AnimationInfo>;
 
 class GameObject : public QObject {
   Q_OBJECT
 
 public:
   // Constructors & Destructor
-  GameObject(const Transform &transform, const Config::GameContext ctx);
+  GameObject(const Config::GameContext &ctx);
   virtual ~GameObject() = default;
   virtual std::unique_ptr<GameObject> clone() const = 0;
 
@@ -165,16 +176,16 @@ public:
 
   RenderData renderData() const;
 
-  void setRenderState(RenderState newRenderState);
-  RenderState renderState() const;
+  void setState(State newState);
+  State state() const;
 
   const RenderData &getRenderData() const;
 
-  void addRenderData(RenderState state, const RenderData &data);
+  void addRenderData(State state, const RenderData &data);
 
   Transform transform() const;
 
-  const RenderData &getRenderData(RenderState state) const;
+  const RenderData &getRenderData(State state) const;
 
   RenderDataMap renderDataByState() const;
 
@@ -191,7 +202,8 @@ protected:
   std::unordered_set<ObjectType> m_objectTypes;
   Transform m_transform;
   RenderDataMap m_renderDataByState;
-  RenderState m_renderState = RenderState::Normal;
+  AnimationDataMap m_animationInfoByState;
+  State m_state = State::Normal;
   bool m_hasCollided;
   bool m_collidable;
   bool m_soundEnabled;
@@ -221,13 +233,17 @@ protected:
   void clampToXBounds();
   void clampToYBounds();
 
+  bool hasDestructionAnimation() const;
+
 private:
   // Member Variables
-  std::uint64_t m_id;
+  std::uint32_t m_id;
   bool m_visible = true;
   bool m_destructionInitiated;
   Game::Movement::MovementStrategy m_movementStrategy;
-  static std::uint64_t counter;
+  static std::uint32_t counter;
+  int m_animFrameTimerMs = 0;
+  int m_currentAnimFrame = 0;
 
   inline void applyMovementStrategy(float deltaTimeInSeconds);
   inline void playSpawnSound();

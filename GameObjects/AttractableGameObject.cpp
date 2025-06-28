@@ -3,9 +3,8 @@
 
 namespace GameObjects {
 
-AttractableGameObject::AttractableGameObject(const Transform &transform,
-                                             const Config::GameContext ctx)
-    : GameObject(transform, ctx), m_attractionEnabled(true),
+AttractableGameObject::AttractableGameObject(const Config::GameContext &ctx)
+    : GameObject(ctx), m_attractionEnabled(true),
       m_magneticVelocity(QPointF(0, 0)) {}
 
 void AttractableGameObject::update(const UpdateContext &context) {

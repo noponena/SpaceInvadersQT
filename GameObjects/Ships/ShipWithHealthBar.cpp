@@ -3,13 +3,11 @@
 namespace GameObjects {
 namespace Ships {
 
-ShipWithHealthBar::ShipWithHealthBar(const std::uint32_t maxHp,
-                                     const float speed,
-                                     const Transform &transform,
-                                     const Config::GameContext ctx)
-    : Ship(maxHp, speed, transform, ctx) {}
+ShipWithHealthBar::ShipWithHealthBar(const Config::GameContext &ctx)
+    : Ship(ctx) {}
 
 void ShipWithHealthBar::initialize() {
+  m_currentHealth = m_maxHealth;
   GameObject::initialize();
   m_healthBar =
       std::make_unique<Graphics::HealthBar>(m_currentHealth, 50, 5, false);

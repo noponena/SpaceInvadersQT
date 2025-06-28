@@ -9,8 +9,7 @@ namespace Ships {
 
 class ShipWithHealthBar : public Ship {
 public:
-  ShipWithHealthBar(const std::uint32_t maxHp, const float speed,
-                    const Transform &transform, const Config::GameContext ctx);
+  ShipWithHealthBar(const Config::GameContext &ctx);
   void initialize() override;
 
 protected:

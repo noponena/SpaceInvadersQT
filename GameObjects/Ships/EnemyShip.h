@@ -9,8 +9,7 @@ namespace Ships {
 class EnemyShip : public ShipWithHealthBar {
   Q_OBJECT
 public:
-  EnemyShip(const std::uint32_t maxHp, const Transform &transoform,
-            const Config::GameContext ctx);
+  EnemyShip(const Config::GameContext &ctx);
   void collideWith(GameObject &other) override;
   void collideWithProjectile(Projectiles::Projectile &projectile) override;
   void collideWithEnemyShip(EnemyShip &enemyShip) override;

@@ -18,7 +18,6 @@ public:
 
   ShipBuilder &withObjectType(const ObjectType objectType);
   ShipBuilder &withPosition(const Transform &transform);
-  ShipBuilder &withSpeed(float speed);
   ShipBuilder &withHealth(float health);
   ShipBuilder &withEnergy(float energy);
   ShipBuilder &withEnergyRegenerationRate(float energyRegenerationRate);

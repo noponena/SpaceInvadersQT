@@ -8,8 +8,7 @@ namespace Ships {
 class PlayerShip : public Ship {
   Q_OBJECT
 public:
-  PlayerShip(const float speed, const Transform &transform,
-             const Config::GameContext ctx);
+  PlayerShip(const Config::GameContext &ctx);
 
   // GameObject interface
 public:
@@ -41,6 +40,8 @@ public:
 
   float maxHealth() const;
   void setMaxHealth(float newMaxHealth);
+
+  void setSpeed(float newSpeed);
 
   // GameObject interface
 protected:

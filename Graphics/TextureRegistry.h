@@ -18,7 +18,6 @@ struct TextureInfo {
 
 class TextureRegistry {
 public:
-  // Get the singleton instance
   static TextureRegistry &instance() {
     static TextureRegistry reg;
     return reg;
@@ -56,6 +55,8 @@ public:
     m_gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     m_gl->glBindTexture(GL_TEXTURE_2D, 0);
     m_textures[path] = TextureInfo{tex, img.width(), img.height()};
+    qDebug() << "Created a texture: path=" << path << " width=" << img.width()
+             << " height=" << img.height();
     return m_textures[path];
   }
 

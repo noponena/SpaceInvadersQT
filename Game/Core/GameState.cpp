@@ -13,8 +13,8 @@ GameState::GameState(Config::GameContext gameCtx, QObject *parent)
 }
 
 void GameState::createPlayerShip() {
-  m_playerShip = std::make_shared<GameObjects::Ships::PlayerShip>(
-      m_playersShipStartSpeed, GameObjects::Transform(), m_gameCtx);
+  m_playerShip = std::make_shared<GameObjects::Ships::PlayerShip>(m_gameCtx);
+  m_playerShip->setSpeed(m_playersShipStartSpeed);
 }
 
 void GameState::initialize() {
@@ -90,7 +90,7 @@ void GameState::initPlayerShip() {
   m_playerShip->moveAbsolute(posVec);
 
   GameObjects::RenderDataMap renderDataMap{
-      {GameObjects::RenderState::Normal,
+      {GameObjects::State::Normal,
        GameObjects::RenderData({30, 30},
                                ":/Images/player_laser_projectile.png")}};
 

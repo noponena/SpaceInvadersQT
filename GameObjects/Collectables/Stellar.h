@@ -8,7 +8,7 @@ namespace Collectables {
 
 class Stellar : public Collectable {
 public:
-  Stellar(const Transform &transform, const Config::GameContext ctx);
+  Stellar(const Config::GameContext &ctx);
 
   // GameObject interface
 protected:

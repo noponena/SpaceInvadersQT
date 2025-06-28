@@ -5,21 +5,19 @@
 
 namespace GameObjects {
 namespace Ships {
-PlayerShip::PlayerShip(const float speed, const Transform &transform,
-                       const Config::GameContext ctx)
-    : Ship(0, speed, transform, ctx) {
+PlayerShip::PlayerShip(const Config::GameContext &ctx) : Ship(ctx) {
   m_magnetism = {true, true, 100.0f, 100.0f};
 
   RenderData normalData;
   normalData.size = QVector2D(50, 50);
   normalData.imagePath = ":/Images/player_ship.png";
-  addRenderData(RenderState::Normal, normalData);
+  addRenderData(State::Normal, normalData);
 
   /*
   RenderData onHitData;
   onHitData.size = QVector2D(100, 100);
   onHitData.imagePath = ":/Images/player_ship.png";
-  addRenderData(RenderState::OnHit, onHitData);
+  addRenderData(State::OnHit, onHitData);
  */
 }
 
@@ -46,7 +44,10 @@ void PlayerShip::initializeSounds() {
 
 std::unique_ptr<GameObject> PlayerShip::clone() const {
   std::unique_ptr<PlayerShip> playerShip =
-      std::make_unique<PlayerShip>(m_speed, m_transform, m_gameContext);
+      std::make_unique<PlayerShip>(m_gameContext);
+
+  playerShip->setTransform(m_transform);
+  playerShip->setSpeed(m_speed);
   playerShip->m_renderDataByState = m_renderDataByState;
   playerShip->m_destructionSoundInfo = m_destructionSoundInfo;
   playerShip->m_objectTypes = m_objectTypes;
@@ -138,6 +139,10 @@ void PlayerShip::setMaxHealth(float newMaxHealth) {
   m_maxHealth = newMaxHealth;
   emit playerMaxHealthSet(newMaxHealth);
   emit playerHealthUpdated(newMaxHealth);
+}
+
+void PlayerShip::setSpeed(float newSpeed) {
+    m_speed = newSpeed;
 }
 
 void PlayerShip::setSecondaryWeapon(std::unique_ptr<Weapons::Weapon> newWeapon,

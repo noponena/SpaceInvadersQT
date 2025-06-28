@@ -13,7 +13,7 @@ enum class MovementState { Initial, Magnetic, Stopped };
 
 class Collectable : public AttractableGameObject {
 public:
-  Collectable(const Transform &transform, const Config::GameContext ctx);
+  Collectable(const Config::GameContext &ctx);
   ~Collectable() {};
 
   bool m_collected = false;

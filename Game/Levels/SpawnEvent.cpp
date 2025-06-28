@@ -23,14 +23,11 @@ void SpawnEvent::execute(
 
     int x = Utils::randi(m_positionRange.first.x(), m_positionRange.second.x());
     int y = Utils::randi(m_positionRange.first.y(), m_positionRange.second.y());
-    qDebug() << "x=" << x;
-    qDebug() << "y=" << y;
     std::vector<QVector2D> coordinates = m_formation.getPoints(QVector2D(x, y));
     for (QVector2D &point : coordinates) {
       std::unique_ptr<GameObjects::GameObject> clonedObject =
           m_gameObject->clone();
       clonedObject->moveAbsolute(QVector2D(point));
-      qDebug() << "spawned enemy at " << point;
       addGameObjectFunc(std::move(clonedObject));
     }
     m_lastSpawnTimeMs = elapsedTimeMs;

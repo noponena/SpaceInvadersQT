@@ -13,18 +13,18 @@ Vortex::Vortex(Config::GameContext ctx)
   RenderData normalData;
   normalData.size = QVector2D(25, 25);
   normalData.imagePath = ":/Images/black_orb.png";
-  addRenderData(RenderState::Normal, normalData);
+  addRenderData(State::Normal, normalData);
 
   RenderData onHitData;
   onHitData.size = QVector2D(100, 100);
   onHitData.imagePath = ":/Images/black_hole.png";
-  addRenderData(RenderState::OnHit, onHitData);
+  addRenderData(State::OnHit, onHitData);
 
   /*
   RenderData hudData;
   hudData.size = QVector2D(25, 25);
   hudData.imagePath = ":/Images/black_hole_hud.png";
-  addRenderData(RenderState::Hud, hudData);
+  addRenderData(State::Hud, hudData);
  */
 }
 
@@ -37,7 +37,7 @@ void Vortex::collideWithEnemyShip(Ships::EnemyShip &enemyShip) {
   Q_UNUSED(enemyShip);
   m_magnetism.enabled = true;
   m_collidable = false;
-  setRenderState(RenderState::OnHit);
+  setState(State::OnHit);
   disableMovement();
 }
 

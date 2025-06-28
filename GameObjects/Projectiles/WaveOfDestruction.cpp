@@ -10,22 +10,22 @@ WaveOfDestruction::WaveOfDestruction(Config::GameContext ctx)
   RenderData normalData;
   normalData.size = QVector2D(250, 20);
   normalData.imagePath = ":/Images/wave.png";
-  addRenderData(RenderState::Normal, normalData);
+  addRenderData(State::Normal, normalData);
 
   m_transform = Transform(QVector2D(0.0f, 0.0f), QVector2D(0.0f, 0.0f),
-                          QVector2D(0.0f, 0.0f), QVector2D(250.0f, 20.0f));
+                          QVector2D(250.0f, 20.0f));
 
   /*
   RenderData onHitData;
   onHitData.size = QVector2D(100, 100);
   onHitData.imagePath = ":/Images/black_hole.png";
-  addRenderData(RenderState::OnHit, onHitData);
+  addRenderData(State::OnHit, onHitData);
 
 
   RenderData hudData;
   hudData.size = QVector2D(25, 25);
   hudData.imagePath = ":/Images/wave_of_destruction_hud.png";
-  addRenderData(RenderState::Hud, hudData);
+  addRenderData(State::Hud, hudData);
  */
 }
 

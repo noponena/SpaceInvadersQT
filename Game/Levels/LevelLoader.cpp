@@ -27,7 +27,7 @@ void LevelLoader::initialize() {
   transform.colliderSize = QVector2D(30, 30);
 
   GameObjects::RenderDataMap renderDataMap{
-      {GameObjects::RenderState::Normal,
+      {GameObjects::State::Normal,
        GameObjects::RenderData({30, 30},
                                ":/Images/enemy_laser_projectile.png")}};
 
@@ -47,8 +47,9 @@ void LevelLoader::initialize() {
       .withProjectile(std::move(projectile))
       .withWeaponCooldownMs(2500);
 
-  m_enemyShip =
-      std::make_unique<GameObjects::Ships::EnemyShip>(5, transform, *m_gameCtx);
+  m_enemyShip = std::make_unique<GameObjects::Ships::EnemyShip>(*m_gameCtx);
+  m_enemyShip->setTransform(transform);
+  m_enemyShip->setMaxHealth(5);
   m_enemyShip->initialize();
 
   m_enemyShip->addPrimaryWeapon(m_weaponBuilder.build());
@@ -80,7 +81,7 @@ void LevelLoader::initialize() {
   m_enemyShip->setMovementStrategy(combined);
 }
 
-Level LevelLoader::loadLevel(const std::string &filepath) {
+Level LevelLoader::loadLevel(const std::string &filepath) const {
   try {
     qDebug() << "loading level:"
              << QString::fromStdString(
@@ -167,7 +168,7 @@ Level LevelLoader::loadLevel(const std::string &filepath) {
   }
 }
 
-std::map<int, Level> LevelLoader::loadLevels() {
+std::map<int, Level> LevelLoader::loadLevels() const {
   std::map<int, Level> levels;
 
   std::filesystem::path levelsPath = std::filesystem::current_path() / "levels";
@@ -229,7 +230,7 @@ void LevelLoader::setGameCtx(Config::GameContext &ctx) {
 }
 
 Formation::Type
-LevelLoader::stringToFormationType(std::string formationTypeStr) {
+LevelLoader::stringToFormationType(std::string formationTypeStr) const {
   std::string upperStr = formationTypeStr;
   std::transform(upperStr.begin(), upperStr.end(), upperStr.begin(),
                  [](unsigned char c) { return std::toupper(c); });

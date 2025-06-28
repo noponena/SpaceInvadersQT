@@ -13,11 +13,12 @@ private:
 
 public:
   static std::shared_ptr<Stellar>
-  getCollectable(const Transform &transform, const Config::GameContext ctx) {
+  getCollectable(const Transform &transform, const Config::GameContext &ctx) {
     if (pool.empty()) {
       // If the pool is empty, create a new one (this should ideally not happen
       // often)
-      auto newCollectable = std::make_shared<Stellar>(transform, ctx);
+      auto newCollectable = std::make_shared<Stellar>(ctx);
+      newCollectable->setTransform(transform);
       newCollectable->initialize();
       return newCollectable;
     } else {
@@ -37,7 +38,7 @@ public:
 
   static void initializePool(int initialSize, const Config::GameContext ctx) {
     for (int i = 0; i < initialSize; ++i) {
-      auto collectable = std::make_shared<Stellar>(Transform(), ctx);
+      auto collectable = std::make_shared<Stellar>(ctx);
       collectable->initialize();
       pool.push(collectable);
     }

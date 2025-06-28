@@ -1,5 +1,5 @@
 #include "Ship.h"
-#include "Graphics/PixmapLibrary.h"
+#include "Graphics/TextureRegistry.h"
 #include "Weapons/Weapon.h"
 #include <QGraphicsColorizeEffect>
 #include <QGraphicsScene>
@@ -9,12 +9,10 @@
 namespace GameObjects {
 namespace Ships {
 
-Ship::Ship(const std::uint32_t maxHp, const float speed,
-           const Transform &transform, const Config::GameContext ctx)
-    : AttractableGameObject(transform, ctx), m_immortal(false),
-      m_pixelWidth(50), m_pixelHeight(50), m_destructionParticleCount(200),
-      m_currentHealth(maxHp), m_maxHealth(maxHp), m_speed(speed),
-      m_energyRegenerationRate(0) {}
+Ship::Ship(const Config::GameContext &ctx)
+    : AttractableGameObject(ctx), m_immortal(false), m_pixelWidth(50),
+      m_pixelHeight(50), m_destructionParticleCount(200), m_currentHealth(1),
+      m_maxHealth(1), m_speed(1), m_energyRegenerationRate(0) {}
 
 Ship::~Ship() {}
 
@@ -102,27 +100,37 @@ void Ship::clearWeapons() {
 }
 
 void Ship::initializeDestructionAnimation() {
+  auto renderDataIt = m_renderDataByState.find(State::OnDestruction);
+  if (renderDataIt == m_renderDataByState.end()) {
+    qDebug() << "No destruction spritesheet found.";
+    return;
+  }
+
   int columns = 4;
   int rows = 4;
-  int targetWidth = 200;
-  int targetHeight = 200;
 
-  QPixmap pixmap = Graphics::PixmapLibrary::getPixmap(
-      ":/Images/explosion.png", targetWidth, targetHeight);
+  const QString &texPath = renderDataIt->second.imagePath;
+  const auto &texInfo =
+      Graphics::TextureRegistry::instance().getOrCreateTexture(texPath);
+  QSize sheetSize(texInfo.width, texInfo.height);
 
-  std::vector<QPoint> frameOffsets;
-  // Calculate and store offsets for each frame
+  AnimationInfo animInfo;
+  animInfo.sheetSize = sheetSize;
+  animInfo.columns = columns;
+  animInfo.rows = rows;
+  animInfo.frameUVs.clear();
+
   for (int row = 0; row < rows; ++row) {
     for (int col = 0; col < columns; ++col) {
-      int x = col * targetWidth / 4;
-      int y = row * targetHeight / 4;
-      frameOffsets.emplace_back(x, y);
+      float u0 = float(col) / columns;
+      float v0 = float(row) / rows;
+      float u1 = float(col + 1) / columns;
+      float v1 = float(row + 1) / rows;
+      animInfo.frameUVs.emplace_back(QVector2D(u0, v0), QVector2D(u1, v1));
     }
   }
 
-  m_destructionAnimation.setSpritesheet(pixmap);
-  m_destructionAnimation.setFrameOffsets(frameOffsets);
-  m_destructionAnimation.setFrameSize(QSize(m_pixelWidth, m_pixelHeight));
+  m_animationInfoByState[State::OnDestruction] = std::move(animInfo);
 }
 
 void Ship::initializeDestructionEffects() {
@@ -156,8 +164,6 @@ void Ship::setEnergyRegenerationRate(std::uint32_t newEnergyRegenerationRate) {
 
 void Ship::setMaxHealth(float newMaxHealth) { m_maxHealth = newMaxHealth; }
 
-void Ship::setSpeed(float newSpeed) { m_speed = newSpeed; }
-
 void Ship::setMaxEnergy(float newMaxEnergy) { m_maxEnergy = newMaxEnergy; }
 
 int Ship::currentHp() const { return m_currentHealth; }
@@ -172,7 +178,7 @@ void Ship::playOnHitAnimation() {
   if (m_onHitAnimationInProgress)
     return;
 
-  setRenderState(RenderState::OnHit);
+  setState(State::OnHit);
   m_onHitAnimationInProgress = true;
   m_onHitTimerId = startTimer(100);
 }
@@ -188,7 +194,7 @@ void Ship::regenerateEnergy(float deltaTimeInSeconds) {
 void Ship::timerEvent(QTimerEvent *event) {
   if (event->timerId() == m_onHitTimerId) {
     killTimer(m_onHitTimerId);
-    setRenderState(RenderState::Normal);
+    setState(State::Normal);
     m_onHitAnimationInProgress = false;
     m_onHitTimerId = -1;
   }

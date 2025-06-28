@@ -17,8 +17,7 @@ namespace Ships {
 class Ship : public AttractableGameObject {
   Q_OBJECT
 public:
-  Ship(const std::uint32_t maxHp, const float speed, const Transform &transform,
-       const Config::GameContext ctx);
+  Ship(const Config::GameContext &ctx);
   virtual ~Ship();
   virtual void update(const UpdateContext &context) override;
   virtual bool shouldBeDeleted() override;
@@ -47,7 +46,6 @@ public:
 
   void setEnergyRegenerationRate(std::uint32_t newEnergyRegenerationRate);
   void setMaxHealth(float newMaxHealth);
-  void setSpeed(float newSpeed);
   void setMaxEnergy(float newMaxEnergy);
 
 protected:

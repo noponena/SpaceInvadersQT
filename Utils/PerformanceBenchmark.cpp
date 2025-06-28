@@ -80,7 +80,7 @@ void PerformanceBenchmark::initializeBenchmark(
   GameObjects::Projectiles::ProjectileBuilder projectileBuilder;
 
   GameObjects::RenderDataMap renderDataMap{
-      {GameObjects::RenderState::Normal,
+      {GameObjects::State::Normal,
        GameObjects::RenderData({30, 30},
                                ":/Images/player_laser_projectile.png")}};
 

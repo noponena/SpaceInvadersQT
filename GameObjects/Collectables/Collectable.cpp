@@ -4,9 +4,8 @@
 namespace GameObjects {
 namespace Collectables {
 
-Collectable::Collectable(const Transform &transform,
-                         const Config::GameContext ctx)
-    : AttractableGameObject(transform, ctx) {
+Collectable::Collectable(const Config::GameContext &ctx)
+    : AttractableGameObject(ctx) {
   m_magneticTargets = {ObjectType::PLAYER_SHIP};
   m_attractionEnabled = false;
 }

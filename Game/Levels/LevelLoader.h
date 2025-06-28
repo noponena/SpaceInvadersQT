@@ -15,8 +15,8 @@ class LevelLoader {
 public:
   LevelLoader() = default;
   void initialize();
-  Level loadLevel(const std::string &filepath);
-  std::map<int, Level> loadLevels();
+  Level loadLevel(const std::string &filepath) const;
+  std::map<int, Level> loadLevels() const;
   Level loadBenchmarkLevel();
   void setGameCtx(Config::GameContext &ctx);
 
@@ -27,7 +27,7 @@ private:
   GameObjects::Projectiles::ProjectileBuilder m_projectileBuilder;
   GameObjects::Ships::ShipBuilder m_shipBuilder;
 
-  Formation::Type stringToFormationType(std::string formationTypeStr);
+  Formation::Type stringToFormationType(std::string formationTypeStr) const;
 };
 
 } // namespace Levels
