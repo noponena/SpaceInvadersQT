@@ -154,7 +154,7 @@ void GameState::initPlayerShip() {
           .withProjectile(
               m_projectileBuilder
                   .withMovementStrategy(
-                      Game::Movement::AngledMovementStrategy(1000, -1, 80))
+                      Game::Movement::AngledMovementStrategy(1000, 1, 10))
                   .build())
           .build();
 
@@ -164,7 +164,7 @@ void GameState::initPlayerShip() {
           .withProjectile(
               m_projectileBuilder
                   .withMovementStrategy(
-                      Game::Movement::AngledMovementStrategy(1000, 1, -80))
+                      Game::Movement::AngledMovementStrategy(1000, 1, -10))
                   .build())
           .build();
 

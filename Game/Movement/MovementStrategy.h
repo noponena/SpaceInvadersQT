@@ -119,8 +119,8 @@ public:
   AngledMovementStrategy(float speed = 1, int direction = 1, int angleDeg = 0) {
 
     float angleRad = angleDeg * PI / 180.0;
-    float speedX = cos(angleRad) * speed;
-    float speedY = sin(angleRad) * speed;
+    float speedX = sin(angleRad) * speed;
+    float speedY = -cos(angleRad) * speed;
 
     m_xAxisMovementStrategies.push_back(
         Movement::LinearMovement(speedX, direction));

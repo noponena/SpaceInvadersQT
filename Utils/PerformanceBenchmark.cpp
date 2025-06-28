@@ -109,7 +109,7 @@ void PerformanceBenchmark::initializeBenchmark(
           .withProjectile(
               projectileBuilder
                   .withMovementStrategy(
-                      Game::Movement::AngledMovementStrategy(1000, -1, 80))
+                      Game::Movement::AngledMovementStrategy(1000, 1, 10))
                   .build())
           .build();
 
@@ -119,7 +119,7 @@ void PerformanceBenchmark::initializeBenchmark(
           .withProjectile(
               projectileBuilder
                   .withMovementStrategy(
-                      Game::Movement::AngledMovementStrategy(1000, 1, -80))
+                      Game::Movement::AngledMovementStrategy(1000, 1, -10))
                   .build())
           .build();
 
@@ -129,7 +129,7 @@ void PerformanceBenchmark::initializeBenchmark(
           .withProjectile(
               projectileBuilder
                   .withMovementStrategy(
-                      Game::Movement::AngledMovementStrategy(1000, 1, -85))
+                      Game::Movement::AngledMovementStrategy(1000, 1, -5))
                   .build())
           .build();
 
@@ -139,7 +139,7 @@ void PerformanceBenchmark::initializeBenchmark(
           .withProjectile(
               projectileBuilder
                   .withMovementStrategy(
-                      Game::Movement::AngledMovementStrategy(1000, -1, 85))
+                      Game::Movement::AngledMovementStrategy(1000, 1, 5))
                   .build())
           .build();
 

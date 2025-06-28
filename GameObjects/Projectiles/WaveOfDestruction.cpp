@@ -12,6 +12,9 @@ WaveOfDestruction::WaveOfDestruction(Config::GameContext ctx)
   normalData.imagePath = ":/Images/wave.png";
   addRenderData(RenderState::Normal, normalData);
 
+  m_transform = Transform(QVector2D(0.0f, 0.0f), QVector2D(0.0f, 0.0f),
+                          QVector2D(0.0f, 0.0f), QVector2D(250.0f, 20.0f));
+
   /*
   RenderData onHitData;
   onHitData.size = QVector2D(100, 100);

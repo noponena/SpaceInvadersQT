@@ -47,8 +47,8 @@ void GameObject::hide() { m_visible = false; }
 
 void GameObject::playDestructionAnimation() {
   hide();
-  // m_destructionAnimation.setPos(m_graphicsItem->pos());
-  // getScene()->addItem(&m_destructionAnimation);
+  //m_destructionAnimation.setPos(m_graphicsItem->pos());
+  //getScene()->addItem(&m_destructionAnimation);
   m_destructionAnimation.start();
 }
 
