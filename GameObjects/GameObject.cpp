@@ -35,26 +35,12 @@ void GameObject::update(const UpdateContext &context) {
 
   applyMovementStrategy(context.deltaTimeInSeconds);
 
-  // Animation advance (unified for all states)
-  auto animIt = m_animationInfoByState.find(m_state);
-  if (animIt != m_animationInfoByState.end()) {
-    // There's an animation for this state
-    AnimationInfo &anim = animIt->second;
-
-    // Advance animation timer/frame index
-    m_animFrameTimerMs += static_cast<int>(context.deltaTimeInSeconds * 1000);
-    if (m_animFrameTimerMs >= anim.frameDurationsMs[m_currentAnimFrame]) {
-      m_animFrameTimerMs = 0;
-      m_currentAnimFrame++;
-      if (m_currentAnimFrame >= anim.frameCount())
-        m_currentAnimFrame = 0; // or hold at last frame, or switch state
-    }
-
-    // Update RenderData for this frame
-    auto &renderData = m_renderDataByState[m_state];
-    auto uvPair = anim.frameUVs[m_currentAnimFrame];
-    renderData.uvMin = uvPair.first;
-    renderData.uvMax = uvPair.second;
+  if (m_animationPlayer.isPlaying()) {
+      auto frameUvs = m_animationPlayer.currentFrameUVs();
+      int currentFrame = m_animationPlayer.getCurrentFrame();
+      setFrameUvsForCurrentState(frameUvs);
+      qDebug() << "[GameObject] Playing animation frame" << currentFrame << "with uvs " << frameUvs;
+      m_animationPlayer.update(static_cast<int>(context.deltaTimeInSeconds * 1000));
   }
 }
 
@@ -73,7 +59,7 @@ void GameObject::playDestructionEffects() {
   // qreal halfWidth = rect.width() / 2;
   // qreal halfHeight = rect.height() / 2;
   // QPointF p(m_position.x() + halfWidth, m_position.y() + halfHeight);
-  m_destructionEffect.setPosition(m_transform.position.toPointF());
+  //m_destructionEffect.setPosition(m_transform.position.toPointF());
   // getScene()->addItem(&m_destructionEffect);
 }
 
@@ -93,17 +79,25 @@ void GameObject::playDestructionSound() {
       m_destructionSoundInfo);
 }
 
+void GameObject::setFrameUvsForCurrentState(const std::pair<QVector2D, QVector2D> frameUvs)
+{
+    m_renderDataByState[m_state].uvMin = frameUvs.first;
+    m_renderDataByState[m_state].uvMax = frameUvs.second;
+}
+
 void GameObject::executeDestructionProcedure() {
   m_collidable = false;
   m_destructionInitiated = true;
-
+  m_state = State::OnDestruction;
+  if (hasDestructionAnimation()) {
+      m_animationPlayer.setAnimation(m_animationInfoByState[State::OnDestruction]);
+      m_animationPlayer.play();
+  }
   playDestructionSound();
   disableMovement();
 
   if (m_destructionEffect)
     playDestructionEffects();
-  if (m_destructionAnimation)
-    playDestructionAnimation();
 
   emit objectDestroyed();
 }

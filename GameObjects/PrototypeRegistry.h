@@ -1,17 +1,37 @@
 #pragma once
 
 #include "GameObject.h"
+#include <QString>
 #include <unordered_map>
 #include <memory>
 #include <stdexcept>
+#include <functional>
+#include <string>
 #include <type_traits>
 
-namespace GameObjects {
+
+// ProtypeKey serves as the key for various game object prototypes
 struct PrototypeKey {
-    ObjectType type;
+    GameObjects::ObjectType type;
     std::string variant;
-    bool operator==(const PrototypeKey& other) const { return type == other.type && variant == other.variant; }
+    bool operator==(const PrototypeKey& other) const {
+        return type == other.type && variant == other.variant;
+    }
 };
+
+// Hash specialization for PrototypeKey
+namespace std {
+template <>
+struct hash<PrototypeKey> {
+    std::size_t operator()(const PrototypeKey& k) const noexcept {
+        std::size_t h1 = std::hash<std::underlying_type_t<GameObjects::ObjectType>>{}(static_cast<std::underlying_type_t<GameObjects::ObjectType>>(k.type));
+        std::size_t h2 = std::hash<std::string>{}(k.variant);
+        return h1 ^ (h2 << 1);
+    }
+};
+}
+
+namespace GameObjects {
 
 /**
  * @brief Generic registry for object prototypes, supporting fast cloning by type.
@@ -31,23 +51,32 @@ class PrototypeRegistry
                   "TypeId must be copy-constructible");
 
 public:
+    static PrototypeRegistry& instance() {
+        static PrototypeRegistry instance;
+        return instance;
+    }
+
     /**
      * @brief Register a prototype instance for a given type.
      *
      * The registry will take ownership of the prototype.
      * Typically, you pass a std::make_unique<ConcreteType>(...) for each type.
      *
-     * @param id The type identifier.
+     * @param key The type identifier.
      * @param prototype The prototype object (ownership is transferred).
-     * @throws std::runtime_error If a prototype for the given id already exists.
+     * @throws std::runtime_error If a prototype for the given key already exists.
      */
-    void registerPrototype(TypeId id, std::unique_ptr<BaseType> prototype)
+    void registerPrototype(const PrototypeKey& key, std::unique_ptr<BaseType> prototype)
     {
         if (!prototype)
             throw std::invalid_argument("Cannot register null prototype");
-        auto [it, inserted] = m_registry.emplace(std::move(id), std::move(prototype));
+        auto [it, inserted] = m_registry.emplace(std::move(key), std::move(prototype));
         if (!inserted)
-            throw std::runtime_error("Prototype already registered for this TypeId");
+            throw std::runtime_error(
+                std::string("Prototype already registered for key '") + key.variant + "'"
+                );
+
+        qDebug() << "Prototype registered for key" << QString::fromStdString(key.variant) << "";
     }
 
     /**
@@ -55,28 +84,40 @@ public:
      *
      * Returns a new instance cloned from the registered prototype.
      *
-     * @param id The type identifier.
+     * @param key The type identifier.
      * @return std::unique_ptr<BaseType> Newly cloned object.
-     * @throws std::out_of_range If the id is not registered.
+     * @throws std::out_of_range If the key is not registered.
      */
-    std::unique_ptr<BaseType> clone(TypeId id) const
+    std::unique_ptr<BaseType> clone(const PrototypeKey& key) const
     {
-        auto it = m_registry.find(id);
+        auto it = m_registry.find(key);
         if (it == m_registry.end())
-            throw std::out_of_range("Prototype not found for given TypeId");
+            throw std::out_of_range(
+                std::string("Prototype not found for key '") + key.variant + "'"
+                );
         return it->second->clone();
     }
+
+    template <typename T>
+    std::unique_ptr<T> cloneAs(const PrototypeKey& key) const {
+        auto basePtr = this->clone(key); // unique_ptr<BaseType>
+        auto raw = dynamic_cast<T*>(basePtr.release());
+        if (!raw)
+            throw std::runtime_error("cloneAs: Type mismatch!");
+        return std::unique_ptr<T>(raw);
+    }
+
 
     /**
      * @brief Check if a prototype is registered for a type id.
      *
-     * @param id The type identifier.
+     * @param key The type identifier.
      * @return true If a prototype is registered.
      * @return false Otherwise.
      */
-    bool hasPrototype(TypeId id) const
+    bool hasPrototype(const PrototypeKey& key) const
     {
-        return m_registry.find(id) != m_registry.end();
+        return m_registry.find(key) != m_registry.end();
     }
 
     /**
@@ -84,11 +125,11 @@ public:
      *
      * Does nothing if the prototype is not found.
      *
-     * @param id The type identifier.
+     * @param key The type identifier.
      */
-    void unregisterPrototype(TypeId id)
+    void unregisterPrototype(const PrototypeKey& key)
     {
-        m_registry.erase(id);
+        m_registry.erase(key);
     }
 
     /**
@@ -100,7 +141,10 @@ public:
     }
 
 private:
-    std::unordered_map<TypeId, std::unique_ptr<BaseType>> m_registry;
+    PrototypeRegistry() = default;
+    PrototypeRegistry(const PrototypeRegistry&) = delete;
+    PrototypeRegistry& operator=(const PrototypeRegistry&) = delete;
+    std::unordered_map<PrototypeKey, std::unique_ptr<BaseType>> m_registry;
 };
 
 }

@@ -114,11 +114,14 @@ void Ship::initializeDestructionAnimation() {
       Graphics::TextureRegistry::instance().getOrCreateTexture(texPath);
   QSize sheetSize(texInfo.width, texInfo.height);
 
-  AnimationInfo animInfo;
+  Graphics::Animations::AnimationInfo animInfo;
   animInfo.sheetSize = sheetSize;
   animInfo.columns = columns;
   animInfo.rows = rows;
+  animInfo.frameDurationMs = 50;
   animInfo.frameUVs.clear();
+
+  qDebug() << "[Ship] Initializing animation..";
 
   for (int row = 0; row < rows; ++row) {
     for (int col = 0; col < columns; ++col) {
@@ -126,7 +129,10 @@ void Ship::initializeDestructionAnimation() {
       float v0 = float(row) / rows;
       float u1 = float(col + 1) / columns;
       float v1 = float(row + 1) / rows;
-      animInfo.frameUVs.emplace_back(QVector2D(u0, v0), QVector2D(u1, v1));
+      QVector2D uvMin = QVector2D(u0, v0);
+      QVector2D uvMax = QVector2D(u1, v1);
+      animInfo.frameUVs.emplace_back(uvMin, uvMax);
+      qDebug() << "[Ship] Added a frame, uvMin =" << uvMin << "uvMax =" << uvMax;
     }
   }
 
@@ -170,8 +176,7 @@ int Ship::currentHp() const { return m_currentHealth; }
 
 bool Ship::shouldBeDeleted() {
   return GameObject::shouldBeDeleted() ||
-         (isDead() && m_destructionAnimation.animationFinished() &&
-          m_destructionEffect.effectFinished());
+         (isDead() && m_animationPlayer.isFinished());
 }
 
 void Ship::playOnHitAnimation() {

@@ -45,6 +45,7 @@ protected:
 private:
   Config::GameContext m_gameCtx;
   QOpenGLShaderProgram *m_program = nullptr;
+  QOpenGLShaderProgram *m_lineProgram = nullptr;
   GameState *m_gameState;
   Core::GameHUD *m_gameHUD;
   std::unique_ptr<Levels::LevelManager> m_levelManager;
@@ -70,6 +71,7 @@ private:
 
   GLuint m_texture = 0;
   QOpenGLVertexArrayObject m_vao;
+  QOpenGLVertexArrayObject m_debugVao;
   QOpenGLBuffer m_vbo;
 
   UI::FPSCounter *m_fpsCounter;

@@ -1,6 +1,6 @@
 #include "LevelLoader.h"
 #include "Config/GameContext.h"
-#include "Weapons/PrimaryWeapon.h"
+#include "Utils/Utils.h"
 #include <QDebug>
 #include <algorithm>
 #include <filesystem>
@@ -22,63 +22,6 @@ void LevelLoader::initialize() {
   if (!m_gameCtx) {
     throw std::invalid_argument("Game context has not been set.");
   }
-
-  GameObjects::Transform transform;
-  transform.colliderSize = QVector2D(30, 30);
-
-  GameObjects::RenderDataMap renderDataMap{
-      {GameObjects::State::Normal,
-       GameObjects::RenderData({30, 30},
-                               ":/Images/enemy_laser_projectile.png")}};
-
-  std::unique_ptr<GameObjects::Projectiles::Projectile> projectile =
-      m_projectileBuilder
-          .createProjectile<GameObjects::Projectiles::Projectile>(*m_gameCtx)
-          .withDamage(1)
-          .withMovementStrategy(
-              Game::Movement::VerticalMovementStrategy(500, 1))
-          .withGrahpics(renderDataMap)
-          .withSpawnSound(Audio::SoundInfo(
-              {true, Game::Audio::SoundEffect::LESSER_ENEMY_LASER}))
-          .withObjectType(GameObjects::ObjectType::ENEMY_PROJECTILE)
-          .build();
-
-  m_weaponBuilder.createWeapon<Weapons::PrimaryWeapon>()
-      .withProjectile(std::move(projectile))
-      .withWeaponCooldownMs(2500);
-
-  m_enemyShip = std::make_unique<GameObjects::Ships::EnemyShip>(*m_gameCtx);
-  m_enemyShip->setTransform(transform);
-  m_enemyShip->setMaxHealth(5);
-  m_enemyShip->initialize();
-
-  m_enemyShip->addPrimaryWeapon(m_weaponBuilder.build());
-  m_enemyShip->setAutoShoot(true);
-
-  Game::Movement::MovementStrategy horizontalStrategyLeft =
-      Game::Movement::HorizontalMovementStrategy(200, -1);
-  Game::Movement::MovementStrategy horizontalStrategyRight =
-      Game::Movement::HorizontalMovementStrategy(200, 1);
-  Game::Movement::MovementStrategy horizontalCombined =
-      horizontalStrategyLeft + horizontalStrategyRight;
-
-  Game::Movement::MovementStrategy verticalStrategy =
-      Game::Movement::VerticalMovementStrategy(200, 1);
-  Game::Movement::MovementStrategy stationaryStrategy =
-      Game::Movement::StationaryMovementStrategy();
-  std::vector<std::pair<Game::Movement::MovementStrategy, float>>
-      verticalCombined = {std::make_pair(verticalStrategy, 0.25f),
-                          std::make_pair(stationaryStrategy, 3.0f)};
-
-  Game::Movement::IntervalMovementStrategy horizontalIntervalStrategy =
-      Game::Movement::IntervalMovementStrategy(horizontalCombined, 1.0f);
-  Game::Movement::IntervalMovementStrategy verticalIntervalStrategy =
-      Game::Movement::IntervalMovementStrategy(verticalCombined);
-
-  Game::Movement::MovementStrategy combined =
-      horizontalIntervalStrategy + verticalIntervalStrategy;
-
-  m_enemyShip->setMovementStrategy(combined);
 }
 
 Level LevelLoader::loadLevel(const std::string &filepath) const {
@@ -148,13 +91,18 @@ Level LevelLoader::loadLevel(const std::string &filepath) const {
             static_cast<int>(yRatio * m_gameCtx->screenGeometry.height()));
         upperLimit = lowerLimit;
       }
-      SpawnEvent event;
+      const std::filesystem::path objectYaml = eventNode["Object"].as<std::string>();
+      const std::filesystem::path blueprintDirPath = Utils::getDataFolderPath(GameDataType::BLUEPRINT);
+      const std::filesystem::path fullPath = blueprintDirPath / objectYaml;
+      auto objBlueprint = m_gameObjectLoader.loadFromFile(fullPath);
+
+      SpawnEvent event(*m_gameCtx);
       event = event.withCount(eventNode["Count"].as<int>())
                   .withTriggerTime(eventNode["Time"].as<int>())
                   .withInterval(eventNode["IntervalMs"].as<int>())
                   .withPositionRange(lowerLimit, upperLimit)
                   .withFormation(formation)
-                  .withGameObject(m_enemyShip->clone());
+                  .withGameObjectBlueprint(objBlueprint);
 
       qDebug() << "adding spawn event...";
       level.spawnEvents.push_back(event);

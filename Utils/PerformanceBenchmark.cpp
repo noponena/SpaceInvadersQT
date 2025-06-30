@@ -1,5 +1,5 @@
 #include "PerformanceBenchmark.h"
-#include "GameObjects/Projectiles/ProjectileBuilder.h"
+#include "GameObjects/GameObjectBuilder.h"
 #include "Utils/Math/MathFunctions.h"
 #include "Utils/Utils.h"
 #include "Weapons/PrimaryWeapon.h"
@@ -77,71 +77,45 @@ void PerformanceBenchmark::initializeBenchmark(
       Game::Movement::IntervalMovementStrategy(horizontalCombined, 12.5f);
 
   Weapons::WeaponBuilder weaponBuilder;
-  GameObjects::Projectiles::ProjectileBuilder projectileBuilder;
+  GameObjects::GameObjectBuilder gameObjectBuilder;
 
   GameObjects::RenderDataMap renderDataMap{
       {GameObjects::State::Normal,
        GameObjects::RenderData({30, 30},
                                ":/Images/player_laser_projectile.png")}};
 
-  std::unique_ptr<GameObjects::Projectiles::Projectile> primaryProjectile =
-      projectileBuilder
-          .createProjectile<GameObjects::Projectiles::Projectile>(m_gameCtx)
-          .withDamage(999)
+  auto buildAngledProjectile = [&](int angle) {
+      auto projectile = gameObjectBuilder
+          .setConcreteType(GameObjects::ConcreteType::PROJECTILE)
           .withObjectType(GameObjects::ObjectType::PLAYER_PROJECTILE)
-          .withGrahpics(renderDataMap)
-          .withSpawnSound(
-              Game::Audio::SoundInfo({true, Game::Audio::SoundEffect::LASER}))
-          .withMovementStrategy(
-              Game::Movement::VerticalMovementStrategy(1000, -1))
-          .build();
+          .withGraphics(renderDataMap)
+          .withSpawnSound(Game::Audio::SoundInfo({true, Game::Audio::SoundEffect::LASER}))
+          .withMovementStrategy(Game::Movement::AngledMovementStrategy(1000, 1, angle))
+          .buildAs<GameObjects::Projectiles::Projectile>(m_gameCtx);
+      projectile->setDamage(999);
+      return projectile;
+  };
 
-  // Create the primary weapon using WeaponBuilder
-  std::unique_ptr<Weapons::Weapon> weapon =
-      weaponBuilder.createWeapon<Weapons::PrimaryWeapon>()
-          .withProjectile(std::move(primaryProjectile))
-          .withWeaponCooldownMs(0)
-          .build();
+  auto weapon = weaponBuilder.clone()
+                          .withProjectile(buildAngledProjectile(0))
+                          .build();
 
-  // Clone the primary weapon and modify the projectile for the second weapon
-  std::unique_ptr<Weapons::Weapon> secondWeapon =
-      weaponBuilder.clone()
-          .withProjectile(
-              projectileBuilder
-                  .withMovementStrategy(
-                      Game::Movement::AngledMovementStrategy(1000, 1, 10))
-                  .build())
-          .build();
+  auto secondWeapon = weaponBuilder.clone()
+                          .withProjectile(buildAngledProjectile(10))
+                          .build();
 
-  // Clone the primary weapon and modify the projectile for the third weapon
-  std::unique_ptr<Weapons::Weapon> thirdWeapon =
-      weaponBuilder.clone()
-          .withProjectile(
-              projectileBuilder
-                  .withMovementStrategy(
-                      Game::Movement::AngledMovementStrategy(1000, 1, -10))
-                  .build())
-          .build();
+  auto thirdWeapon = weaponBuilder.clone()
+                         .withProjectile(buildAngledProjectile(-10))
+                         .build();
 
-  // Clone the primary weapon and modify the projectile for the fourth weapon
-  std::unique_ptr<Weapons::Weapon> fourthWeapon =
-      weaponBuilder.clone()
-          .withProjectile(
-              projectileBuilder
-                  .withMovementStrategy(
-                      Game::Movement::AngledMovementStrategy(1000, 1, -5))
-                  .build())
-          .build();
+  auto fourthWeapon = weaponBuilder.clone()
+                          .withProjectile(buildAngledProjectile(-5))
+                          .build();
 
-  // Clone the primary weapon and modify the projectile for the fifth weapon
-  std::unique_ptr<Weapons::Weapon> fifthWeapon =
-      weaponBuilder.clone()
-          .withProjectile(
-              projectileBuilder
-                  .withMovementStrategy(
-                      Game::Movement::AngledMovementStrategy(1000, 1, 5))
-                  .build())
-          .build();
+  auto fifthWeapon = weaponBuilder.clone()
+                         .withProjectile(buildAngledProjectile(5))
+                         .build();
+
 
   playerShip->clearWeapons();
   playerShip->addPrimaryWeapon(std::move(weapon));

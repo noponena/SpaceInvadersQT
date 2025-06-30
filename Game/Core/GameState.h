@@ -2,7 +2,7 @@
 #define GAMESTATE_H
 
 #include "GameObjects/GameObject.h"
-#include "GameObjects/Projectiles/ProjectileBuilder.h"
+#include "GameObjects/GameObjectBuilder.h"
 #include "GameObjects/Ships/PlayerShip.h"
 #include "Weapons/WeaponBuilder.h"
 
@@ -42,7 +42,7 @@ private:
   void initPlayerShip();
   std::shared_ptr<GameObjects::Ships::PlayerShip> m_playerShip;
   Weapons::WeaponBuilder m_weaponBuilder;
-  GameObjects::Projectiles::ProjectileBuilder m_projectileBuilder;
+  GameObjects::GameObjectBuilder m_gameObjectBuilder;
 
 signals:
   void objectDeleted(QGraphicsItem *object);

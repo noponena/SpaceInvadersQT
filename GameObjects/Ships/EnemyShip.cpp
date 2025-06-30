@@ -2,6 +2,8 @@
 #include "Game/Audio/SoundInfo.h"
 #include "GameObjects/Collectables/Health.h"
 #include "GameObjects/Collectables/Stellar.h"
+#include "GameObjects/PrototypeRegistry.h"
+#include "Weapons/PrimaryWeapon.h"
 #include "Utils/Utils.h"
 #include <QColor>
 #include <QGraphicsScene>
@@ -13,6 +15,8 @@ namespace GameObjects {
 namespace Ships {
 EnemyShip::EnemyShip(const Config::GameContext &ctx)
     : ShipWithHealthBar(ctx), m_bottomEdgeSignalEmitted(false) {
+
+  static auto& prototypeRegistry = PrototypeRegistry<PrototypeKey, GameObject>::instance();
   m_stellarCoinSpawnRange = QPoint(2, 5);
   m_healthSpawnProbability = 0.10;
 
@@ -27,13 +31,80 @@ EnemyShip::EnemyShip(const Config::GameContext &ctx)
   addRenderData(State::OnHit, onHitData);
 
   RenderData onDestructionData;
-  onHitData.size = QVector2D(50, 50);
-  onHitData.imagePath = ":/Images/explosion.png";
+  onDestructionData.size = QVector2D(50, 50);
+  onDestructionData.imagePath = ":/Images/explosion.png";
   addRenderData(State::OnDestruction, onDestructionData);
 
   m_transform.colliderSize = {30, 30};
 
   m_magneticTargets = {ObjectType::PROJECTILE};
+  setMaxHealth(5);
+
+  const PrototypeKey projectileKey{ObjectType::ENEMY_PROJECTILE, "BasicEnemyProjectile"};
+  std::unique_ptr<Projectiles::Projectile> projectile;
+
+  if (!prototypeRegistry.hasPrototype(projectileKey)) {
+
+      Transform projectileTransform;
+      projectileTransform.colliderSize = {10, 10};
+
+      GameObjects::RenderDataMap renderDataMap{
+                                               {State::Normal,
+                                                RenderData({30, 30},
+                                                           ":/Images/enemy_laser_projectile.png")}};
+
+      projectile = m_gameObjectBuilder
+                       .setConcreteType(GameObjects::ConcreteType::PROJECTILE)
+                       .withObjectType(GameObjects::ObjectType::ENEMY_PROJECTILE)
+                       .withTransform(projectileTransform)
+                       .withMovementStrategy(Game::Movement::VerticalMovementStrategy(500, 1))
+                       .withGraphics(renderDataMap)
+                       .withSpawnSound(Game::Audio::SoundInfo({true, Game::Audio::SoundEffect::LESSER_ENEMY_LASER}))
+                       .buildAs<Projectiles::Projectile>(m_gameContext);
+
+      projectile->setDamage(1);
+
+      prototypeRegistry.registerPrototype(
+          { projectileKey },
+          std::move(projectile)
+          );
+  }
+
+  projectile = prototypeRegistry.cloneAs<Projectiles::Projectile>(
+      { projectileKey }
+      );
+
+  m_weaponBuilder.createWeapon<Weapons::PrimaryWeapon>()
+      .withProjectile(std::move(projectile))
+      .withWeaponCooldownMs(2500);
+
+  Game::Movement::MovementStrategy horizontalStrategyLeft =
+      Game::Movement::HorizontalMovementStrategy(200, -1);
+  Game::Movement::MovementStrategy horizontalStrategyRight =
+      Game::Movement::HorizontalMovementStrategy(200, 1);
+  Game::Movement::MovementStrategy horizontalCombined =
+      horizontalStrategyLeft + horizontalStrategyRight;
+
+  Game::Movement::MovementStrategy verticalStrategy =
+      Game::Movement::VerticalMovementStrategy(200, 1);
+  Game::Movement::MovementStrategy stationaryStrategy =
+      Game::Movement::StationaryMovementStrategy();
+  std::vector<std::pair<Game::Movement::MovementStrategy, float>>
+      verticalCombined = {std::make_pair(verticalStrategy, 0.25f),
+                          std::make_pair(stationaryStrategy, 3.0f)};
+
+  Game::Movement::IntervalMovementStrategy horizontalIntervalStrategy =
+      Game::Movement::IntervalMovementStrategy(horizontalCombined, 1.0f);
+  Game::Movement::IntervalMovementStrategy verticalIntervalStrategy =
+      Game::Movement::IntervalMovementStrategy(verticalCombined);
+
+  Game::Movement::MovementStrategy combined =
+      horizontalIntervalStrategy + verticalIntervalStrategy;
+
+  setMovementStrategy(combined);
+
+  addPrimaryWeapon(m_weaponBuilder.build());
+  setAutoShoot(true);
 }
 
 void EnemyShip::initializeObjectType() {

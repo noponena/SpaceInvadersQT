@@ -13,6 +13,8 @@ PlayerShip::PlayerShip(const Config::GameContext &ctx) : Ship(ctx) {
   normalData.imagePath = ":/Images/player_ship.png";
   addRenderData(State::Normal, normalData);
 
+  m_transform.colliderSize = {30, 30};
+
   /*
   RenderData onHitData;
   onHitData.size = QVector2D(100, 100);

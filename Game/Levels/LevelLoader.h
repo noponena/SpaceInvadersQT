@@ -2,9 +2,8 @@
 #define GAME_LEVELS_LEVELLOADER_H
 
 #include "Formation.h"
-#include "GameObjects/Projectiles/ProjectileBuilder.h"
-#include "GameObjects/Ships/EnemyShip.h"
-#include "GameObjects/Ships/ShipBuilder.h"
+#include "Game/Movement/MovementStrategyLoader.h"
+#include "GameObjects/GameObjectLoader.h"
 #include "Level.h"
 #include "Weapons/WeaponBuilder.h"
 
@@ -22,11 +21,9 @@ public:
 
 private:
   std::unique_ptr<Config::GameContext> m_gameCtx;
-  std::unique_ptr<GameObjects::Ships::EnemyShip> m_enemyShip;
+  Game::Movement::MovementStrategyLoader m_movementLoader;
+  GameObjects::GameObjectLoader m_gameObjectLoader;
   Weapons::WeaponBuilder m_weaponBuilder;
-  GameObjects::Projectiles::ProjectileBuilder m_projectileBuilder;
-  GameObjects::Ships::ShipBuilder m_shipBuilder;
-
   Formation::Type stringToFormationType(std::string formationTypeStr) const;
 };
 

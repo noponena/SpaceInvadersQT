@@ -19,6 +19,9 @@ public:
     m_yAxisMovementStrategies.reserve(m_maxStrategies);
   }
 
+  std::vector<AxisMovementStrategy> m_xAxisMovementStrategies;
+  std::vector<AxisMovementStrategy> m_yAxisMovementStrategies;
+
   std::pair<QVector2D, QVector2D> move(QVector2D pos, QVector2D anchorPos,
                                        float deltaTimeInSeconds) {
     float x = pos.x();
@@ -78,10 +81,6 @@ public:
 
     return combined;
   }
-
-protected:
-  std::vector<AxisMovementStrategy> m_xAxisMovementStrategies;
-  std::vector<AxisMovementStrategy> m_yAxisMovementStrategies;
 
 private:
   int m_maxStrategies = 10;

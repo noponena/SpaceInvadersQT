@@ -2,6 +2,8 @@
 #define GAMEOBJECTS_ENEMYSHIP_H
 
 #include "GameObjects/Projectiles/Projectile.h"
+#include "GameObjects/GameObjectBuilder.h"
+#include "Weapons/WeaponBuilder.h"
 #include "ShipWithHealthBar.h"
 
 namespace GameObjects {
@@ -31,6 +33,9 @@ protected:
   void initializeObjectType() override;
   void initializeSounds() override;
 
+  GameObjectBuilder m_gameObjectBuilder;
+  Weapons::WeaponBuilder m_weaponBuilder;
+
 private:
   bool m_bottomEdgeSignalEmitted;
   void clampHealthSpawnProbability();
@@ -42,6 +47,7 @@ public:
 
 signals:
   void enemyShipDeleted();
+
 };
 } // namespace Ships
 

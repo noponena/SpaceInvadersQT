@@ -50,4 +50,21 @@ std::string getTimestampStr() {
   return ss.str();
 }
 
+std::filesystem::path getDataFolderPath(GameDataType type) {
+    switch (type) {
+    case GameDataType::LEVEL:
+        return std::filesystem::current_path() / "levels";
+    case GameDataType::BLUEPRINT:
+        return std::filesystem::current_path() / "Blueprints";
+    case GameDataType::ENEMY:
+        return std::filesystem::current_path() / "Blueprints/Enemy";
+    case GameDataType::PROJECTILE:
+        return std::filesystem::current_path() / "Blueprints/Projectile";
+    case GameDataType::MOVEMENT_STRATEGY:
+        return std::filesystem::current_path() / "Blueprints/Movement";
+    }
+
+    throw std::invalid_argument("Invalid GameDataType!");
+}
+
 } // namespace Utils

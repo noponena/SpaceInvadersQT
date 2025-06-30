@@ -5,7 +5,10 @@ namespace GameObjects {
 namespace Projectiles {
 
 Projectile::Projectile(const Config::GameContext &ctx)
-    : GameObject(ctx), m_damage(1), m_properties({}) {}
+    : GameObject(ctx), m_damage(1), m_properties({})
+{
+    m_transform.colliderSize = {10, 10};
+}
 
 std::unique_ptr<GameObject> Projectile::clone() const {
   std::unique_ptr<Projectile> projectile =

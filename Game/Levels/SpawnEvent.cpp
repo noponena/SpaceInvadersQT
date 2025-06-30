@@ -4,9 +4,14 @@
 namespace Game {
 namespace Levels {
 
-SpawnEvent::SpawnEvent()
-    : m_count(1), m_triggered(false), m_finished(false), m_lastSpawnTimeMs(0),
-      m_spawnCounter(0) {}
+SpawnEvent::SpawnEvent(Config::GameContext ctx)
+    : m_gameCtx(ctx)
+    , m_count(1)
+    , m_triggered(false)
+    , m_finished(false)
+    , m_lastSpawnTimeMs(0)
+    , m_spawnCounter(0)
+{}
 
 void SpawnEvent::execute(
     int elapsedTimeMs,
@@ -25,10 +30,11 @@ void SpawnEvent::execute(
     int y = Utils::randi(m_positionRange.first.y(), m_positionRange.second.y());
     std::vector<QVector2D> coordinates = m_formation.getPoints(QVector2D(x, y));
     for (QVector2D &point : coordinates) {
-      std::unique_ptr<GameObjects::GameObject> clonedObject =
-          m_gameObject->clone();
-      clonedObject->moveAbsolute(QVector2D(point));
-      addGameObjectFunc(std::move(clonedObject));
+      std::unique_ptr<GameObjects::GameObject> concreteObject =
+            m_gameObjectBlueprint.instantiate(m_gameCtx);
+      concreteObject->initialize();
+      concreteObject->moveAbsolute(QVector2D(point));
+      addGameObjectFunc(std::move(concreteObject));
     }
     m_lastSpawnTimeMs = elapsedTimeMs;
     m_spawnCounter++;
@@ -70,10 +76,10 @@ SpawnEvent &SpawnEvent::withFormation(const Formation formation) {
   return *this;
 }
 
-SpawnEvent &SpawnEvent::withGameObject(
-    std::shared_ptr<GameObjects::GameObject> gameObject) {
-  m_gameObject = std::move(gameObject);
-  return *this;
+SpawnEvent &SpawnEvent::withGameObjectBlueprint(GameObjects::GameObjectBlueprint & gameObjectBlueprint)
+{
+    m_gameObjectBlueprint = gameObjectBlueprint;
+    return *this;
 }
 
 } // namespace Levels

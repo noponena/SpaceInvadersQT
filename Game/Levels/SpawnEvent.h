@@ -2,6 +2,7 @@
 #define GAME_LEVELS_SPAWNEVENT_H
 
 #include "Game/Levels/Formation.h"
+#include "GameObjects/GameObjectBlueprint.h"
 #include "GameObjects/GameObject.h"
 #include <functional>
 #include <memory>
@@ -11,7 +12,7 @@ namespace Levels {
 
 class SpawnEvent {
 public:
-  SpawnEvent();
+  SpawnEvent(Config::GameContext ctx);
   void execute(int elapsedTimeMs,
                std::function<void(std::shared_ptr<GameObjects::GameObject>)>
                    addGameObjectFunc);
@@ -24,10 +25,11 @@ public:
   SpawnEvent &withInterval(int intervalMs);
   SpawnEvent &withFormation(const Formation formation);
   SpawnEvent &
-  withGameObject(std::shared_ptr<GameObjects::GameObject> gameObject);
+  withGameObjectBlueprint(GameObjects::GameObjectBlueprint & gameObjectBlueprint);
 
 private:
-  std::shared_ptr<GameObjects::GameObject> m_gameObject;
+  Config::GameContext m_gameCtx;
+  GameObjects::GameObjectBlueprint m_gameObjectBlueprint;
   Formation m_formation;
   std::pair<QVector2D, QVector2D> m_positionRange;
   int m_triggerTimeMs;

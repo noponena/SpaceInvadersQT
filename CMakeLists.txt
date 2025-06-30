@@ -25,6 +25,11 @@ endif()
 
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets OpenGLWidgets Concurrent)
 
+file(GLOB_RECURSE GAME_LEVEL_FILES
+    "${CMAKE_CURRENT_SOURCE_DIR}/Levels/*.yaml"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Blueprints/*.yaml"
+)
+
 set(HEADERS
     Config/GameContext.h
     Game/Audio/SoundBuffer.h
@@ -56,26 +61,28 @@ set(HEADERS
     Game/Levels/SpawnEvent.h
     Game/Movement/AxisMovementStrategy.h
     Game/Movement/MovementStrategy.h
+    Game/Movement/MovementStrategyLoader.h
     GameObjects/AttractableGameObject.h
     GameObjects/Collectables/Collectable.h
     GameObjects/Collectables/Health.h
     GameObjects/Collectables/Stellar.h
     GameObjects/Collectables/StellarPool.h
     GameObjects/GameObject.h
+    GameObjects/GameObjectBlueprint.h
     GameObjects/GameObjectBuilder.h
+    GameObjects/GameObjectLoader.h
     GameObjects/PrototypeRegistry.h
     GameObjects/Projectiles/EnemyProjectile.h
     GameObjects/Projectiles/PlayerProjectile.h
     GameObjects/Projectiles/Projectile.h
-    GameObjects/Projectiles/ProjectileBuilder.h
     GameObjects/Projectiles/Vortex.h
     GameObjects/Projectiles/WaveOfDestruction.h
     GameObjects/Ships/EnemyShip.h
     GameObjects/Ships/PlayerShip.h
     GameObjects/Ships/Ship.h
-    GameObjects/Ships/ShipBuilder.h
     GameObjects/Ships/ShipWithHealthBar.h
     Graphics/Animations/AnimatedItem.h
+    Graphics/Animations/AnimationPlayer.h
     Graphics/CooldownItem.h
     Graphics/Effects/Effect.h
     Graphics/Effects/Particle.h
@@ -124,6 +131,7 @@ set(SOURCES
     Game/Levels/LevelLoader.cpp
     Game/Levels/LevelManager.cpp
     Game/Levels/SpawnEvent.cpp
+    Game/Movement/MovementStrategyLoader.cpp
     GameObjects/AttractableGameObject.cpp
     GameObjects/Collectables/Collectable.cpp
     GameObjects/Collectables/Health.cpp
@@ -131,16 +139,15 @@ set(SOURCES
     GameObjects/Collectables/StellarPool.cpp
     GameObjects/GameObject.cpp
     GameObjects/GameObjectBuilder.cpp
+    GameObjects/GameObjectLoader.cpp
     GameObjects/Projectiles/EnemyProjectile.cpp
     GameObjects/Projectiles/PlayerProjectile.cpp
     GameObjects/Projectiles/Projectile.cpp
-    GameObjects/Projectiles/ProjectileBuilder.cpp
     GameObjects/Projectiles/Vortex.cpp
     GameObjects/Projectiles/WaveOfDestruction.cpp
     GameObjects/Ships/EnemyShip.cpp
     GameObjects/Ships/PlayerShip.cpp
     GameObjects/Ships/Ship.cpp
-    GameObjects/Ships/ShipBuilder.cpp
     GameObjects/Ships/ShipWithHealthBar.cpp
     Graphics/Effects/ParticleSystem.cpp
     Graphics/EnergyBar.cpp
@@ -187,6 +194,11 @@ target_link_libraries(${PROJECT_NAME}
 target_compile_definitions(${PROJECT_NAME}
     PRIVATE
         YAML_CPP_STATIC_DEFINE
+)
+
+target_sources(${PROJECT_NAME}
+  PRIVATE
+    ${GAME_LEVEL_FILES}
 )
 
 option(PERFORMANCE_BENCHMARK "Build with performance benchmark" OFF)

@@ -3,7 +3,7 @@
 
 #include "Game/Core/GameState.h"
 #include "Game/Levels/Level.h"
-#include "GameObjects/Projectiles/ProjectileBuilder.h"
+#include "GameObjects/GameObjectBuilder.h"
 
 namespace Game {
 namespace Levels {
@@ -22,7 +22,7 @@ private:
       m_addGameObjectFunc;
   Game::Levels::Level m_currentLevel;
   Weapons::WeaponBuilder m_weaponBuilder;
-  GameObjects::Projectiles::ProjectileBuilder m_projectileBuilder;
+  GameObjects::GameObjectBuilder m_gameObjectBuilder;
   QElapsedTimer m_elapsedTimer;
   QElapsedTimer m_levelTimer;
   Core::GameState *m_gameState;

@@ -6,6 +6,7 @@
 #include "Game/Movement/MovementStrategy.h"
 #include "Graphics/Animations/AnimatedItem.h"
 #include "Graphics/Effects/ParticleSystem.h"
+#include "Graphics/Animations/AnimationPlayer.h"
 #include "Utils/BoundsChecker.h"
 #include <QGraphicsItem>
 #include <QObject>
@@ -31,6 +32,17 @@ enum class ObjectType {
   STELLAR_COIN,
   HEALTH
 };
+
+enum class ConcreteType {
+    PLAYER_SHIP,
+    ENEMY_SHIP,
+    PROJECTILE,
+    VORTEX,
+    WAVE_OF_DESTRUCTION,
+    STELLAR_COIN,
+    HEALTH
+};
+
 
 namespace Projectiles {
 class Projectile;
@@ -62,15 +74,6 @@ enum class State {
   Normal,
   OnHit,
   OnDestruction,
-};
-
-struct AnimationInfo {
-  QSize sheetSize;
-  int columns;
-  int rows;
-  std::vector<std::pair<QVector2D, QVector2D>> frameUVs;
-  int frameCount() const { return frameUVs.size(); }
-  std::vector<int> frameDurationsMs;
 };
 
 struct RenderData {
@@ -106,7 +109,7 @@ struct Transform {
 };
 
 using RenderDataMap = std::unordered_map<State, RenderData>;
-using AnimationDataMap = std::unordered_map<State, AnimationInfo>;
+using AnimationDataMap = std::unordered_map<State, Graphics::Animations::AnimationInfo>;
 
 class GameObject : public QObject {
   Q_OBJECT
@@ -213,6 +216,7 @@ protected:
 
   Graphics::Effects::ParticleSystem m_destructionEffect;
   Graphics::Animations::AnimatedItem m_destructionAnimation;
+  Graphics::Animations::AnimationPlayer m_animationPlayer;
 
   Game::Audio::SoundInfo m_spawnSoundInfo;
   Game::Audio::SoundInfo m_destructionSoundInfo;
@@ -248,6 +252,8 @@ private:
   inline void applyMovementStrategy(float deltaTimeInSeconds);
   inline void playSpawnSound();
   inline void playDestructionSound();
+
+  void setFrameUvsForCurrentState(const std::pair<QVector2D, QVector2D> frameUvs);
 
 signals:
   void objectCreated(std::shared_ptr<GameObjects::GameObject> object);

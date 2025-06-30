@@ -1,0 +1,6 @@
+name: "Vertical"
+
+yAxis:
+  - type: "Linear"
+    speed: 500
+    direction: 1

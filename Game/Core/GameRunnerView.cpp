@@ -10,6 +10,29 @@
 namespace Game {
 namespace Core {
 
+const char *line_vertex = R"(
+#version 330 core
+layout(location = 0) in vec2 position;
+
+uniform vec2 viewport;
+
+void main() {
+    vec2 ndc = (position / viewport) * 2.0 - 1.0;
+    ndc.y = -ndc.y; // OpenGL/Qt Y flip
+    gl_Position = vec4(ndc, 0.0, 1.0);
+}
+)";
+
+const char *line_fragment = R"(
+#version 330 core
+out vec4 fragColor;
+uniform vec3 lineColor;
+void main() {
+    fragColor = vec4(lineColor, 1.0);
+}
+
+)";
+
 const char *vertexShaderSrc = R"(
 #version 330 core
 layout(location = 0) in vec2 vert;
@@ -19,6 +42,8 @@ uniform vec2 spritePos;
 uniform vec2 spriteSize;
 uniform float spriteRotation;
 uniform vec2 viewport;
+uniform vec2 uvMin;
+uniform vec2 uvMax;
 
 out vec2 fragUV;
 
@@ -35,7 +60,7 @@ void main() {
     ndc.y = -ndc.y; // invert Y for Qt
     gl_Position = vec4(ndc, 0, 1);
 
-    fragUV = uv;
+    fragUV = mix(uvMin, uvMax, uv);
 }
 )";
 
@@ -87,6 +112,8 @@ GameRunnerView::~GameRunnerView() {
   // are destroyed before the scene (QGraphicsScene)
   // destroys the graphics items in the scene.
   delete m_gameState;
+  delete m_program;
+  delete m_lineProgram;
 }
 
 void GameRunnerView::setupView() {
@@ -203,96 +230,149 @@ void GameRunnerView::resumeGame() {
 }
 
 void GameRunnerView::initializeGL() {
-  initializeOpenGLFunctions();
+    initializeOpenGLFunctions();
 
-  // Compile shaders
-  m_program = new QOpenGLShaderProgram();
-  m_program->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSrc);
-  m_program->addShaderFromSourceCode(QOpenGLShader::Fragment,
-                                     fragmentShaderSrc);
-  m_program->link();
+    // === 1. Compile and link shaders ===
+    // Main sprite shader
+    m_program = new QOpenGLShaderProgram();
+    m_program->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSrc);
+    m_program->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSrc);
+    m_program->link();
 
-  // VAO/VBO for quad
-  m_vao.create();
-  m_vao.bind();
-  m_vbo.create();
-  m_vbo.bind();
-  m_vbo.allocate(quad, sizeof(quad));
+    // Debug line shader
+    m_lineProgram = new QOpenGLShaderProgram();
+    m_lineProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, line_vertex);
+    m_lineProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, line_fragment);
+    m_lineProgram->link();
 
-  m_program->enableAttributeArray(0);
-  m_program->setAttributeBuffer(0, GL_FLOAT, 0, 2, 4 * sizeof(float));
-  m_program->enableAttributeArray(1);
-  m_program->setAttributeBuffer(1, GL_FLOAT, 2 * sizeof(float), 2,
-                                4 * sizeof(float));
+    // === 2. Main sprite VAO/VBO setup ===
+    m_vao.create();
+    m_vao.bind();
 
-  m_vbo.release();
-  m_vao.release();
+    m_vbo.create();
+    m_vbo.bind();
+    m_vbo.allocate(quad, sizeof(quad));  // quad = your quad vertex data
 
-  QImage img(32, 32, QImage::Format_RGBA8888);
-  img.fill(Qt::white);
-  for (int x = 0; x < 32; ++x)
-    for (int y = 0; y < 32; ++y)
-      if (x == 0 || y == 0 || x == 31 || y == 31)
-        img.setPixelColor(x, y, Qt::red);
+    m_program->enableAttributeArray(0); // vert.xy
+    m_program->setAttributeBuffer(0, GL_FLOAT, 0, 2, 4 * sizeof(float));
+    m_program->enableAttributeArray(1); // uv.xy
+    m_program->setAttributeBuffer(1, GL_FLOAT, 2 * sizeof(float), 2, 4 * sizeof(float));
 
-  glGenTextures(1, &m_texture);
-  glBindTexture(GL_TEXTURE_2D, m_texture);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 32, 32, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-               img.bits());
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    m_vbo.release();
+    m_vao.release();
 
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    // === 3. Debug line VAO (no VBO here!) ===
+    m_debugVao.create();
+    // Do not bind any buffer here; for lines, you will create a temporary VBO each frame (or batch them later)
+    m_debugVao.release();
 
-  Graphics::TextureRegistry::instance().setGlContext(this);
-  Graphics::TextureRegistry::instance().preloadAllFromDir(":/Images/");
+    // === 4. Texture setup (unchanged) ===
+    QImage img(32, 32, QImage::Format_RGBA8888);
+    img.fill(Qt::white);
+    for (int x = 0; x < 32; ++x)
+        for (int y = 0; y < 32; ++y)
+            if (x == 0 || y == 0 || x == 31 || y == 31)
+                img.setPixelColor(x, y, Qt::red);
+
+    glGenTextures(1, &m_texture);
+    glBindTexture(GL_TEXTURE_2D, m_texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 32, 32, 0, GL_RGBA, GL_UNSIGNED_BYTE, img.bits());
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    Graphics::TextureRegistry::instance().setGlContext(this);
+    Graphics::TextureRegistry::instance().preloadAllFromDir(":/Images/");
 }
+
 
 void GameRunnerView::resizeGL(int w, int h) { QOpenGLWidget::resizeGL(w, h); }
 
 void GameRunnerView::paintGL() {
-  glClearColor(0, 0, 0, 1);
-  glClear(GL_COLOR_BUFFER_BIT);
+    glClearColor(0, 0, 0, 1);
+    glClear(GL_COLOR_BUFFER_BIT);
 
-  m_program->bind();
-  m_vao.bind();
-  glActiveTexture(GL_TEXTURE0);
-  m_program->setUniformValue("tex", 0);
-  m_program->setUniformValue("viewport", QVector2D(width(), height()));
+    m_program->bind();
+    m_vao.bind();
+    glActiveTexture(GL_TEXTURE0);
+    m_program->setUniformValue("tex", 0);
+    m_program->setUniformValue("viewport", QVector2D(width(), height()));
 
-  // qDebug() << "Rendering objects:" << m_gameObjects->size();
+    for (const auto &obj : *m_gameObjects) {
+        if (!obj->isVisible()) continue;
 
-  for (const auto &obj : *m_gameObjects) {
-    if (!obj->isVisible()) {
-      continue;
+        m_vao.bind();
+        m_program->bind();
+
+        // Sprite rendering as before
+        const auto &pos = obj->getPosition();
+        const GameObjects::RenderData renderData = obj->getRenderData();
+        const QString texPath = renderData.imagePath;
+        const auto &texInfo = Graphics::TextureRegistry::instance().getOrCreateTexture(texPath);
+        GLuint texture = texInfo.handle;
+
+        QVector2D size = renderData.size;
+        float rotation = renderData.rotation;
+
+        glBindTexture(GL_TEXTURE_2D, texture);
+
+        m_program->setUniformValue("uvMin", renderData.uvMin);
+        m_program->setUniformValue("uvMax", renderData.uvMax);
+
+        m_program->setUniformValue("spritePos", pos);
+        m_program->setUniformValue("spriteSize", size);
+        m_program->setUniformValue("spriteRotation", rotation);
+
+        glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+        m_program->release();
+        m_vao.release();
+
+        // -- Draw collider box --
+        m_debugVao.bind();
+        m_lineProgram->bind();
+        m_lineProgram->setUniformValue("viewport", QVector2D(width(), height()));
+        m_lineProgram->setUniformValue("lineColor", QVector3D(1, 0, 0)); // Red
+
+        QVector2D collider = obj->transform().colliderSize;
+        QVector2D center = obj->getPosition();
+
+        float x1 = center.x() - 0.5f * collider.x();
+        float x2 = center.x() + 0.5f * collider.x();
+        float y1 = center.y() - 0.5f * collider.y();
+        float y2 = center.y() + 0.5f * collider.y();
+
+        QVector2D colliderVerts[] = {
+            {x1, y1},
+            {x2, y1},
+            {x2, y2},
+            {x1, y2}
+        };
+
+        GLuint debugVBO;
+        glGenBuffers(1, &debugVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, debugVBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(colliderVerts), colliderVerts, GL_STREAM_DRAW);
+
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+
+        glDrawArrays(GL_LINE_LOOP, 0, 4);
+
+        glDisableVertexAttribArray(0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glDeleteBuffers(1, &debugVBO);
+
+        m_lineProgram->release();
+        m_debugVao.release();
     }
-    // Get position, bounding box, scale
-    const auto &pos = obj->getPosition();
 
-    // Use PixmapData for texture and custom scale
-    GameObjects::RenderData renderData = obj->getRenderData();
-    QString texPath = renderData.imagePath;
-    const auto &texInfo =
-        Graphics::TextureRegistry::instance().getOrCreateTexture(texPath);
-    GLuint texture = texInfo.handle;
-
-    // Use either bounding box size, or custom scale from PixmapData
-    QVector2D size = renderData.size;
-    float rotation = renderData.rotation;
-
-    glBindTexture(GL_TEXTURE_2D, texture);
-
-    m_program->setUniformValue("spritePos", pos);
-    m_program->setUniformValue("spriteSize", size);
-    m_program->setUniformValue("spriteRotation", rotation);
-
-    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-  }
-
-  m_vao.release();
-  m_program->release();
+    m_vao.release();
+    m_program->release();
 }
+
 
 void GameRunnerView::gameLoop() {
   // auto loopStartTime = std::chrono::high_resolution_clock::now();
