@@ -16,16 +16,18 @@ void main() {
     vec2 ndc = (vertPos / viewport) * 2.0 - 1.0;
     ndc.y = -ndc.y; // if Qt Y-up, else omit
     gl_Position = vec4(ndc, 0, 1);
-    gl_PointSize = 48.0; // Or make this a uniform/attribute for size fade
+    gl_PointSize = 5.0; // Or make this a uniform/attribute for size fade
     fragColor = vertColor;
 }
 )";
 
 const char *fragmentShaderSrc = R"(
 #version 330 core
+in vec4 fragColor;
 out vec4 color;
+
 void main() {
-    color = vec4(1,0,1,1);
+    color = fragColor;
 }
 )";
 EffectManager::EffectManager() {
@@ -76,8 +78,18 @@ void EffectManager::update(float deltaTime)
 }
 
 void EffectManager::render(const QVector2D& viewport) {
-    if (!m_glFuncs || m_effects.empty()) return;
+    if (!m_glFuncs || (m_effects.empty() && m_pendingInit.empty())) return;
     qDebug() << "[EffectManager] Rendering effects.. viewport:" << viewport;
+
+    // IMPORTANT: GL resource initialization must occur while context is current (i.e., in render).
+    // See https://doc.qt.io/qt-6/qopenglcontext.html#makeCurrent
+    for (auto& sys : m_pendingInit)
+        sys->initializeGL(m_glFuncs);
+    m_effects.insert(m_effects.end(),
+                     std::make_move_iterator(m_pendingInit.begin()),
+                     std::make_move_iterator(m_pendingInit.end()));
+    m_pendingInit.clear();
+
     m_particleProgram->bind();
     m_particleProgram->setUniformValue("viewport", viewport);
 
@@ -87,11 +99,10 @@ void EffectManager::render(const QVector2D& viewport) {
     m_particleProgram->release();
 }
 
-void EffectManager::spawnDestructionEffect(const QVector2D& pos, float lifeSpan, int count, const std::optional<QColor> color) {
-    auto system = std::make_unique<ParticleSystem>(128);
-    system->initializeGL(m_glFuncs);
-    system->spawnParticles(count, pos, lifeSpan, 50.0f, color);
-    m_effects.push_back(std::move(system));
+void EffectManager::spawnDestructionEffect(const QVector2D& pos, float lifeSpan, int maxSpeed, int count, const std::optional<QColor> color) {
+    auto system = std::make_unique<ParticleSystem>();
+    system->spawnParticles(count, pos, lifeSpan, maxSpeed, color);
+    m_pendingInit.push_back(std::move(system));
     qDebug() << "[EffectManager] ParticleSystem added";
 }
 

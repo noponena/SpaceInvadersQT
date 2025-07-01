@@ -35,7 +35,7 @@ void ParticleSystem::destroyGL(QOpenGLFunctions_3_3_Core *glFuncs) {
 
 void ParticleSystem::uploadToGPU(QOpenGLFunctions_3_3_Core* glFuncs) {
     m_vertexData.clear();
-    /*
+
     for (const Particle& p : m_particles) {
         if (!p.isAlive()) continue;
         float normAlpha = std::clamp(p.life / p.lifeSpan, 0.0f, 1.0f);
@@ -46,21 +46,7 @@ void ParticleSystem::uploadToGPU(QOpenGLFunctions_3_3_Core* glFuncs) {
         m_vertexData.push_back(c.greenF());
         m_vertexData.push_back(c.blueF());
         m_vertexData.push_back(normAlpha * c.alphaF());
-
-        // qDebug() << "[ParticleSystem] r" << c.redF() << "g" << c.greenF() << "b" << c.blueF() << "a" << (normAlpha * c.alphaF());
     }
-*/
-    for (int i = 0; i < 100; ++i) {
-        m_vertexData.push_back(i * 20.0f);  // X: 0, 20, 40, ...
-        m_vertexData.push_back(200.0f);     // Y: all at 200
-        m_vertexData.push_back(1.0f);       // R
-        m_vertexData.push_back(0.0f);       // G
-        m_vertexData.push_back(1.0f);       // B
-        m_vertexData.push_back(1.0f);       // A
-    }
-    qDebug() << "[ParticleSystem] Vertex count:" << m_vertexData.size() / 6;
-    if (!m_particles.empty())
-        qDebug() << "[ParticleSystem] First particle pos:" << m_particles[0].position << "life:" << m_particles[0].life;
     glFuncs->glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
     glFuncs->glBufferSubData(GL_ARRAY_BUFFER, 0, m_vertexData.size() * sizeof(float), m_vertexData.data());
     glFuncs->glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -69,8 +55,8 @@ void ParticleSystem::uploadToGPU(QOpenGLFunctions_3_3_Core* glFuncs) {
 void ParticleSystem::render(QOpenGLFunctions_3_3_Core* glFuncs)
 {
     glFuncs->glEnable(GL_PROGRAM_POINT_SIZE);
-    glFuncs->glDisable(GL_DEPTH_TEST);
-    glFuncs->glDisable(GL_BLEND);
+    glFuncs->glEnable(GL_BLEND);
+    glFuncs->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     uploadToGPU(glFuncs);
 
@@ -108,11 +94,6 @@ void ParticleSystem::spawnParticles(int count,
 {
     int spawned = 0;
     m_allParticlesDead = false;
-    if (color.has_value()) {
-        qDebug() << "[ParticleSystem] Spawning" << color.value() << "partciles with lifeSpan" << lifeSpan << "and maxSpeed" << maxSpeed;
-    } else {
-        qDebug() << "[ParticleSystem] Spawning random colored partciles with lifeSpan" << lifeSpan << "and maxSpeed" << maxSpeed;
-    }
     for (Particle& p : m_particles) {
         if (!p.isAlive() && spawned < count) {
             QColor pColor = color.value_or(Utils::getRandomColor());
@@ -125,8 +106,6 @@ void ParticleSystem::spawnParticles(int count,
         m_particles.emplace_back(pos, lifeSpan, pColor, maxSpeed);
         ++spawned;
     }
-
-    qDebug() << "[ParticleSystem] Spawned" << spawned << "particles to position" << pos;
 }
 
 } // namespace Effects

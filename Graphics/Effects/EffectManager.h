@@ -30,8 +30,9 @@ public:
     void render(const QVector2D& viewport);
     void spawnDestructionEffect(const QVector2D &pos,
                                 float lifeSpan = 0.8f,
+                                int maxSpeed = 250,
                                 int count = 25,
-                                const std::optional<QColor> color = nullptr);
+                                const std::optional<QColor> color = std::nullopt);
     void clear();
 
 private:
@@ -39,6 +40,7 @@ private:
     QOpenGLShaderProgram *m_particleProgram = nullptr;
     QOpenGLFunctions_3_3_Core* m_glFuncs = nullptr;
     std::vector<std::unique_ptr<ParticleSystem>> m_effects;
+    std::vector<std::unique_ptr<ParticleSystem>> m_pendingInit;
     void destroyGL();
 };
 

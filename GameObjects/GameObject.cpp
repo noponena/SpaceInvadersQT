@@ -40,7 +40,7 @@ void GameObject::update(const UpdateContext &context) {
       auto frameUvs = m_animationPlayer.currentFrameUVs();
       int currentFrame = m_animationPlayer.getCurrentFrame();
       setFrameUvsForCurrentState(frameUvs);
-      qDebug() << "[GameObject] Playing animation frame" << currentFrame << "with uvs " << frameUvs;
+      qDebug() << "[GameObject] Playing animation frame" << currentFrame << "with uvs" << frameUvs;
       m_animationPlayer.update(static_cast<int>(context.deltaTimeInSeconds * 1000));
   }
 }
@@ -58,12 +58,8 @@ void GameObject::playDestructionAnimation() {
 
 void GameObject::playDestructionEffects() {
 
-  Graphics::Effects::EffectManager::instance().spawnDestructionEffect(QVector2D(getCenterPosition()), 3.0, 100, QColor(255, 0, 0, 255));
-  // qreal halfWidth = rect.width() / 2;
-  // qreal halfHeight = rect.height() / 2;
-  // QPointF p(m_position.x() + halfWidth, m_position.y() + halfHeight);
-  //m_destructionEffect.setPosition(m_transform.position.toPointF());
-  // getScene()->addItem(&m_destructionEffect);
+  Graphics::Effects::EffectManager::instance().spawnDestructionEffect(QVector2D(getCenterPosition()), 3.0, 500, 100);
+
 }
 
 void GameObject::applyMovementStrategy(float deltaTimeInSeconds) {
