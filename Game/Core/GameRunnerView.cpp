@@ -116,6 +116,17 @@ GameRunnerView::~GameRunnerView() {
   delete m_lineProgram;
   if (m_gameHUD)
     delete m_gameHUD;
+  delete m_fpsCounter;
+  delete m_gameObjectCounter;
+  delete m_stellarTokens;
+  delete m_playerHp;
+  delete m_levelEndedInfo;
+
+  m_vao.destroy();
+  m_debugVao.destroy();
+  m_vbo.destroy();
+  if (m_texture != 0)
+    glDeleteTextures(1, &m_texture);
 }
 
 void GameRunnerView::setupView() {
