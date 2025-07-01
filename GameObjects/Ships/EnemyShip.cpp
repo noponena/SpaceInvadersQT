@@ -3,8 +3,8 @@
 #include "GameObjects/Collectables/Health.h"
 #include "GameObjects/Collectables/Stellar.h"
 #include "GameObjects/PrototypeRegistry.h"
-#include "Weapons/PrimaryWeapon.h"
 #include "Utils/Utils.h"
+#include "Weapons/PrimaryWeapon.h"
 #include <QColor>
 #include <QGraphicsScene>
 #include <QPen>
@@ -16,7 +16,8 @@ namespace Ships {
 EnemyShip::EnemyShip(const Config::GameContext &ctx)
     : ShipWithHealthBar(ctx), m_bottomEdgeSignalEmitted(false) {
 
-  static auto& prototypeRegistry = PrototypeRegistry<PrototypeKey, GameObject>::instance();
+  static auto &prototypeRegistry =
+      PrototypeRegistry<PrototypeKey, GameObject>::instance();
   m_stellarCoinSpawnRange = QPoint(2, 5);
   m_healthSpawnProbability = 0.10;
 
@@ -41,39 +42,37 @@ EnemyShip::EnemyShip(const Config::GameContext &ctx)
   m_magneticTargets = {ObjectType::PROJECTILE};
   setMaxHealth(5);
 
-  const PrototypeKey projectileKey{ObjectType::ENEMY_PROJECTILE, "BasicEnemyProjectile"};
+  const PrototypeKey projectileKey{ObjectType::ENEMY_PROJECTILE,
+                                   "BasicEnemyProjectile"};
   std::unique_ptr<Projectiles::Projectile> projectile;
 
   if (!prototypeRegistry.hasPrototype(projectileKey)) {
 
-      Transform projectileTransform;
-      projectileTransform.colliderSize = {10, 10};
+    Transform projectileTransform;
+    projectileTransform.colliderSize = {10, 10};
 
-      GameObjects::RenderDataMap renderDataMap{
-                                               {State::Normal,
-                                                RenderData({30, 30},
-                                                           ":/Images/enemy_laser_projectile.png")}};
+    GameObjects::RenderDataMap renderDataMap{
+        {State::Normal,
+         RenderData({30, 30}, ":/Images/enemy_laser_projectile.png")}};
 
-      projectile = m_gameObjectBuilder
-                       .setConcreteType(GameObjects::ConcreteType::PROJECTILE)
-                       .withObjectType(GameObjects::ObjectType::ENEMY_PROJECTILE)
-                       .withTransform(projectileTransform)
-                       .withMovementStrategy(Game::Movement::VerticalMovementStrategy(500, 1))
-                       .withGraphics(renderDataMap)
-                       .withSpawnSound(Game::Audio::SoundInfo({true, Game::Audio::SoundEffect::LESSER_ENEMY_LASER}))
-                       .buildAs<Projectiles::Projectile>(m_gameContext);
+    projectile = m_gameObjectBuilder
+                     .setConcreteType(GameObjects::ConcreteType::PROJECTILE)
+                     .withObjectType(GameObjects::ObjectType::ENEMY_PROJECTILE)
+                     .withTransform(projectileTransform)
+                     .withMovementStrategy(
+                         Game::Movement::VerticalMovementStrategy(500, 1))
+                     .withGraphics(renderDataMap)
+                     .withSpawnSound(Game::Audio::SoundInfo(
+                         {true, Game::Audio::SoundEffect::LESSER_ENEMY_LASER}))
+                     .buildAs<Projectiles::Projectile>(m_gameContext);
 
-      projectile->setDamage(1);
+    projectile->setDamage(1);
 
-      prototypeRegistry.registerPrototype(
-          { projectileKey },
-          std::move(projectile)
-          );
+    prototypeRegistry.registerPrototype({projectileKey}, std::move(projectile));
   }
 
-  projectile = prototypeRegistry.cloneAs<Projectiles::Projectile>(
-      { projectileKey }
-      );
+  projectile =
+      prototypeRegistry.cloneAs<Projectiles::Projectile>({projectileKey});
 
   m_weaponBuilder.createWeapon<Weapons::PrimaryWeapon>()
       .withProjectile(std::move(projectile))

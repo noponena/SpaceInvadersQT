@@ -1,10 +1,10 @@
 #ifndef GAMEOBJECTS_ENEMYSHIP_H
 #define GAMEOBJECTS_ENEMYSHIP_H
 
-#include "GameObjects/Projectiles/Projectile.h"
 #include "GameObjects/GameObjectBuilder.h"
-#include "Weapons/WeaponBuilder.h"
+#include "GameObjects/Projectiles/Projectile.h"
 #include "ShipWithHealthBar.h"
+#include "Weapons/WeaponBuilder.h"
 
 namespace GameObjects {
 namespace Ships {
@@ -47,7 +47,6 @@ public:
 
 signals:
   void enemyShipDeleted();
-
 };
 } // namespace Ships
 

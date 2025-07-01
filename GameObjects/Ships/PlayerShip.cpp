@@ -13,6 +13,11 @@ PlayerShip::PlayerShip(const Config::GameContext &ctx) : Ship(ctx) {
   normalData.imagePath = ":/Images/player_ship.png";
   addRenderData(State::Normal, normalData);
 
+  RenderData onDestructionData;
+  onDestructionData.size = QVector2D(50, 50);
+  onDestructionData.imagePath = ":/Images/explosion.png";
+  addRenderData(State::OnDestruction, onDestructionData);
+
   m_transform.colliderSize = {30, 30};
 
   /*
@@ -30,7 +35,7 @@ void PlayerShip::update(const UpdateContext &context) {
 }
 
 bool PlayerShip::shouldBeDeleted() {
-  return (isDead() && m_destructionAnimation.animationFinished());
+  return (isDead() && m_animationPlayer.isFinished());
 }
 
 void PlayerShip::initializeObjectType() {
@@ -142,9 +147,7 @@ void PlayerShip::setMaxHealth(float newMaxHealth) {
   emit playerHealthUpdated(newMaxHealth);
 }
 
-void PlayerShip::setSpeed(float newSpeed) {
-    m_speed = newSpeed;
-}
+void PlayerShip::setSpeed(float newSpeed) { m_speed = newSpeed; }
 
 void PlayerShip::setSecondaryWeapon(std::unique_ptr<Weapons::Weapon> newWeapon,
                                     std::uint32_t weaponIndex) {

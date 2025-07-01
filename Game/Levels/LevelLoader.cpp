@@ -91,8 +91,10 @@ Level LevelLoader::loadLevel(const std::string &filepath) const {
             static_cast<int>(yRatio * m_gameCtx->screenGeometry.height()));
         upperLimit = lowerLimit;
       }
-      const std::filesystem::path objectYaml = eventNode["Object"].as<std::string>();
-      const std::filesystem::path blueprintDirPath = Utils::getDataFolderPath(GameDataType::BLUEPRINT);
+      const std::filesystem::path objectYaml =
+          eventNode["Object"].as<std::string>();
+      const std::filesystem::path blueprintDirPath =
+          Utils::getDataFolderPath(GameDataType::BLUEPRINT);
       const std::filesystem::path fullPath = blueprintDirPath / objectYaml;
       auto objBlueprint = m_gameObjectLoader.loadFromFile(fullPath);
 

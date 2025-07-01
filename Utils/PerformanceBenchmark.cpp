@@ -85,37 +85,33 @@ void PerformanceBenchmark::initializeBenchmark(
                                ":/Images/player_laser_projectile.png")}};
 
   auto buildAngledProjectile = [&](int angle) {
-      auto projectile = gameObjectBuilder
-          .setConcreteType(GameObjects::ConcreteType::PROJECTILE)
-          .withObjectType(GameObjects::ObjectType::PLAYER_PROJECTILE)
-          .withGraphics(renderDataMap)
-          .withSpawnSound(Game::Audio::SoundInfo({true, Game::Audio::SoundEffect::LASER}))
-          .withMovementStrategy(Game::Movement::AngledMovementStrategy(1000, 1, angle))
-          .buildAs<GameObjects::Projectiles::Projectile>(m_gameCtx);
-      projectile->setDamage(999);
-      return projectile;
+    auto projectile =
+        gameObjectBuilder.setConcreteType(GameObjects::ConcreteType::PROJECTILE)
+            .withObjectType(GameObjects::ObjectType::PLAYER_PROJECTILE)
+            .withGraphics(renderDataMap)
+            .withSpawnSound(
+                Game::Audio::SoundInfo({true, Game::Audio::SoundEffect::LASER}))
+            .withMovementStrategy(
+                Game::Movement::AngledMovementStrategy(1000, 1, angle))
+            .buildAs<GameObjects::Projectiles::Projectile>(m_gameCtx);
+    projectile->setDamage(999);
+    return projectile;
   };
 
-  auto weapon = weaponBuilder.clone()
-                          .withProjectile(buildAngledProjectile(0))
-                          .build();
+  auto weapon =
+      weaponBuilder.clone().withProjectile(buildAngledProjectile(0)).build();
 
-  auto secondWeapon = weaponBuilder.clone()
-                          .withProjectile(buildAngledProjectile(10))
-                          .build();
+  auto secondWeapon =
+      weaponBuilder.clone().withProjectile(buildAngledProjectile(10)).build();
 
-  auto thirdWeapon = weaponBuilder.clone()
-                         .withProjectile(buildAngledProjectile(-10))
-                         .build();
+  auto thirdWeapon =
+      weaponBuilder.clone().withProjectile(buildAngledProjectile(-10)).build();
 
-  auto fourthWeapon = weaponBuilder.clone()
-                          .withProjectile(buildAngledProjectile(-5))
-                          .build();
+  auto fourthWeapon =
+      weaponBuilder.clone().withProjectile(buildAngledProjectile(-5)).build();
 
-  auto fifthWeapon = weaponBuilder.clone()
-                         .withProjectile(buildAngledProjectile(5))
-                         .build();
-
+  auto fifthWeapon =
+      weaponBuilder.clone().withProjectile(buildAngledProjectile(5)).build();
 
   playerShip->clearWeapons();
   playerShip->addPrimaryWeapon(std::move(weapon));

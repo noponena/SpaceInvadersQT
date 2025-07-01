@@ -1,4 +1,5 @@
 #include "Utils.h"
+#include <QRandomGenerator>
 #include <chrono>
 #include <ctime>
 #include <iomanip>
@@ -51,28 +52,28 @@ std::string getTimestampStr() {
 }
 
 std::filesystem::path getDataFolderPath(GameDataType type) {
-    switch (type) {
-    case GameDataType::LEVEL:
-        return std::filesystem::current_path() / "levels";
-    case GameDataType::BLUEPRINT:
-        return std::filesystem::current_path() / "Blueprints";
-    case GameDataType::ENEMY:
-        return std::filesystem::current_path() / "Blueprints/Enemy";
-    case GameDataType::PROJECTILE:
-        return std::filesystem::current_path() / "Blueprints/Projectile";
-    case GameDataType::MOVEMENT_STRATEGY:
-        return std::filesystem::current_path() / "Blueprints/Movement";
-    }
+  switch (type) {
+  case GameDataType::LEVEL:
+    return std::filesystem::current_path() / "levels";
+  case GameDataType::BLUEPRINT:
+    return std::filesystem::current_path() / "Blueprints";
+  case GameDataType::ENEMY:
+    return std::filesystem::current_path() / "Blueprints/Enemy";
+  case GameDataType::PROJECTILE:
+    return std::filesystem::current_path() / "Blueprints/Projectile";
+  case GameDataType::MOVEMENT_STRATEGY:
+    return std::filesystem::current_path() / "Blueprints/Movement";
+  }
 
-    throw std::invalid_argument("Invalid GameDataType!");
+  throw std::invalid_argument("Invalid GameDataType!");
 }
 
 QColor getRandomColor() {
-    int r = QRandomGenerator::global()->bounded(256);
-    int g = QRandomGenerator::global()->bounded(256);
-    int b = QRandomGenerator::global()->bounded(256);
+  int r = QRandomGenerator::global()->bounded(256);
+  int g = QRandomGenerator::global()->bounded(256);
+  int b = QRandomGenerator::global()->bounded(256);
 
-    return QColor(r, g, b);
+  return QColor(r, g, b);
 }
 
 } // namespace Utils

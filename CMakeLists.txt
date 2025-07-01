@@ -81,7 +81,6 @@ set(HEADERS
     GameObjects/Ships/PlayerShip.h
     GameObjects/Ships/Ship.h
     GameObjects/Ships/ShipWithHealthBar.h
-    Graphics/Animations/AnimatedItem.h
     Graphics/Animations/AnimationPlayer.h
     Graphics/CooldownItem.h
     Graphics/Effects/Effect.h

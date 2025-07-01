@@ -30,92 +30,95 @@ void main() {
     color = fragColor;
 }
 )";
-EffectManager::EffectManager() {
-    m_particleProgram = new QOpenGLShaderProgram;
-}
+EffectManager::EffectManager() { m_particleProgram = new QOpenGLShaderProgram; }
 
 EffectManager::~EffectManager() {
-    destroyGL();
-    if (m_particleProgram) {
-        delete m_particleProgram;
-        m_particleProgram = nullptr;
+  destroyGL();
+  if (m_particleProgram) {
+    delete m_particleProgram;
+    m_particleProgram = nullptr;
+  }
+}
+
+void EffectManager::initializeGL(QOpenGLFunctions_3_3_Core *glFuncs) {
+  m_glFuncs = glFuncs;
+
+  // Initialize particle shader program
+  if (!m_particleProgram->addShaderFromSourceCode(QOpenGLShader::Vertex,
+                                                  vertexShaderSrc))
+    qCritical() << "Failed to load vertex shader:" << m_particleProgram->log();
+
+  if (!m_particleProgram->addShaderFromSourceCode(QOpenGLShader::Fragment,
+                                                  fragmentShaderSrc))
+    qCritical() << "Failed to load fragment shader:"
+                << m_particleProgram->log();
+
+  if (!m_particleProgram->link())
+    qCritical() << "Failed to link shader program:" << m_particleProgram->log();
+
+  if (!m_particleProgram->isLinked())
+    qCritical() << "Particle shader program not linked successfully!";
+}
+
+void EffectManager::update(float deltaTime) {
+  if (!m_glFuncs || m_effects.empty())
+    return;
+  auto it = m_effects.begin();
+  while (it != m_effects.end()) {
+    (*it)->update(deltaTime);
+    if ((*it)->allParticlesDead()) {
+      (*it)->destroyGL(m_glFuncs);
+      it = m_effects.erase(it);
+      qDebug() << "[EffectManager] ParticleSystem deleted";
+    } else {
+      ++it;
     }
+  }
 }
 
-void EffectManager::initializeGL(QOpenGLFunctions_3_3_Core *glFuncs)
-{
-    m_glFuncs = glFuncs;
+void EffectManager::render(const QVector2D &viewport) {
+  if (!m_glFuncs || (m_effects.empty() && m_pendingInit.empty()))
+    return;
 
-    // Initialize particle shader program
-    if (!m_particleProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSrc))
-        qCritical() << "Failed to load vertex shader:" << m_particleProgram->log();
+  // IMPORTANT: GL resource initialization must occur while context is current
+  // (i.e., in render). See
+  // https://doc.qt.io/qt-6/qopenglcontext.html#makeCurrent
+  for (auto &sys : m_pendingInit)
+    sys->initializeGL(m_glFuncs);
+  m_effects.insert(m_effects.end(),
+                   std::make_move_iterator(m_pendingInit.begin()),
+                   std::make_move_iterator(m_pendingInit.end()));
+  m_pendingInit.clear();
 
-    if (!m_particleProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSrc))
-        qCritical() << "Failed to load fragment shader:" << m_particleProgram->log();
+  m_particleProgram->bind();
+  m_particleProgram->setUniformValue("viewport", viewport);
 
-    if (!m_particleProgram->link())
-        qCritical() << "Failed to link shader program:" << m_particleProgram->log();
+  for (auto &effect : m_effects)
+    effect->render(m_glFuncs);
 
-    if (!m_particleProgram->isLinked())
-        qCritical() << "Particle shader program not linked successfully!";
+  m_particleProgram->release();
 }
 
-void EffectManager::update(float deltaTime)
-{
-    if (!m_glFuncs || m_effects.empty()) return;
-    qDebug() << "[EffectManager] Updating effects..";
-    auto it = m_effects.begin();
-    while (it != m_effects.end()) {
-        (*it)->update(deltaTime);
-        if ((*it)->allParticlesDead()) {
-            (*it)->destroyGL(m_glFuncs);
-            it = m_effects.erase(it);
-            qDebug() << "[EffectManager] ParticleSystem deleted";
-        } else {
-            ++it;
-        }
-    }
-}
-
-void EffectManager::render(const QVector2D& viewport) {
-    if (!m_glFuncs || (m_effects.empty() && m_pendingInit.empty())) return;
-    qDebug() << "[EffectManager] Rendering effects.. viewport:" << viewport;
-
-    // IMPORTANT: GL resource initialization must occur while context is current (i.e., in render).
-    // See https://doc.qt.io/qt-6/qopenglcontext.html#makeCurrent
-    for (auto& sys : m_pendingInit)
-        sys->initializeGL(m_glFuncs);
-    m_effects.insert(m_effects.end(),
-                     std::make_move_iterator(m_pendingInit.begin()),
-                     std::make_move_iterator(m_pendingInit.end()));
-    m_pendingInit.clear();
-
-    m_particleProgram->bind();
-    m_particleProgram->setUniformValue("viewport", viewport);
-
-    for (auto& effect : m_effects)
-        effect->render(m_glFuncs);
-
-    m_particleProgram->release();
-}
-
-void EffectManager::spawnDestructionEffect(const QVector2D& pos, float lifeSpan, int maxSpeed, int count, const std::optional<QColor> color) {
-    auto system = std::make_unique<ParticleSystem>();
-    system->spawnParticles(count, pos, lifeSpan, maxSpeed, color);
-    m_pendingInit.push_back(std::move(system));
-    qDebug() << "[EffectManager] ParticleSystem added";
+void EffectManager::spawnDestructionEffect(const QVector2D &pos, float lifeSpan,
+                                           int maxSpeed, int count,
+                                           const std::optional<QColor> color) {
+  auto system = std::make_unique<ParticleSystem>();
+  system->spawnParticles(count, pos, lifeSpan, maxSpeed, color);
+  m_pendingInit.push_back(std::move(system));
+  qDebug() << "[EffectManager] ParticleSystem added";
 }
 
 void EffectManager::clear() {
-    destroyGL();
-    m_effects.clear();
+  m_effects.clear();
+  m_pendingInit.clear();
 }
 
 void EffectManager::destroyGL() {
-    if (!m_glFuncs) return;
-    for (auto& effect : m_effects)
-        effect->destroyGL(m_glFuncs);
-    m_glFuncs = nullptr;
+  if (!m_glFuncs)
+    return;
+  for (auto &effect : m_effects)
+    effect->destroyGL(m_glFuncs);
+  m_glFuncs = nullptr;
 }
 
 } // namespace Effects

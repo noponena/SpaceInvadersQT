@@ -1,5 +1,5 @@
-#include "Utils/CustomMessageHandler.h"
 #include "UI/MainWindow.h"
+#include "Utils/CustomMessageHandler.h"
 #include <QApplication>
 
 int main(int argc, char *argv[]) {

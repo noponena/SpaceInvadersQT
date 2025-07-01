@@ -18,15 +18,15 @@ MainWindow::MainWindow(QWidget *parent)
   float screenHeight = screenGeometry.height();
 
 #ifdef NDEBUG
-    // Release build: Borderless fullscreen
-    setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
-    screenWidth = screenGeometry.width();
-    screenHeight = screenGeometry.height();
+  // Release build: Borderless fullscreen
+  setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
+  screenWidth = screenGeometry.width();
+  screenHeight = screenGeometry.height();
 #else
-    // Debug build: Windowed, slightly smaller for convenience
-    setWindowFlags(Qt::Window);
-    screenWidth *= 0.95;
-    screenHeight *= 0.95;
+  // Debug build: Windowed, slightly smaller for convenience
+  setWindowFlags(Qt::Window);
+  screenWidth *= 0.95;
+  screenHeight *= 0.95;
 #endif
 
   QRect windowGeometry(0, 0, screenWidth, screenHeight);

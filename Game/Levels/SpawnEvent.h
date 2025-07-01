@@ -2,8 +2,8 @@
 #define GAME_LEVELS_SPAWNEVENT_H
 
 #include "Game/Levels/Formation.h"
-#include "GameObjects/GameObjectBlueprint.h"
 #include "GameObjects/GameObject.h"
+#include "GameObjects/GameObjectBlueprint.h"
 #include <functional>
 #include <memory>
 
@@ -24,8 +24,8 @@ public:
   SpawnEvent &withCount(int count);
   SpawnEvent &withInterval(int intervalMs);
   SpawnEvent &withFormation(const Formation formation);
-  SpawnEvent &
-  withGameObjectBlueprint(GameObjects::GameObjectBlueprint & gameObjectBlueprint);
+  SpawnEvent &withGameObjectBlueprint(
+      GameObjects::GameObjectBlueprint &gameObjectBlueprint);
 
 private:
   Config::GameContext m_gameCtx;

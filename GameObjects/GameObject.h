@@ -4,8 +4,6 @@
 #include "Config/GameContext.h"
 #include "Game/Audio/SoundInfo.h"
 #include "Game/Movement/MovementStrategy.h"
-#include "Graphics/Animations/AnimatedItem.h"
-#include "Graphics/Effects/ParticleSystem.h"
 #include "Graphics/Animations/AnimationPlayer.h"
 #include "Utils/BoundsChecker.h"
 #include <QGraphicsItem>
@@ -34,15 +32,14 @@ enum class ObjectType {
 };
 
 enum class ConcreteType {
-    PLAYER_SHIP,
-    ENEMY_SHIP,
-    PROJECTILE,
-    VORTEX,
-    WAVE_OF_DESTRUCTION,
-    STELLAR_COIN,
-    HEALTH
+  PLAYER_SHIP,
+  ENEMY_SHIP,
+  PROJECTILE,
+  VORTEX,
+  WAVE_OF_DESTRUCTION,
+  STELLAR_COIN,
+  HEALTH
 };
-
 
 namespace Projectiles {
 class Projectile;
@@ -85,7 +82,8 @@ struct RenderData {
   QVector2D uvMax = QVector2D(1.0f, 1.0f); // upper-right
 
   RenderData(const QVector2D &sz = QVector2D(10.0f, 10.0f),
-             const QString &path = QString(":/Images/placeholder.png"), float rot = 0.0f)
+             const QString &path = QString(":/Images/placeholder.png"),
+             float rot = 0.0f)
       : size(sz), imagePath(path), rotation(rot) {}
 };
 
@@ -109,7 +107,8 @@ struct Transform {
 };
 
 using RenderDataMap = std::unordered_map<State, RenderData>;
-using AnimationDataMap = std::unordered_map<State, Graphics::Animations::AnimationInfo>;
+using AnimationDataMap =
+    std::unordered_map<State, Graphics::Animations::AnimationInfo>;
 
 class GameObject : public QObject {
   Q_OBJECT
@@ -215,8 +214,6 @@ protected:
   Magnetism m_magnetism;
   Config::GameContext m_gameContext;
 
-  Graphics::Effects::ParticleSystem m_destructionEffect;
-  Graphics::Animations::AnimatedItem m_destructionAnimation;
   Graphics::Animations::AnimationPlayer m_animationPlayer;
 
   Game::Audio::SoundInfo m_spawnSoundInfo;
@@ -247,14 +244,13 @@ private:
   bool m_destructionInitiated;
   Game::Movement::MovementStrategy m_movementStrategy;
   static std::uint32_t counter;
-  int m_animFrameTimerMs = 0;
-  int m_currentAnimFrame = 0;
 
   inline void applyMovementStrategy(float deltaTimeInSeconds);
   inline void playSpawnSound();
   inline void playDestructionSound();
 
-  void setFrameUvsForCurrentState(const std::pair<QVector2D, QVector2D> frameUvs);
+  void
+  setFrameUvsForCurrentState(const std::pair<QVector2D, QVector2D> frameUvs);
 
 signals:
   void objectCreated(std::shared_ptr<GameObjects::GameObject> object);

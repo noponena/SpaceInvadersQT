@@ -11,7 +11,8 @@ std::uint32_t GameObject::counter = 0;
 GameObject::GameObject(const Config::GameContext &ctx)
     : m_hasCollided(false), m_collidable(true), m_soundEnabled(true),
       m_magnetism({false, 0, 0}), m_id(counter++),
-    m_hasDestructionEffect(false), m_destructionInitiated(false), m_gameContext(ctx) {
+      m_hasDestructionEffect(false), m_destructionInitiated(false),
+      m_gameContext(ctx) {
 
   m_state = State::Normal;
   m_objectTypes = {ObjectType::BASE};
@@ -37,11 +38,10 @@ void GameObject::update(const UpdateContext &context) {
   applyMovementStrategy(context.deltaTimeInSeconds);
 
   if (m_animationPlayer.isPlaying()) {
-      auto frameUvs = m_animationPlayer.currentFrameUVs();
-      int currentFrame = m_animationPlayer.getCurrentFrame();
-      setFrameUvsForCurrentState(frameUvs);
-      qDebug() << "[GameObject] Playing animation frame" << currentFrame << "with uvs" << frameUvs;
-      m_animationPlayer.update(static_cast<int>(context.deltaTimeInSeconds * 1000));
+    auto frameUvs = m_animationPlayer.currentFrameUVs();
+    setFrameUvsForCurrentState(frameUvs);
+    m_animationPlayer.update(
+        static_cast<int>(context.deltaTimeInSeconds * 1000));
   }
 }
 
@@ -49,17 +49,11 @@ void GameObject::show() { m_visible = true; }
 
 void GameObject::hide() { m_visible = false; }
 
-void GameObject::playDestructionAnimation() {
-  hide();
-  // m_destructionAnimation.setPos(m_graphicsItem->pos());
-  // getScene()->addItem(&m_destructionAnimation);
-  m_destructionAnimation.start();
-}
+void GameObject::playDestructionAnimation() {}
 
 void GameObject::playDestructionEffects() {
-
-  Graphics::Effects::EffectManager::instance().spawnDestructionEffect(QVector2D(getCenterPosition()), 3.0, 500, 100);
-
+  Graphics::Effects::EffectManager::instance().spawnDestructionEffect(
+      QVector2D(getCenterPosition()), 3.0, 500, 256);
 }
 
 void GameObject::applyMovementStrategy(float deltaTimeInSeconds) {
@@ -78,19 +72,20 @@ void GameObject::playDestructionSound() {
       m_destructionSoundInfo);
 }
 
-void GameObject::setFrameUvsForCurrentState(const std::pair<QVector2D, QVector2D> frameUvs)
-{
-    m_renderDataByState[m_state].uvMin = frameUvs.first;
-    m_renderDataByState[m_state].uvMax = frameUvs.second;
+void GameObject::setFrameUvsForCurrentState(
+    const std::pair<QVector2D, QVector2D> frameUvs) {
+  m_renderDataByState[m_state].uvMin = frameUvs.first;
+  m_renderDataByState[m_state].uvMax = frameUvs.second;
 }
 
 void GameObject::executeDestructionProcedure() {
+  m_state = State::OnDestruction;
   m_collidable = false;
   m_destructionInitiated = true;
-  m_state = State::OnDestruction;
   if (hasDestructionAnimation()) {
-      m_animationPlayer.setAnimation(m_animationInfoByState[State::OnDestruction]);
-      m_animationPlayer.play();
+    m_animationPlayer.setAnimation(
+        m_animationInfoByState[State::OnDestruction]);
+    m_animationPlayer.play();
   }
   playDestructionSound();
   disableMovement();
@@ -124,18 +119,16 @@ void GameObject::setDestructionSoundInfo(
   m_destructionSoundInfo = newDestructionSoundInfo;
 }
 
-void GameObject::setState(State newState) {
-  m_state = newState;
-  m_currentAnimFrame = 0;
-  m_animFrameTimerMs = 0;
-}
+void GameObject::setState(State newState) { m_state = newState; }
 
 State GameObject::state() const { return m_state; }
 
 const RenderData &GameObject::getRenderData() const {
   auto it = m_renderDataByState.find(m_state);
+
   if (it != m_renderDataByState.end())
     return it->second;
+
   return m_renderDataByState.at(State::Normal);
 }
 

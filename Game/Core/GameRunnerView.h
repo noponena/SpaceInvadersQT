@@ -168,7 +168,7 @@ private:
   void drawColliderBox(const GameObjects::GameObject *obj);
   void renderSprite(const GameObjects::GameObject *obj);
   void renderAllSprites();
-  signals:
+signals:
   void fpsUpdated(int fps);
   void gamePaused();
   void levelQuit();

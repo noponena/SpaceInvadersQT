@@ -1,12 +1,13 @@
 #include "GameState.h"
 #include "GameObjects/Projectiles/Vortex.h"
 #include "GameObjects/Projectiles/WaveOfDestruction.h"
-#include "GameObjects/Ships/EnemyShip.h"
 #include "GameObjects/PrototypeRegistry.h"
+#include "GameObjects/Ships/EnemyShip.h"
 #include "Weapons/PrimaryWeapon.h"
 #include "Weapons/SecondaryWeapon.h"
 
-using ProjectilePrototypeRegistry = GameObjects::PrototypeRegistry<PrototypeKey, GameObjects::GameObject>;
+using ProjectilePrototypeRegistry =
+    GameObjects::PrototypeRegistry<PrototypeKey, GameObjects::GameObject>;
 
 namespace Game {
 namespace Core {
@@ -94,7 +95,7 @@ void GameState::initPlayerShip() {
                    m_gameCtx.movementBounds.bottom());
   m_playerShip->moveAbsolute(posVec);
 
-  auto& projectileRegistry = ProjectilePrototypeRegistry::instance();
+  auto &projectileRegistry = ProjectilePrototypeRegistry::instance();
 
   GameObjects::RenderDataMap renderDataMap{
       {GameObjects::State::Normal,
@@ -103,74 +104,77 @@ void GameState::initPlayerShip() {
 
   // 1. Register Vortex Projectile prototype
   {
-        qDebug() << "Building Vortex projectile..";
-      auto vortexProjectile = m_gameObjectBuilder
-                                  .setConcreteType(GameObjects::ConcreteType::VORTEX)
-                                  .withObjectType(GameObjects::ObjectType::PLAYER_PROJECTILE)
-                                  .withMovementStrategy(Game::Movement::VerticalMovementStrategy(1000, -1))
-                                  .buildAs<GameObjects::Projectiles::Vortex>(m_gameCtx);
+    qDebug() << "Building Vortex projectile..";
+    auto vortexProjectile =
+        m_gameObjectBuilder.setConcreteType(GameObjects::ConcreteType::VORTEX)
+            .withObjectType(GameObjects::ObjectType::PLAYER_PROJECTILE)
+            .withMovementStrategy(
+                Game::Movement::VerticalMovementStrategy(1000, -1))
+            .buildAs<GameObjects::Projectiles::Vortex>(m_gameCtx);
 
-      vortexProjectile->setDamage(0);
+    vortexProjectile->setDamage(0);
 
-      qDebug() << "Vortex projectile built!";
+    qDebug() << "Vortex projectile built!";
 
-      projectileRegistry.registerPrototype(
-          { GameObjects::ObjectType::PROJECTILE, "VORTEX" },
-          std::move(vortexProjectile)
-          );
+    projectileRegistry.registerPrototype(
+        {GameObjects::ObjectType::PROJECTILE, "VORTEX"},
+        std::move(vortexProjectile), true);
   }
 
   // 2. Register Wave of Destruction Projectile prototype
   {
-      qDebug() << "Building WaveOfDestruction projectile..";
-      auto waveOfDestructionProjectile = m_gameObjectBuilder
-                                             .setConcreteType(GameObjects::ConcreteType::WAVE_OF_DESTRUCTION)
-                                             .withObjectType(GameObjects::ObjectType::PLAYER_PROJECTILE)
-                                             .withMovementStrategy(Game::Movement::VerticalMovementStrategy(250, -1))
-                                             .buildAs<GameObjects::Projectiles::WaveOfDestruction>(m_gameCtx);
+    qDebug() << "Building WaveOfDestruction projectile..";
+    auto waveOfDestructionProjectile =
+        m_gameObjectBuilder
+            .setConcreteType(GameObjects::ConcreteType::WAVE_OF_DESTRUCTION)
+            .withObjectType(GameObjects::ObjectType::PLAYER_PROJECTILE)
+            .withMovementStrategy(
+                Game::Movement::VerticalMovementStrategy(250, -1))
+            .buildAs<GameObjects::Projectiles::WaveOfDestruction>(m_gameCtx);
 
-      waveOfDestructionProjectile->setDamage(1000);
+    waveOfDestructionProjectile->setDamage(1000);
 
-      qDebug() << "WaveOfDestruction projectile built!";
+    qDebug() << "WaveOfDestruction projectile built!";
 
-      projectileRegistry.registerPrototype(
-          { GameObjects::ObjectType::PROJECTILE, "WAVE_OF_DESTRUCTION" },
-          std::move(waveOfDestructionProjectile)
-          );
+    projectileRegistry.registerPrototype(
+        {GameObjects::ObjectType::PROJECTILE, "WAVE_OF_DESTRUCTION"},
+        std::move(waveOfDestructionProjectile), true);
   }
 
   // 3. Register Primary Projectile prototype
   {
-      qDebug() << "Building primary projectile..";
-      auto primaryProjectile = m_gameObjectBuilder
-                                   .setConcreteType(GameObjects::ConcreteType::PROJECTILE)
-                                   .withObjectType(GameObjects::ObjectType::PLAYER_PROJECTILE)
-                                   .withMovementStrategy(Game::Movement::VerticalMovementStrategy(1000, -1))
-                                   .withGraphics(renderDataMap)
-                                   .withSpawnSound(Audio::SoundInfo({true, Game::Audio::SoundEffect::LASER}))
-                                   .buildAs<GameObjects::Projectiles::Projectile>(m_gameCtx);
+    qDebug() << "Building primary projectile..";
+    auto primaryProjectile =
+        m_gameObjectBuilder
+            .setConcreteType(GameObjects::ConcreteType::PROJECTILE)
+            .withObjectType(GameObjects::ObjectType::PLAYER_PROJECTILE)
+            .withMovementStrategy(
+                Game::Movement::VerticalMovementStrategy(1000, -1))
+            .withGraphics(renderDataMap)
+            .withSpawnSound(
+                Audio::SoundInfo({true, Game::Audio::SoundEffect::LASER}))
+            .buildAs<GameObjects::Projectiles::Projectile>(m_gameCtx);
 
-      primaryProjectile->setDamage(1);
+    primaryProjectile->setDamage(1);
 
-      qDebug() << "Primary projectile built!";
+    qDebug() << "Primary projectile built!";
 
-      projectileRegistry.registerPrototype(
-          { GameObjects::ObjectType::PROJECTILE, "PRIMARY" },
-          std::move(primaryProjectile)
-          );
+    projectileRegistry.registerPrototype(
+        {GameObjects::ObjectType::PROJECTILE, "PRIMARY"},
+        std::move(primaryProjectile), true);
   }
 
-  auto vortexProjectile = projectileRegistry.cloneAs<GameObjects::Projectiles::Vortex>(
-      { GameObjects::ObjectType::PROJECTILE, "VORTEX" }
-      );
+  auto vortexProjectile =
+      projectileRegistry.cloneAs<GameObjects::Projectiles::Vortex>(
+          {GameObjects::ObjectType::PROJECTILE, "VORTEX"});
 
-  auto waveOfDestructionProjectile = projectileRegistry.cloneAs<GameObjects::Projectiles::WaveOfDestruction>(
-      { GameObjects::ObjectType::PROJECTILE, "WAVE_OF_DESTRUCTION" }
-      );
+  auto waveOfDestructionProjectile =
+      projectileRegistry.cloneAs<GameObjects::Projectiles::WaveOfDestruction>(
+          {GameObjects::ObjectType::PROJECTILE, "WAVE_OF_DESTRUCTION"});
 
-  auto primaryProjectile = projectileRegistry.cloneAs<GameObjects::Projectiles::Projectile>(
-      { GameObjects::ObjectType::PROJECTILE, "PRIMARY" }
-      );
+  auto primaryProjectile =
+      projectileRegistry.cloneAs<GameObjects::Projectiles::Projectile>(
+          {GameObjects::ObjectType::PROJECTILE, "PRIMARY"});
 
   // Build Vortex Weapon
   auto vortex = m_weaponBuilder.createWeapon<Weapons::SecondaryWeapon>()
@@ -180,11 +184,12 @@ void GameState::initPlayerShip() {
                     .build();
 
   // Build Wave of Destruction Weapon
-  auto waveOfDestruction = m_weaponBuilder.createWeapon<Weapons::SecondaryWeapon>()
-                               .withProjectile(std::move(waveOfDestructionProjectile))
-                               .withWeaponCooldownMs(5000)
-                               .withEnergyConsuption(200)
-                               .build();
+  auto waveOfDestruction =
+      m_weaponBuilder.createWeapon<Weapons::SecondaryWeapon>()
+          .withProjectile(std::move(waveOfDestructionProjectile))
+          .withWeaponCooldownMs(5000)
+          .withEnergyConsuption(200)
+          .build();
 
   // Build Primary Weapon
   auto weapon = m_weaponBuilder.createWeapon<Weapons::PrimaryWeapon>()
@@ -193,27 +198,28 @@ void GameState::initPlayerShip() {
                     .build();
 
   // Clone and customize for second weapon
-  auto secondWeaponProjectile = m_gameObjectBuilder
-                                    .setConcreteType(GameObjects::ConcreteType::PROJECTILE)
-                                    .withObjectType(GameObjects::ObjectType::PLAYER_PROJECTILE)
-                                    .withMovementStrategy(Game::Movement::AngledMovementStrategy(1000, 1, 10))
-                                    .buildAs<GameObjects::Projectiles::Projectile>(m_gameCtx);
+  auto secondWeaponProjectile =
+      m_gameObjectBuilder.setConcreteType(GameObjects::ConcreteType::PROJECTILE)
+          .withObjectType(GameObjects::ObjectType::PLAYER_PROJECTILE)
+          .withMovementStrategy(
+              Game::Movement::AngledMovementStrategy(1000, 1, 10))
+          .buildAs<GameObjects::Projectiles::Projectile>(m_gameCtx);
 
   auto secondWeapon = m_weaponBuilder.clone()
                           .withProjectile(std::move(secondWeaponProjectile))
                           .build();
 
   // Clone and customize for third weapon
-  auto thirdWeaponProjectile = m_gameObjectBuilder
-                                   .setConcreteType(GameObjects::ConcreteType::PROJECTILE)
-                                   .withObjectType(GameObjects::ObjectType::PLAYER_PROJECTILE)
-                                   .withMovementStrategy(Game::Movement::AngledMovementStrategy(1000, 1, -10))
-                                   .buildAs<GameObjects::Projectiles::Projectile>(m_gameCtx);
+  auto thirdWeaponProjectile =
+      m_gameObjectBuilder.setConcreteType(GameObjects::ConcreteType::PROJECTILE)
+          .withObjectType(GameObjects::ObjectType::PLAYER_PROJECTILE)
+          .withMovementStrategy(
+              Game::Movement::AngledMovementStrategy(1000, 1, -10))
+          .buildAs<GameObjects::Projectiles::Projectile>(m_gameCtx);
 
   auto thirdWeapon = m_weaponBuilder.clone()
                          .withProjectile(std::move(thirdWeaponProjectile))
                          .build();
-
 
   m_playerShip->addPrimaryWeapon(std::move(weapon));
   m_playerShip->addPrimaryWeapon(std::move(secondWeapon));

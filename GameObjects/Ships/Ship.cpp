@@ -132,7 +132,8 @@ void Ship::initializeDestructionAnimation() {
       QVector2D uvMin = QVector2D(u0, v0);
       QVector2D uvMax = QVector2D(u1, v1);
       animInfo.frameUVs.emplace_back(uvMin, uvMax);
-      qDebug() << "[Ship] Added a frame, uvMin =" << uvMin << "uvMax =" << uvMax;
+      qDebug() << "[Ship] Added a frame, uvMin =" << uvMin
+               << "uvMax =" << uvMax;
     }
   }
 
@@ -199,7 +200,10 @@ void Ship::regenerateEnergy(float deltaTimeInSeconds) {
 void Ship::timerEvent(QTimerEvent *event) {
   if (event->timerId() == m_onHitTimerId) {
     killTimer(m_onHitTimerId);
-    setState(State::Normal);
+    // Only switch back if we're still in OnHit!
+    if (m_state == State::OnHit) {
+      setState(State::Normal);
+    }
     m_onHitAnimationInProgress = false;
     m_onHitTimerId = -1;
   }
