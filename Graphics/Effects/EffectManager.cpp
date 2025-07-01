@@ -109,6 +109,12 @@ void EffectManager::spawnDestructionEffect(const QVector2D &pos, float lifeSpan,
 }
 
 void EffectManager::clear() {
+  if (m_glFuncs) {
+    for (auto &effect : m_effects)
+      effect->destroyGL(m_glFuncs);
+    for (auto &effect : m_pendingInit)
+      effect->destroyGL(m_glFuncs);
+  }
   m_effects.clear();
   m_pendingInit.clear();
 }
