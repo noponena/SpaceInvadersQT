@@ -30,8 +30,7 @@ void PlayerShip::update(const UpdateContext &context) {
 }
 
 bool PlayerShip::shouldBeDeleted() {
-  return (isDead() && m_destructionAnimation.animationFinished() &&
-          m_destructionEffect.effectFinished());
+  return (isDead() && m_destructionAnimation.animationFinished());
 }
 
 void PlayerShip::initializeObjectType() {

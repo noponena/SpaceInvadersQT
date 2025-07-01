@@ -1,5 +1,6 @@
 #include "GameObject.h"
 #include "Game/Audio/SoundManager.h"
+#include "Graphics/Effects/EffectManager.h"
 #include <QGraphicsScene>
 #include <cmath>
 
@@ -10,7 +11,7 @@ std::uint32_t GameObject::counter = 0;
 GameObject::GameObject(const Config::GameContext &ctx)
     : m_hasCollided(false), m_collidable(true), m_soundEnabled(true),
       m_magnetism({false, 0, 0}), m_id(counter++),
-      m_destructionInitiated(false), m_gameContext(ctx) {
+    m_hasDestructionEffect(false), m_destructionInitiated(false), m_gameContext(ctx) {
 
   m_state = State::Normal;
   m_objectTypes = {ObjectType::BASE};
@@ -56,6 +57,8 @@ void GameObject::playDestructionAnimation() {
 }
 
 void GameObject::playDestructionEffects() {
+
+  Graphics::Effects::EffectManager::instance().spawnDestructionEffect(QVector2D(getCenterPosition()), 3.0, 100, QColor(255, 0, 0, 255));
   // qreal halfWidth = rect.width() / 2;
   // qreal halfHeight = rect.height() / 2;
   // QPointF p(m_position.x() + halfWidth, m_position.y() + halfHeight);
@@ -96,7 +99,7 @@ void GameObject::executeDestructionProcedure() {
   playDestructionSound();
   disableMovement();
 
-  if (m_destructionEffect)
+  if (m_hasDestructionEffect)
     playDestructionEffects();
 
   emit objectDestroyed();

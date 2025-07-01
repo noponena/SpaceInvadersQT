@@ -140,7 +140,7 @@ void Ship::initializeDestructionAnimation() {
 }
 
 void Ship::initializeDestructionEffects() {
-  m_destructionEffect.spawnParticles(m_destructionParticleCount);
+  // m_destructionEffect.spawnParticles(m_destructionParticleCount);
 }
 
 void Ship::onProjectileFired(

@@ -85,6 +85,7 @@ set(HEADERS
     Graphics/Animations/AnimationPlayer.h
     Graphics/CooldownItem.h
     Graphics/Effects/Effect.h
+    Graphics/Effects/EffectManager.h
     Graphics/Effects/Particle.h
     Graphics/Effects/ParticleSystem.h
     Graphics/EnergyBar.h
@@ -99,6 +100,7 @@ set(HEADERS
     Utils/Math/MathConstants.h
     Utils/Math/MathFunctions.h
     Utils/BoundsChecker.h
+    Utils/CustomMessageHandler.h
     Utils/PerformanceBenchmark.h
     Utils/Utils.h
     Weapons/PrimaryWeapon.h
@@ -149,6 +151,7 @@ set(SOURCES
     GameObjects/Ships/PlayerShip.cpp
     GameObjects/Ships/Ship.cpp
     GameObjects/Ships/ShipWithHealthBar.cpp
+    Graphics/Effects/EffectManager.cpp
     Graphics/Effects/ParticleSystem.cpp
     Graphics/EnergyBar.cpp
     Graphics/HealthBar.cpp

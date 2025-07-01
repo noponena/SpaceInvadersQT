@@ -67,4 +67,12 @@ std::filesystem::path getDataFolderPath(GameDataType type) {
     throw std::invalid_argument("Invalid GameDataType!");
 }
 
+QColor getRandomColor() {
+    int r = QRandomGenerator::global()->bounded(256);
+    int g = QRandomGenerator::global()->bounded(256);
+    int b = QRandomGenerator::global()->bounded(256);
+
+    return QColor(r, g, b);
+}
+
 } // namespace Utils

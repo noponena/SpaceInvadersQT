@@ -36,6 +36,7 @@ EnemyShip::EnemyShip(const Config::GameContext &ctx)
   addRenderData(State::OnDestruction, onDestructionData);
 
   m_transform.colliderSize = {30, 30};
+  m_hasDestructionEffect = true;
 
   m_magneticTargets = {ObjectType::PROJECTILE};
   setMaxHealth(5);

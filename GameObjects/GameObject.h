@@ -210,6 +210,7 @@ protected:
   bool m_hasCollided;
   bool m_collidable;
   bool m_soundEnabled;
+  bool m_hasDestructionEffect;
   std::unordered_set<int> m_collisions;
   Magnetism m_magnetism;
   Config::GameContext m_gameContext;

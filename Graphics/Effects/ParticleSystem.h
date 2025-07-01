@@ -1,38 +1,44 @@
 #ifndef GAMEOBJECTS_EFFECTS_PARTICLESYSTEM_H
 #define GAMEOBJECTS_EFFECTS_PARTICLESYSTEM_H
 
-#include "Effect.h"
 #include "Particle.h"
+#include <optional>
+#include <QOpenGLBuffer>
+#include <QOpenGLFunctions_3_3_Core>
+#include <QOpenGLShaderProgram>
+#include <QOpenGLVertexArrayObject>
+#include <QOpenGLWidget>
 
 namespace Graphics {
 namespace Effects {
 
-class ParticleSystem : public Effect {
-  Q_OBJECT
+class ParticleSystem {
 public:
-  ParticleSystem();
-  ~ParticleSystem();
-  void update(float deltaTimeInSeconds);
-  void spawnParticles(int count, QColor color = nullptr,
-                      float lifespanInSeconds = 1.0f);
+    explicit ParticleSystem(int maxParticles = 512);
 
-  operator bool() const { return !m_particles.empty(); }
+    void spawnParticles(int count, const QVector2D& pos, float lifeSpan, float maxSpeed, const std::optional<QColor> color);
+    void update(float deltaTime);
+    void render(QOpenGLFunctions_3_3_Core* glFuncs);
+    bool allParticlesDead() const;
+    void initializeGL(QOpenGLFunctions_3_3_Core* glFuncs);
+    void destroyGL(QOpenGLFunctions_3_3_Core* glFuncs);
+
+    ~ParticleSystem() = default;
 
 private:
-  bool m_effectFinished;
-  std::vector<Particle> m_particles;
-  QColor getRandomColor();
+    std::vector<Particle> m_particles;
+    bool m_allParticlesDead;
 
-public:
-  QRectF boundingRect() const override { return QRectF(); };
-  void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
-             QWidget *widget) override;
+    // OpenGL resources:
+    GLuint m_vbo = 0;
+    GLuint m_vao = 0;
+    int m_maxParticles = 0;
 
-  // Effect interface
-public:
-  void setPosition(QPointF newPosition) override;
-  bool effectFinished() const;
+    // Internal buffer for sending data to GPU
+    std::vector<float> m_vertexData; // [x, y, r, g, b, a]
+    void uploadToGPU(QOpenGLFunctions_3_3_Core *glFuncs);
 };
+
 
 } // namespace Effects
 } // namespace Graphics

@@ -1,6 +1,7 @@
 #include "Game/Core/GameRunnerView.h"
 #include "GameObjects/Ships/PlayerShip.h"
 #include "Graphics/TextureRegistry.h"
+#include "Graphics/Effects/EffectManager.h"
 #include "Utils/PerformanceBenchmark.h"
 #include <QOpenGLWidget>
 #include <QTimer>
@@ -231,6 +232,7 @@ void GameRunnerView::resumeGame() {
 
 void GameRunnerView::initializeGL() {
     initializeOpenGLFunctions();
+    Graphics::Effects::EffectManager::instance().initializeGL(this);
 
     // === 1. Compile and link shaders ===
     // Main sprite shader
@@ -294,85 +296,93 @@ void GameRunnerView::paintGL() {
     glClearColor(0, 0, 0, 1);
     glClear(GL_COLOR_BUFFER_BIT);
 
+    renderAllSprites();
+    Graphics::Effects::EffectManager::instance().render(QVector2D(width(), height()));
+
+#ifndef NDEBUG
+   //renderAllDebugColliders();
+#endif   
+}
+
+// -- Main sprite rendering for all objects --
+void GameRunnerView::renderAllSprites() {
     m_program->bind();
     m_vao.bind();
     glActiveTexture(GL_TEXTURE0);
     m_program->setUniformValue("tex", 0);
     m_program->setUniformValue("viewport", QVector2D(width(), height()));
 
-    for (const auto &obj : *m_gameObjects) {
+    for (const auto& obj : *m_gameObjects) {
         if (!obj->isVisible()) continue;
-
-        m_vao.bind();
-        m_program->bind();
-
-        // Sprite rendering as before
-        const auto &pos = obj->getPosition();
-        const GameObjects::RenderData renderData = obj->getRenderData();
-        const QString texPath = renderData.imagePath;
-        const auto &texInfo = Graphics::TextureRegistry::instance().getOrCreateTexture(texPath);
-        GLuint texture = texInfo.handle;
-
-        QVector2D size = renderData.size;
-        float rotation = renderData.rotation;
-
-        glBindTexture(GL_TEXTURE_2D, texture);
-
-        m_program->setUniformValue("uvMin", renderData.uvMin);
-        m_program->setUniformValue("uvMax", renderData.uvMax);
-
-        m_program->setUniformValue("spritePos", pos);
-        m_program->setUniformValue("spriteSize", size);
-        m_program->setUniformValue("spriteRotation", rotation);
-
-        glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-        m_program->release();
-        m_vao.release();
-
-        // -- Draw collider box --
-        m_debugVao.bind();
-        m_lineProgram->bind();
-        m_lineProgram->setUniformValue("viewport", QVector2D(width(), height()));
-        m_lineProgram->setUniformValue("lineColor", QVector3D(1, 0, 0)); // Red
-
-        QVector2D collider = obj->transform().colliderSize;
-        QVector2D center = obj->getPosition();
-
-        float x1 = center.x() - 0.5f * collider.x();
-        float x2 = center.x() + 0.5f * collider.x();
-        float y1 = center.y() - 0.5f * collider.y();
-        float y2 = center.y() + 0.5f * collider.y();
-
-        QVector2D colliderVerts[] = {
-            {x1, y1},
-            {x2, y1},
-            {x2, y2},
-            {x1, y2}
-        };
-
-        GLuint debugVBO;
-        glGenBuffers(1, &debugVBO);
-        glBindBuffer(GL_ARRAY_BUFFER, debugVBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(colliderVerts), colliderVerts, GL_STREAM_DRAW);
-
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-        glDrawArrays(GL_LINE_LOOP, 0, 4);
-
-        glDisableVertexAttribArray(0);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glDeleteBuffers(1, &debugVBO);
-
-        m_lineProgram->release();
-        m_debugVao.release();
+        renderSprite(obj.get());
     }
 
+    glBindVertexArray(0);
     m_vao.release();
     m_program->release();
 }
 
+void GameRunnerView::renderSprite(const GameObjects::GameObject* obj) {
+    // NOTE: Assumes m_vao and m_program already bound by caller
+    const auto& pos = obj->getPosition();
+    const GameObjects::RenderData renderData = obj->getRenderData();
+    const auto& texInfo = Graphics::TextureRegistry::instance().getOrCreateTexture(renderData.imagePath);
+    GLuint texture = texInfo.handle;
+
+    glBindTexture(GL_TEXTURE_2D, texture);
+
+    m_program->setUniformValue("uvMin", renderData.uvMin);
+    m_program->setUniformValue("uvMax", renderData.uvMax);
+    m_program->setUniformValue("spritePos", pos);
+    m_program->setUniformValue("spriteSize", renderData.size);
+    m_program->setUniformValue("spriteRotation", renderData.rotation);
+
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+}
+
+// -- Debug collider rendering for all objects --
+void GameRunnerView::renderAllDebugColliders() {
+    m_debugVao.bind();
+    m_lineProgram->bind();
+    m_lineProgram->setUniformValue("viewport", QVector2D(width(), height()));
+    m_lineProgram->setUniformValue("lineColor", QVector3D(1, 0, 0)); // Red
+
+    for (const auto& obj : *m_gameObjects) {
+        if (!obj->isVisible()) continue;
+        drawColliderBox(obj.get());
+    }
+
+    glBindVertexArray(0);
+    m_lineProgram->release();
+    m_debugVao.release();
+}
+
+void GameRunnerView::drawColliderBox(const GameObjects::GameObject* obj) {
+    QVector2D collider = obj->transform().colliderSize;
+    QVector2D center = obj->getPosition();
+
+    float x1 = center.x() - 0.5f * collider.x();
+    float x2 = center.x() + 0.5f * collider.x();
+    float y1 = center.y() - 0.5f * collider.y();
+    float y2 = center.y() + 0.5f * collider.y();
+
+    QVector2D colliderVerts[] = {
+        {x1, y1}, {x2, y1}, {x2, y2}, {x1, y2}
+    };
+
+    GLuint debugVBO;
+    glGenBuffers(1, &debugVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, debugVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(colliderVerts), colliderVerts, GL_STREAM_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glDrawArrays(GL_LINE_LOOP, 0, 4);
+    glDisableVertexAttribArray(0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glDeleteBuffers(1, &debugVBO);
+}
 
 void GameRunnerView::gameLoop() {
   // auto loopStartTime = std::chrono::high_resolution_clock::now();
@@ -398,8 +408,8 @@ void GameRunnerView::gameLoop() {
   */
 
   updateGameState(deltaTimeInSeconds);
-  // m_collisionDetector->detectBVH();
   m_collisionDetector->detectBVHParallel();
+  Graphics::Effects::EffectManager::instance().update(deltaTimeInSeconds);
   updateFps();
 
   updateGameCounters();

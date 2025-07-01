@@ -21,6 +21,7 @@ int randi(int lowerBound, int upperBound);
 bool probabilityCheck(float probability);
 std::string getTimestampStr();
 std::filesystem::path getDataFolderPath(GameDataType type);
+QColor getRandomColor();
 
 inline GameObjects::ConcreteType concreteTypeFromString(const std::string& typeStr) {
     static const std::unordered_map<std::string, GameObjects::ConcreteType> lookup = {
