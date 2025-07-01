@@ -24,7 +24,7 @@ public:
   void initializeGL(QOpenGLFunctions_3_3_Core *glFuncs);
   void destroyGL(QOpenGLFunctions_3_3_Core *glFuncs);
 
-  ~ParticleSystem() = default;
+  ~ParticleSystem();
 
 private:
   std::vector<Particle> m_particles;
@@ -34,6 +34,7 @@ private:
   GLuint m_vbo = 0;
   GLuint m_vao = 0;
   int m_maxParticles = 0;
+  QOpenGLFunctions_3_3_Core *m_glFuncs = nullptr;
 
   // Internal buffer for sending data to GPU
   std::vector<float> m_vertexData; // [x, y, r, g, b, a]

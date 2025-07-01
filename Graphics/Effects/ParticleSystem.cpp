@@ -5,9 +5,18 @@ namespace Graphics {
 namespace Effects {
 
 ParticleSystem::ParticleSystem(int maxParticles)
-    : m_maxParticles(maxParticles), m_vao(0), m_vbo(0) {}
+    : m_maxParticles(maxParticles), m_vao(0), m_vbo(0) {
+  m_particles.reserve(maxParticles);
+  m_vertexData.reserve(maxParticles * 6);
+}
+
+ParticleSystem::~ParticleSystem() {
+  if ((m_vao != 0 || m_vbo != 0) && m_glFuncs)
+    destroyGL(m_glFuncs);
+}
 
 void ParticleSystem::initializeGL(QOpenGLFunctions_3_3_Core *glFuncs) {
+  m_glFuncs = glFuncs;
   glFuncs->glGenVertexArrays(1, &m_vao);
   glFuncs->glGenBuffers(1, &m_vbo);
 
@@ -28,12 +37,14 @@ void ParticleSystem::initializeGL(QOpenGLFunctions_3_3_Core *glFuncs) {
 }
 
 void ParticleSystem::destroyGL(QOpenGLFunctions_3_3_Core *glFuncs) {
+  m_glFuncs = glFuncs;
   if (m_vao)
     glFuncs->glDeleteVertexArrays(1, &m_vao);
   if (m_vbo)
     glFuncs->glDeleteBuffers(1, &m_vbo);
   m_vao = 0;
   m_vbo = 0;
+  m_glFuncs = nullptr;
 }
 
 void ParticleSystem::uploadToGPU(QOpenGLFunctions_3_3_Core *glFuncs) {
@@ -59,6 +70,7 @@ void ParticleSystem::uploadToGPU(QOpenGLFunctions_3_3_Core *glFuncs) {
 }
 
 void ParticleSystem::render(QOpenGLFunctions_3_3_Core *glFuncs) {
+  m_glFuncs = glFuncs;
   glFuncs->glEnable(GL_PROGRAM_POINT_SIZE);
   glFuncs->glEnable(GL_BLEND);
   glFuncs->glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
