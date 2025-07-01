@@ -109,7 +109,7 @@ void ParticleSystem::spawnParticles(int count,
     int spawned = 0;
     m_allParticlesDead = false;
     if (color.has_value()) {
-        qDebug() << "[ParticleSystem] Spawning" << color << "partciles with lifeSpan" << lifeSpan << "and maxSpeed" << maxSpeed;
+        qDebug() << "[ParticleSystem] Spawning" << color.value() << "partciles with lifeSpan" << lifeSpan << "and maxSpeed" << maxSpeed;
     } else {
         qDebug() << "[ParticleSystem] Spawning random colored partciles with lifeSpan" << lifeSpan << "and maxSpeed" << maxSpeed;
     }
