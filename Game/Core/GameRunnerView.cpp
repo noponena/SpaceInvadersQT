@@ -3,6 +3,7 @@
 #include "Graphics/Effects/EffectManager.h"
 #include "Graphics/TextureRegistry.h"
 #include "Utils/PerformanceBenchmark.h"
+#include <QVector2D>
 #include <QOpenGLWidget>
 #include <QTimer>
 #include <chrono>
@@ -90,6 +91,7 @@ GameRunnerView::GameRunnerView(Config::GameContext ctx, QWidget *parent)
     : m_gameCtx(ctx), m_continuousShoot(false), m_progressLevel(true),
       m_levelFailed(false), m_levelFailedOrPassedInfoDisplayed(false),
       m_spawnEventsFinished(false), m_benchmarkMode(false),
+      m_debugVbo(QOpenGLBuffer::VertexBuffer),
       m_vbo(QOpenGLBuffer::VertexBuffer) {
   m_gameState = new GameState(ctx);
   m_levelManager = std::make_unique<Levels::LevelManager>(m_gameState);
@@ -281,10 +283,19 @@ void GameRunnerView::initializeGL() {
   m_vbo.release();
   m_vao.release();
 
-  // === 3. Debug line VAO (no VBO here!) ===
+  // === 3. Debug line VAO/VBO setup ===
   m_debugVao.create();
-  // Do not bind any buffer here; for lines, you will create a temporary VBO
-  // each frame (or batch them later)
+  m_debugVao.bind();
+
+  m_debugVbo.create();
+  m_debugVbo.bind();
+  m_debugVbo.setUsagePattern(QOpenGLBuffer::DynamicDraw);
+  m_debugVbo.allocate(sizeof(QVector2D) * 4);
+
+  m_lineProgram->enableAttributeArray(0);
+  m_lineProgram->setAttributeBuffer(0, GL_FLOAT, 0, 2, 0);
+
+  m_debugVbo.release();
   m_debugVao.release();
 
   // === 4. Texture setup (unchanged) ===
@@ -395,19 +406,10 @@ void GameRunnerView::drawColliderBox(const GameObjects::GameObject *obj) {
 
   QVector2D colliderVerts[] = {{x1, y1}, {x2, y1}, {x2, y2}, {x1, y2}};
 
-  GLuint debugVBO;
-  glGenBuffers(1, &debugVBO);
-  glBindBuffer(GL_ARRAY_BUFFER, debugVBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(colliderVerts), colliderVerts,
-               GL_STREAM_DRAW);
-
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+  m_debugVbo.bind();
+  glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(colliderVerts), colliderVerts);
   glDrawArrays(GL_LINE_LOOP, 0, 4);
-  glDisableVertexAttribArray(0);
-
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-  glDeleteBuffers(1, &debugVBO);
+  m_debugVbo.release();
 }
 
 void GameRunnerView::gameLoop() {
