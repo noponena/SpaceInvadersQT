@@ -1,7 +1,4 @@
 #include "EffectManager.h"
-#include <windows.h>
-#include <GL/gl.h>
-
 
 namespace Graphics {
 namespace Effects {
