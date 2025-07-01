@@ -123,8 +123,6 @@ void GameRunnerView::setupView() {
   // format.setSwapBehavior(QSurfaceFormat::TripleBuffer);
   format.setSwapInterval(0);
   format.setRenderableType(QSurfaceFormat::RenderableType::OpenGL);
-  QOpenGLWidget *glWidget = new QOpenGLWidget;
-  glWidget->setFormat(format);
   QSurfaceFormat::setDefaultFormat(format);
 }
 
