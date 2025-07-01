@@ -152,7 +152,11 @@ void PlayerShip::setSpeed(float newSpeed) { m_speed = newSpeed; }
 void PlayerShip::setSecondaryWeapon(std::unique_ptr<Weapons::Weapon> newWeapon,
                                     std::uint32_t weaponIndex) {
   Ship::setSecondaryWeapon(std::move(newWeapon), weaponIndex);
-  emit playerSecondaryWeaponsChanged(m_secondaryWeapons);
+  std::array<QString, 4> paths;
+  for (int i = 0; i < 4; ++i)
+    paths[i] = m_secondaryWeapons[i] ? m_secondaryWeapons[i]->getHudImagePath()
+                                     : ":/Images/placeholder.png";
+  emit playerSecondaryWeaponsChanged(paths);
 }
 
 bool PlayerShip::fireSecondaryWeapon(std::uint32_t weaponIndex) {

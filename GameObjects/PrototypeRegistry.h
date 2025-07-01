@@ -58,37 +58,40 @@ public:
   }
 
   /**
- * @brief Register a prototype instance for a given type.
- *
- * The registry will take ownership of the prototype.
- * Typically, you pass a std::make_unique<ConcreteType>(...) for each type.
- *
- * @param key The type identifier.
- * @param prototype The prototype object (ownership is transferred).
- * @param ignoreIfExists If true, do not throw if key exists; log a warning instead (default: false).
- * @throws std::runtime_error If a prototype for the given key already exists and ignoreIfExists is false.
- */
+   * @brief Register a prototype instance for a given type.
+   *
+   * The registry will take ownership of the prototype.
+   * Typically, you pass a std::make_unique<ConcreteType>(...) for each type.
+   *
+   * @param key The type identifier.
+   * @param prototype The prototype object (ownership is transferred).
+   * @param ignoreIfExists If true, do not throw if key exists; log a warning
+   * instead (default: false).
+   * @throws std::runtime_error If a prototype for the given key already exists
+   * and ignoreIfExists is false.
+   */
   void registerPrototype(const PrototypeKey &key,
                          std::unique_ptr<BaseType> prototype,
                          bool ignoreIfExists = false) {
-      if (!prototype)
-          throw std::invalid_argument("Cannot register null prototype");
+    if (!prototype)
+      throw std::invalid_argument("Cannot register null prototype");
 
-      auto [it, inserted] = m_registry.emplace(key, std::move(prototype));
-      if (!inserted) {
-          if (ignoreIfExists) {
-              qWarning() << "Prototype already registered for key"
-                         << QString::fromStdString(key.variant)
-                         << "- ignoring registration.";
-              return;
-          } else {
-              throw std::runtime_error(
-                  std::string("Prototype already registered for key '") + key.variant + "'");
-          }
+    auto [it, inserted] = m_registry.emplace(key, std::move(prototype));
+    if (!inserted) {
+      if (ignoreIfExists) {
+        qWarning() << "Prototype already registered for key"
+                   << QString::fromStdString(key.variant)
+                   << "- ignoring registration.";
+        return;
+      } else {
+        throw std::runtime_error(
+            std::string("Prototype already registered for key '") +
+            key.variant + "'");
       }
+    }
 
-      qDebug() << "Prototype registered for key"
-               << QString::fromStdString(key.variant);
+    qDebug() << "Prototype registered for key"
+             << QString::fromStdString(key.variant);
   }
 
   /**

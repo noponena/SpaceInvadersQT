@@ -83,6 +83,8 @@ set(HEADERS
     GameObjects/Ships/ShipWithHealthBar.h
     Graphics/Animations/AnimationPlayer.h
     Graphics/CooldownItem.h
+    Graphics/GLBar.h
+    Graphics/GLCooldownItem.h
     Graphics/Effects/Effect.h
     Graphics/Effects/EffectManager.h
     Graphics/Effects/Particle.h
@@ -150,6 +152,8 @@ set(SOURCES
     GameObjects/Ships/PlayerShip.cpp
     GameObjects/Ships/Ship.cpp
     GameObjects/Ships/ShipWithHealthBar.cpp
+    Graphics/GLBar.cpp
+    Graphics/GLCooldownItem.cpp
     Graphics/Effects/EffectManager.cpp
     Graphics/Effects/ParticleSystem.cpp
     Graphics/EnergyBar.cpp

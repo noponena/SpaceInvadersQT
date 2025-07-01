@@ -11,8 +11,7 @@ SpawnEvents:
   - Time: 0
     Enabled: true
     Count: 10000
-    Position: { X: 0.1, Y: 0.0 }
-    IntervalMs: 250
-    Formation: {Type: "Rectangle", Width: 10, Height: 1, Solid: True, Spacing: { X: 280, Y: 50}}
-    Behavior: "None"
-    Object: "BasicEnemy"
+    Position: { Min: { X: 0.05, Y: 0.0 }, Max: { X: 0.95, Y: 0.0 } }
+    IntervalMs: 10
+    Formation: { Type: "Rectangle", Width: 1, Height: 1, Solid: true, Spacing: { X: 50, Y: 50 } }
+    Object: "Enemy/BasicEnemy.yaml"

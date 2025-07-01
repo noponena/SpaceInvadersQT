@@ -1,24 +1,21 @@
-#ifndef GAME_CORE_GAMEHUD_H
-#define GAME_CORE_GAMEHUD_H
+#pragma once
 
-#include "Graphics/CooldownItem.h"
-#include "Graphics/EnergyBar.h"
-#include "Graphics/HealthBar.h"
+#include "Graphics/GLBar.h"          // Custom OpenGL-based progress bar
+#include "Graphics/GLCooldownItem.h" // Custom OpenGL-based cooldown widget
 #include "Weapons/Weapon.h"
-#include <QGraphicsItemGroup>
-#include <QGraphicsPixmapItem>
+#include <QObject>
+#include <array>
 
-namespace Game {
-namespace Core {
-
-class GameHUD : public QObject, public QGraphicsItemGroup {
+class GameHUD : public QObject {
   Q_OBJECT
 public:
-  GameHUD(int width, int height);
+  explicit GameHUD(int width, int height, QObject *parent = nullptr);
+
+  // Called from your QOpenGLWidget::paintGL() at the right time
+  void render(QOpenGLFunctions_3_3_Core *gl);
 
 public slots:
-  void
-  onPlayerSecondaryWeaponsChanged(std::unique_ptr<Weapons::Weapon> weapons[]);
+  void onPlayerSecondaryWeaponsChanged(const std::array<QString, 4> &);
   void onPlayerSecondaryWeaponFired(std::uint32_t weaponIndex,
                                     std::uint32_t cooldownMs);
   void onPlayerEnergyUpdated(float updatedEnergy);
@@ -27,15 +24,11 @@ public slots:
   void onPlayerMaxHealthSet(float maxHealth);
 
 private:
-  Graphics::CooldownItem *m_weaponCooldownItems[4];
-  Graphics::EnergyBar *m_energyBar;
-  Graphics::HealthBar *m_healthBar;
-  float m_previousPlayerEnergy;
-  float m_previousPlayerHealth;
-  QGraphicsRectItem *m_background;
+  int m_width, m_height;
+  // std::array<GLCooldownItem, 4> m_weaponCooldownItems;
+  GLBar m_energyBar;
+  GLBar m_healthBar;
+
+  float m_previousPlayerEnergy = 0.0f;
+  float m_previousPlayerHealth = 0.0f;
 };
-
-} // namespace Core
-} // namespace Game
-
-#endif // GAME_CORE_GAMEHUD_H

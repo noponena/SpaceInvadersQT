@@ -98,20 +98,26 @@ void PerformanceBenchmark::initializeBenchmark(
     return projectile;
   };
 
-  auto weapon =
-      weaponBuilder.clone().withProjectile(buildAngledProjectile(0)).build();
-
-  auto secondWeapon =
-      weaponBuilder.clone().withProjectile(buildAngledProjectile(10)).build();
-
-  auto thirdWeapon =
-      weaponBuilder.clone().withProjectile(buildAngledProjectile(-10)).build();
-
-  auto fourthWeapon =
-      weaponBuilder.clone().withProjectile(buildAngledProjectile(-5)).build();
-
-  auto fifthWeapon =
-      weaponBuilder.clone().withProjectile(buildAngledProjectile(5)).build();
+  auto weapon = weaponBuilder.createWeapon<Weapons::PrimaryWeapon>()
+                    .withProjectile(buildAngledProjectile(0))
+                    .withWeaponCooldownMs(0)
+                    .build();
+  auto secondWeapon = weaponBuilder.createWeapon<Weapons::PrimaryWeapon>()
+                          .withProjectile(buildAngledProjectile(10))
+                          .withWeaponCooldownMs(0)
+                          .build();
+  auto thirdWeapon = weaponBuilder.createWeapon<Weapons::PrimaryWeapon>()
+                         .withProjectile(buildAngledProjectile(-10))
+                         .withWeaponCooldownMs(0)
+                         .build();
+  auto fourthWeapon = weaponBuilder.createWeapon<Weapons::PrimaryWeapon>()
+                          .withProjectile(buildAngledProjectile(5))
+                          .withWeaponCooldownMs(0)
+                          .build();
+  auto fifthWeapon = weaponBuilder.createWeapon<Weapons::PrimaryWeapon>()
+                         .withProjectile(buildAngledProjectile(-5))
+                         .withWeaponCooldownMs(0)
+                         .build();
 
   playerShip->clearWeapons();
   playerShip->addPrimaryWeapon(std::move(weapon));
@@ -127,6 +133,8 @@ void PerformanceBenchmark::initializeBenchmark(
   playerShip->updateFireRate(-99999);
   playerShip->setImmortal(true);
   playerShip->setAutoShoot(true);
+
+  qDebug() << "[PerformanceBenchmark] Initialization done!";
 }
 
 float PerformanceBenchmark::getMemUsage() {

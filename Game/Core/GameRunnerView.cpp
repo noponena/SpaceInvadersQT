@@ -101,10 +101,8 @@ GameRunnerView::GameRunnerView(Config::GameContext ctx, QWidget *parent)
   m_elapsedTimer.start();
   m_fpsTimer.start();
 
-  m_gameHUD = new Core::GameHUD(ctx.screenGeometry.width(),
-                                ctx.screenGeometry.height());
-  m_scene.addItem(m_gameHUD);
-  m_gameHUD->setPos(0, ctx.screenGeometry.height() * 0.9);
+  // m_gameHUD = new GameHUD(ctx.screenGeometry.width(),
+  //                               ctx.screenGeometry.height());
 
   setupConnections();
 }
@@ -116,6 +114,8 @@ GameRunnerView::~GameRunnerView() {
   delete m_gameState;
   delete m_program;
   delete m_lineProgram;
+  if (m_gameHUD)
+    delete m_gameHUD;
 }
 
 void GameRunnerView::setupView() {
@@ -178,29 +178,33 @@ void GameRunnerView::startLevel(const Levels::Level &level,
   m_gameState->createPlayerShip();
   m_playerShip = m_gameState->playerShip();
 
+  /*
   connect(m_playerShip.get(),
           &GameObjects::Ships::PlayerShip::playerSecondaryWeaponsChanged,
-          m_gameHUD, &Core::GameHUD::onPlayerSecondaryWeaponsChanged);
+          m_gameHUD, &GameHUD::onPlayerSecondaryWeaponsChanged);
 
   connect(m_playerShip.get(),
           &GameObjects::Ships::PlayerShip::playerSecondaryWeaponFired,
-          m_gameHUD, &Core::GameHUD::onPlayerSecondaryWeaponFired);
+          m_gameHUD, &GameHUD::onPlayerSecondaryWeaponFired);
+
 
   connect(m_playerShip.get(),
           &GameObjects::Ships::PlayerShip::playerEnergyUpdated, m_gameHUD,
-          &Core::GameHUD::onPlayerEnergyUpdated);
+          &GameHUD::onPlayerEnergyUpdated);
 
   connect(m_playerShip.get(),
           &GameObjects::Ships::PlayerShip::playerMaxEnergySet, m_gameHUD,
-          &Core::GameHUD::onPlayerMaxEnergySet);
+          &GameHUD::onPlayerMaxEnergySet);
 
   connect(m_playerShip.get(),
           &GameObjects::Ships::PlayerShip::playerHealthUpdated, m_gameHUD,
-          &Core::GameHUD::onPlayerHealthUpdated);
+          &GameHUD::onPlayerHealthUpdated);
 
   connect(m_playerShip.get(),
           &GameObjects::Ships::PlayerShip::playerMaxHealthSet, m_gameHUD,
-          &Core::GameHUD::onPlayerMaxHealthSet);
+          &GameHUD::onPlayerMaxHealthSet);
+
+*/
 
   m_gameState->initialize();
 
@@ -301,6 +305,8 @@ void GameRunnerView::resizeGL(int w, int h) { QOpenGLWidget::resizeGL(w, h); }
 void GameRunnerView::paintGL() {
   glClearColor(0, 0, 0, 1);
   glClear(GL_COLOR_BUFFER_BIT);
+
+  // m_gameHUD->render(this);
 
   renderAllSprites();
   Graphics::Effects::EffectManager::instance().render(

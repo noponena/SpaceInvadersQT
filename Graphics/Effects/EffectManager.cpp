@@ -16,7 +16,7 @@ void main() {
     vec2 ndc = (vertPos / viewport) * 2.0 - 1.0;
     ndc.y = -ndc.y; // if Qt Y-up, else omit
     gl_Position = vec4(ndc, 0, 1);
-    gl_PointSize = 5.0; // Or make this a uniform/attribute for size fade
+    gl_PointSize = 2.5; // Or make this a uniform/attribute for size fade
     fragColor = vertColor;
 }
 )";

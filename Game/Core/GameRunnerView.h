@@ -47,7 +47,7 @@ private:
   QOpenGLShaderProgram *m_program = nullptr;
   QOpenGLShaderProgram *m_lineProgram = nullptr;
   GameState *m_gameState;
-  Core::GameHUD *m_gameHUD;
+  GameHUD *m_gameHUD;
   std::unique_ptr<Levels::LevelManager> m_levelManager;
   QTimer m_gameTimer;
   QTimer m_benchmarkTimer;
@@ -56,7 +56,6 @@ private:
   QElapsedTimer m_elapsedTimer;
   QElapsedTimer m_fpsTimer;
   QSet<int> m_pressedKeys;
-  QGraphicsScene m_scene;
   int m_frameCount = 0;
   QGraphicsTextItem *m_stellarTokens;
   QGraphicsTextItem *m_playerHp;

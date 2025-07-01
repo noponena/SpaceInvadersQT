@@ -1,40 +1,30 @@
-# Level configuration file
-
-# The unique level number (integer, starting from 0).
+# Level number.
 Level: 0
 
-# The display name of this level.
+# Level name.
 Name: "Example Level"
 
-# Brief description shown to the player.
+# Level description.
 Description: "Introduction to the game mechanics and level generation."
 
-# Maximum number of enemies allowed to reach the bottom of the screen before failing the level.
+# Maximum number of enemies allowed to reach the bottom of the screen.
 EnemyLimit: 1
 
-# List of spawn events for this level.
+# Spawn events for this level.
 SpawnEvents:
-  # --- Spawn Event 1 ---
-  - Time: 5000                # Time (in milliseconds) after level start when this event triggers.
-    Enabled: true             # Whether this spawn event is enabled (true/false).
+  # Spawn event 1
+  - Time: 5000                # Time in milliseconds when the spawn event is triggered.
+    Enabled: true             # Enable or disable this spawn event.
     Count: 100                # Number of formations to spawn (not individual enemies).
-                              # Total enemies = Count × (Width × Height) for "Rectangle" formations.
+                              # Total enemies = Count × (Width × Height) for rectangles.
 
-    # Spawn position: a fixed point or a random range.
-    # Position: { X: 0.75, Y: 0.1 }                 # (Example: spawn at a fixed point)
-    Position: { Min: { X: 0.0, Y: 0.0 }, Max: { X: 1.0, Y: 0.0 } }  # Random spawn along the top edge (X from 0.0 to 1.0, Y = 0.0).
+    # Position: { X: 0.75, Y: 0.1 }  # Position as a single point (X, Y in normalized coordinates 0.0–1.0).
+    Position: { Min: { X: 0.0, Y: 0.0 }, Max: { X: 1.0, Y: 0.0 } }  # Range in which the enemy will spwan at random.
+    IntervalMs: 1000           # Interval (ms) between spawns; applies if Count > 1.
 
-    IntervalMs: 1000           # Interval in milliseconds between individual spawns within this event (if Count > 1).
-
-    # Formation parameters:
-    #   Type:      Shape of the formation ("Rectangle", "Triangle", "Circle").
-    #   Width:     Number of enemies per row (for Rectangle).
-    #   Height:    Number of rows (for Rectangle).
-    #   Solid:     Whether the formation is solid (true) or hollow (false).
-    #   Spacing:   Distance between enemies in pixels (X and Y).
-    # To spawn a single enemy, use Type: "Rectangle", Width: 1, Height: 1.
-    # Spacing values are in raw pixels (not relative to screen size).
+    # Formation type: Height and Width are enemy counts, not screen dimensions.
+    # Available types: "Rectangle", "Triangle", "Circle"
     Formation: { Type: "Rectangle", Width: 1, Height: 1, Solid: true, Spacing: { X: 50, Y: 50 } }
 
-    Behavior: "None"           # (Reserved for future use; not implemented yet)
-    Object: "BasicEnemy"       # (Reserved for future use; only "BasicEnemy" is currently supported)
+    Behavior: "None"          # Not yet implemented.
+    Object: "Enemy/BasicEnemy.yaml"

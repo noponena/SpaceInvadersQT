@@ -53,8 +53,7 @@ private:
   float m_acceleration = 1250;
 signals:
   void stellarTokenCollected();
-  void
-  playerSecondaryWeaponsChanged(std::unique_ptr<Weapons::Weapon> weapons[]);
+  void playerSecondaryWeaponsChanged(const std::array<QString, 4> &);
   void playerSecondaryWeaponFired(std::uint32_t weaponIndex,
                                   std::uint32_t cooldownMs);
   void healthUpdated(int amount);

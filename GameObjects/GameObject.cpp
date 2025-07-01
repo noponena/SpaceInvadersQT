@@ -53,7 +53,7 @@ void GameObject::playDestructionAnimation() {}
 
 void GameObject::playDestructionEffects() {
   Graphics::Effects::EffectManager::instance().spawnDestructionEffect(
-      QVector2D(getCenterPosition()), 3.0, 500, 256);
+      QVector2D(getCenterPosition()), 1.0, 2000, 200);
 }
 
 void GameObject::applyMovementStrategy(float deltaTimeInSeconds) {

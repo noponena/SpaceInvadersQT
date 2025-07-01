@@ -95,7 +95,7 @@ if !CLEAN_BUILD! EQU 1 (
 if not exist build mkdir build
 cd build
 
-cmake .. -G "MinGW Makefiles"
+cmake .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
 if %ERRORLEVEL% NEQ 0 goto error
 cmake --build . --config Release -- -j!CORES!
 if %ERRORLEVEL% NEQ 0 goto error
@@ -112,7 +112,7 @@ if !CLEAN_BUILD! EQU 1 (
     for %%i in (*) do del /f /q "%%i"
 )
 
-cmake .. -G "MinGW Makefiles"
+cmake .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
 if %ERRORLEVEL% NEQ 0 goto error
 
 cmake --build . --config Release -- -j!CORES!
