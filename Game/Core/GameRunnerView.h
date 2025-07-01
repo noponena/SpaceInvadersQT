@@ -71,6 +71,7 @@ private:
   GLuint m_texture = 0;
   QOpenGLVertexArrayObject m_vao;
   QOpenGLVertexArrayObject m_debugVao;
+  QOpenGLBuffer m_debugVbo;
   QOpenGLBuffer m_vbo;
 
   UI::FPSCounter *m_fpsCounter;
