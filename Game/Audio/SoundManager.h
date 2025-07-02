@@ -9,6 +9,7 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <vector>
 
 namespace Game {
 namespace Audio {
@@ -24,6 +25,7 @@ public:
   }
 
   void playSoundEffect(SoundInfo soundInfo);
+  void cleanup();
   float Gain = 1.0f;
 
 private:
@@ -31,10 +33,11 @@ private:
   ~SoundManager();
 
   void loadSounds();
-  void cleanup();
+  std::shared_ptr<SoundSource> getAvailableSource(float gain);
+
+  std::vector<std::shared_ptr<SoundSource>> m_sourcePool;
   std::map<SoundEffect, std::pair<std::uint32_t, float>> m_sounds;
   std::list<std::shared_ptr<SoundSource>> m_activeSources;
-  std::mutex m_activeSourcesMutex;
   std::uint32_t m_soundCounter;
   std::uint32_t m_maxSoundCount;
 };

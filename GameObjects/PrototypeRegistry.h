@@ -79,18 +79,18 @@ public:
     auto [it, inserted] = m_registry.emplace(key, std::move(prototype));
     if (!inserted) {
       if (ignoreIfExists) {
-        qWarning() << "Prototype already registered for key"
+        qWarning() << "[PrototypeRegistry] Prototype already registered for key"
                    << QString::fromStdString(key.variant)
                    << "- ignoring registration.";
         return;
       } else {
         throw std::runtime_error(
-            std::string("Prototype already registered for key '") +
+            std::string("[PrototypeRegistry] Prototype already registered for key '") +
             key.variant + "'");
       }
     }
 
-    qDebug() << "Prototype registered for key"
+    qDebug() << "[PrototypeRegistry] Prototype registered for key"
              << QString::fromStdString(key.variant);
   }
 
@@ -106,7 +106,7 @@ public:
   std::unique_ptr<BaseType> clone(const PrototypeKey &key) const {
     auto it = m_registry.find(key);
     if (it == m_registry.end())
-      throw std::out_of_range(std::string("Prototype not found for key '") +
+      throw std::out_of_range(std::string("[PrototypeRegistry] Prototype not found for key '") +
                               key.variant + "'");
     return it->second->clone();
   }

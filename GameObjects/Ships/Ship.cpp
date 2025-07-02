@@ -132,8 +132,6 @@ void Ship::initializeDestructionAnimation() {
       QVector2D uvMin = QVector2D(u0, v0);
       QVector2D uvMax = QVector2D(u1, v1);
       animInfo.frameUVs.emplace_back(uvMin, uvMax);
-      qDebug() << "[Ship] Added a frame, uvMin =" << uvMin
-               << "uvMax =" << uvMax;
     }
   }
 

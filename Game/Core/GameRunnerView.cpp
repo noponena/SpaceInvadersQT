@@ -1,4 +1,5 @@
 #include "Game/Core/GameRunnerView.h"
+#include "Game/Audio/SoundManager.h"
 #include "Graphics/Effects/EffectManager.h"
 #include "Graphics/TextureRegistry.h"
 #include "Utils/PerformanceBenchmark.h"
@@ -441,6 +442,7 @@ void GameRunnerView::gameLoop() {
 
   updateGameCounters();
   checkLevelFailedOrPassed();
+  Game::Audio::SoundManager::getInstance().cleanup();
   m_lastFrameEndTime = std::chrono::high_resolution_clock::now();
   this->update();
 }

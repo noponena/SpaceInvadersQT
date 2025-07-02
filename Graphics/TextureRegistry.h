@@ -39,7 +39,7 @@ public:
     QImage img(path);
     if (img.isNull()) {
       // Log and return placeholder
-      qWarning() << "TextureRegistry: Could not load" << path
+      qWarning() << "[TextureRegistry] Could not load" << path
                  << ", using placeholder.";
       return m_placeholder;
     }
@@ -55,7 +55,7 @@ public:
     m_gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     m_gl->glBindTexture(GL_TEXTURE_2D, 0);
     m_textures[path] = TextureInfo{tex, img.width(), img.height()};
-    qDebug() << "Created a texture: path=" << path << " width=" << img.width()
+    qDebug() << "[TextureRegistry] Created a texture: path=" << path << " width=" << img.width()
              << " height=" << img.height();
     return m_textures[path];
   }
