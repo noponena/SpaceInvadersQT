@@ -165,6 +165,7 @@ set(SOURCES
     Graphics/EnergyBar.cpp
     Graphics/HealthBar.cpp
     Graphics/ProgressBar.cpp
+    Graphics/TextureRegistry.cpp
     Main/main.cpp
     UI/FPSCounter.cpp
     UI/GameObjectCounter.cpp
