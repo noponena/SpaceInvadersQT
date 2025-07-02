@@ -23,6 +23,11 @@ public:
     return reg;
   }
 
+  ~TextureRegistry();
+
+  // Release all loaded textures. Instance remains usable after calling.
+  void clear();
+
   void setGlContext(QOpenGLFunctions_3_3_Core *gl) {
     m_gl = gl;
     createPlaceholder(); // ensure placeholder is created once gl is set!
