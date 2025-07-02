@@ -1,4 +1,5 @@
 #include "GLBar.h"
+#include <QOpenGLContext>
 
 static const char *VERT_SHADER = R"(
 #version 330
@@ -25,9 +26,25 @@ GLBar::GLBar(float maxValue, const QVector2D &pos, const QVector2D &size,
       m_color(color) {}
 
 GLBar::~GLBar() {
-  if (m_program)
+  if (m_program) {
     delete m_program;
-  // Clean up VAO, VBO if needed...
+    m_program = nullptr;
+  }
+
+  if (m_vao != 0 || m_vbo != 0) {
+    if (QOpenGLContext *ctx = QOpenGLContext::currentContext()) {
+      if (QOpenGLFunctions_3_3_Core *gl =
+              ctx->versionFunctions<QOpenGLFunctions_3_3_Core>()) {
+        if (m_vao)
+          gl->glDeleteVertexArrays(1, &m_vao);
+        if (m_vbo)
+          gl->glDeleteBuffers(1, &m_vbo);
+      }
+    }
+  }
+
+  m_vao = 0;
+  m_vbo = 0;
 }
 
 void GLBar::setValue(float value) {
