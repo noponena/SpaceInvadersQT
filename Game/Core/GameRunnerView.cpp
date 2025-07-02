@@ -1,5 +1,4 @@
 #include "Game/Core/GameRunnerView.h"
-#include "GameObjects/Ships/PlayerShip.h"
 #include "Graphics/Effects/EffectManager.h"
 #include "Graphics/TextureRegistry.h"
 #include "Utils/PerformanceBenchmark.h"

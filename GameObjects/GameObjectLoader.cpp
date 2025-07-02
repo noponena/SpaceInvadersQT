@@ -52,7 +52,7 @@ GameObjectLoader::loadFromYaml(const YAML::Node &node) {
   if (node["movement"]) {
     const std::filesystem::path filePath = node["movement"].as<std::string>();
     const std::filesystem::path dirPath =
-        Utils::getDataFolderPath(GameDataType::MOVEMENT_STRATEGY);
+        Utils::getDataFolderPath(GameDataType::BLUEPRINT) / "movement";
     const std::filesystem::path fullPath = dirPath / filePath;
     qDebug() << "[GameObjectLoader] ...loading movement from:"
              << QString::fromStdString(fullPath.string());

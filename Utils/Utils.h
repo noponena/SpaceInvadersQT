@@ -7,11 +7,9 @@
 #include <unordered_map>
 
 enum class GameDataType {
+  ROOT,
   BLUEPRINT,
   LEVEL,
-  ENEMY,
-  PROJECTILE,
-  MOVEMENT_STRATEGY
 };
 
 namespace Utils {

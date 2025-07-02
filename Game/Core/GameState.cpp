@@ -33,6 +33,10 @@ void GameState::deinitialize() {
   m_gameObjects.clear();
   m_magneticGameObjectMap.clear();
 
+  // std::vector<std::shared_ptr<GameObjects::GameObject>>{}.swap(m_gameObjects);
+  // std::unordered_map<std::uint64_t,
+  //                    std::shared_ptr<GameObjects::GameObject>>{}.swap(m_magneticGameObjectMap);
+
   // disconnect(m_playerShip.get(), &GameObjects::GameObject::objectCreated,
   // this,
   //         &GameState::onObjectCreated);

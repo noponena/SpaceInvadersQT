@@ -8,7 +8,14 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
+# Specify resources file
 set(RESOURCES Resources.qrc)
+
+# Specify asset folders
+set(GAME_ASSETS
+    gamedata/levels
+    gamedata/blueprints
+)
 
 if(POLICY CMP0135)
   cmake_policy(SET CMP0135 NEW)
@@ -26,8 +33,7 @@ endif()
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets OpenGLWidgets Concurrent)
 
 file(GLOB_RECURSE GAME_LEVEL_FILES
-    "${CMAKE_CURRENT_SOURCE_DIR}/Levels/*.yaml"
-    "${CMAKE_CURRENT_SOURCE_DIR}/Blueprints/*.yaml"
+    "${CMAKE_CURRENT_SOURCE_DIR}/gamedata/*.yaml"
 )
 
 set(HEADERS
@@ -206,6 +212,15 @@ target_sources(${PROJECT_NAME}
   PRIVATE
     ${GAME_LEVEL_FILES}
 )
+
+# Copy asset folders to build output dir
+foreach(asset_dir ${GAME_ASSETS})
+    add_custom_command(TARGET SpaceInvadersQT POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_SOURCE_DIR}/${asset_dir}"
+            "$<TARGET_FILE_DIR:SpaceInvadersQT>/${asset_dir}"
+    )
+endforeach()
 
 option(PERFORMANCE_BENCHMARK "Build with performance benchmark" OFF)
 if(PERFORMANCE_BENCHMARK)

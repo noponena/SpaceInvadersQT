@@ -53,16 +53,12 @@ std::string getTimestampStr() {
 
 std::filesystem::path getDataFolderPath(GameDataType type) {
   switch (type) {
+  case GameDataType::ROOT:
+    return std::filesystem::current_path() / "gamedata";
   case GameDataType::LEVEL:
-    return std::filesystem::current_path() / "levels";
+    return std::filesystem::current_path() / "gamedata/levels";
   case GameDataType::BLUEPRINT:
-    return std::filesystem::current_path() / "Blueprints";
-  case GameDataType::ENEMY:
-    return std::filesystem::current_path() / "Blueprints/Enemy";
-  case GameDataType::PROJECTILE:
-    return std::filesystem::current_path() / "Blueprints/Projectile";
-  case GameDataType::MOVEMENT_STRATEGY:
-    return std::filesystem::current_path() / "Blueprints/Movement";
+    return std::filesystem::current_path() / "gamedata/blueprints";
   }
 
   throw std::invalid_argument("Invalid GameDataType!");
