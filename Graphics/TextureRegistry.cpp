@@ -2,9 +2,7 @@
 
 namespace Graphics {
 
-TextureRegistry::~TextureRegistry() {
-  clear();
-}
+TextureRegistry::~TextureRegistry() { clear(); }
 
 void TextureRegistry::clear() {
   if (m_gl) {

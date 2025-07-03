@@ -31,22 +31,20 @@ void SoundSource::Play(const ALuint buffer_to_play) {
 }
 
 void SoundSource::reset(float gain) {
-    alSourceStop(p_Source);
-    alSourcef(p_Source, AL_GAIN, gain);
+  alSourceStop(p_Source);
+  alSourcef(p_Source, AL_GAIN, gain);
 }
 
-bool SoundSource::isPlaying() const
-{
-    ALint state;
-    alGetSourcei(p_Source, AL_SOURCE_STATE, &state);
-    return state == AL_PLAYING;
+bool SoundSource::isPlaying() const {
+  ALint state;
+  alGetSourcei(p_Source, AL_SOURCE_STATE, &state);
+  return state == AL_PLAYING;
 }
 
 ALuint SoundSource::getSourceID() const { return p_Source; }
 
-std::chrono::steady_clock::time_point SoundSource::getPlayStartTime() const
-{
-    return m_playStartTime;
+std::chrono::steady_clock::time_point SoundSource::getPlayStartTime() const {
+  return m_playStartTime;
 }
 } // namespace Audio
 } // namespace Game

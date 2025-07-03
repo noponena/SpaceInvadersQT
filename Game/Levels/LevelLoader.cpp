@@ -121,7 +121,8 @@ Level LevelLoader::loadLevel(const std::string &filepath) const {
 std::map<int, Level> LevelLoader::loadLevels() const {
   std::map<int, Level> levels;
 
-  std::filesystem::path levelsPath = Utils::getDataFolderPath(GameDataType::LEVEL);
+  std::filesystem::path levelsPath =
+      Utils::getDataFolderPath(GameDataType::LEVEL);
   qDebug() << "Attempting to load levels from path:"
            << QString::fromStdString(levelsPath.string());
 
@@ -148,7 +149,8 @@ std::map<int, Level> LevelLoader::loadLevels() const {
 }
 
 Level LevelLoader::loadBenchmarkLevel() {
-  std::filesystem::path levelsPath = Utils::getDataFolderPath(GameDataType::LEVEL);
+  std::filesystem::path levelsPath =
+      Utils::getDataFolderPath(GameDataType::LEVEL);
   qDebug() << "Looking for benchmark.yaml in path:"
            << QString::fromStdString(levelsPath.string());
 

@@ -85,7 +85,8 @@ public:
         return;
       } else {
         throw std::runtime_error(
-            std::string("[PrototypeRegistry] Prototype already registered for key '") +
+            std::string(
+                "[PrototypeRegistry] Prototype already registered for key '") +
             key.variant + "'");
       }
     }
@@ -106,8 +107,9 @@ public:
   std::unique_ptr<BaseType> clone(const PrototypeKey &key) const {
     auto it = m_registry.find(key);
     if (it == m_registry.end())
-      throw std::out_of_range(std::string("[PrototypeRegistry] Prototype not found for key '") +
-                              key.variant + "'");
+      throw std::out_of_range(
+          std::string("[PrototypeRegistry] Prototype not found for key '") +
+          key.variant + "'");
     return it->second->clone();
   }
 

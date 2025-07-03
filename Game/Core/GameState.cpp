@@ -72,9 +72,10 @@ void GameState::update(float deltaTimeInSeconds) {
     m_gameObjects[i]->update(ctx);
     if (m_gameObjects[i]->shouldBeDeleted()) {
 #ifndef NDEBUG
-        int useCount = m_gameObjects[i].use_count();
-        if (useCount > 1)
-            qCritical() << "More than 1 owners at the moment of deletion:" << useCount;
+      int useCount = m_gameObjects[i].use_count();
+      if (useCount > 1)
+        qCritical() << "More than 1 owners at the moment of deletion:"
+                    << useCount;
 #endif
       m_magneticGameObjectMap.erase(m_gameObjects[i]->id());
       std::swap(m_gameObjects[i], m_gameObjects.back());

@@ -3,9 +3,9 @@
 #include "Graphics/Effects/EffectManager.h"
 #include "Graphics/TextureRegistry.h"
 #include "Utils/PerformanceBenchmark.h"
-#include <QVector2D>
 #include <QOpenGLWidget>
 #include <QTimer>
+#include <QVector2D>
 #include <chrono>
 #include <thread>
 

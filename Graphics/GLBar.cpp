@@ -1,6 +1,6 @@
 #include "GLBar.h"
-#include <QOpenGLExtraFunctions>
 #include <QOpenGLContext>
+#include <QOpenGLExtraFunctions>
 
 static const char *VERT_SHADER = R"(
 #version 330
@@ -27,31 +27,33 @@ GLBar::GLBar(float maxValue, const QVector2D &pos, const QVector2D &size,
       m_color(color) {}
 
 GLBar::~GLBar() {
-    if (m_program) {
-        delete m_program;
-        m_program = nullptr;
-    }
+  if (m_program) {
+    delete m_program;
+    m_program = nullptr;
+  }
 
-    GLuint vao = m_vao;
-    GLuint vbo = m_vbo;
-    m_vao = 0;
-    m_vbo = 0;
+  GLuint vao = m_vao;
+  GLuint vbo = m_vbo;
+  m_vao = 0;
+  m_vbo = 0;
 
-    if (vao != 0 || vbo != 0) {
-        if (QOpenGLContext *ctx = QOpenGLContext::currentContext()) {
-            QOpenGLExtraFunctions *gl = ctx->extraFunctions();
-            if (gl) {
-                if (vao)
-                    gl->glDeleteVertexArrays(1, &vao);
-                if (vbo)
-                    gl->glDeleteBuffers(1, &vbo);
-            } else {
-                qWarning("GLBar::~GLBar(): Could not get OpenGL functions. Resources may leak.");
-            }
-        } else {
-            qWarning("GLBar::~GLBar(): No current OpenGL context. Resources may leak.");
-        }
+  if (vao != 0 || vbo != 0) {
+    if (QOpenGLContext *ctx = QOpenGLContext::currentContext()) {
+      QOpenGLExtraFunctions *gl = ctx->extraFunctions();
+      if (gl) {
+        if (vao)
+          gl->glDeleteVertexArrays(1, &vao);
+        if (vbo)
+          gl->glDeleteBuffers(1, &vbo);
+      } else {
+        qWarning("GLBar::~GLBar(): Could not get OpenGL functions. Resources "
+                 "may leak.");
+      }
+    } else {
+      qWarning(
+          "GLBar::~GLBar(): No current OpenGL context. Resources may leak.");
     }
+  }
 }
 
 void GLBar::setValue(float value) {

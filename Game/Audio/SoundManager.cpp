@@ -14,44 +14,42 @@ SoundManager::SoundManager() : m_soundCounter(0), m_maxSoundCount(50) {
 SoundManager::~SoundManager() {}
 
 void SoundManager::playSoundEffect(SoundInfo soundInfo) {
-  if (soundInfo.enabled) {   
+  if (soundInfo.enabled) {
     std::pair<std::uint32_t, float> sound = m_sounds[soundInfo.soundEffect];
     float gain = Gain * sound.second * soundInfo.gain;
     std::shared_ptr<SoundSource> source = getAvailableSource(gain);
     if (source) {
-        m_activeSources.push_back(source);
-        source->Play(sound.first);
-        m_soundCounter++;
+      m_activeSources.push_back(source);
+      source->Play(sound.first);
+      m_soundCounter++;
     }
   }
 }
 
 std::shared_ptr<SoundSource> SoundManager::getAvailableSource(float gain) {
-    // 1. Look for a stopped source
-    for (auto& src : m_sourcePool) {
-        if (!src->isPlaying()) {
-            src->reset(gain);
-            return src;
-        }
+  // 1. Look for a stopped source
+  for (auto &src : m_sourcePool) {
+    if (!src->isPlaying()) {
+      src->reset(gain);
+      return src;
     }
-    // 2. If all are busy, but pool isn't full, create a new one
-    if (m_sourcePool.size() < m_maxSoundCount) {
-        auto src = std::make_shared<SoundSource>(gain);
-        m_sourcePool.push_back(src);
-        return src;
-    }
-    // 3. Pool is full and all busy: steal/override an existing source
-    // Example: steal the oldest
-    auto& toSteal = *std::min_element(
-        m_sourcePool.begin(), m_sourcePool.end(),
-        [](const auto& a, const auto& b) {
-            return a->getPlayStartTime() < b->getPlayStartTime();
-        }
-        );
-    toSteal->reset(gain);
-    return toSteal;
+  }
+  // 2. If all are busy, but pool isn't full, create a new one
+  if (m_sourcePool.size() < m_maxSoundCount) {
+    auto src = std::make_shared<SoundSource>(gain);
+    m_sourcePool.push_back(src);
+    return src;
+  }
+  // 3. Pool is full and all busy: steal/override an existing source
+  // Example: steal the oldest
+  auto &toSteal =
+      *std::min_element(m_sourcePool.begin(), m_sourcePool.end(),
+                        [](const auto &a, const auto &b) {
+                          return a->getPlayStartTime() < b->getPlayStartTime();
+                        });
+  toSteal->reset(gain);
+  return toSteal;
 }
-
 
 void SoundManager::loadSounds() {
   SoundDevice::get();
@@ -99,7 +97,8 @@ void SoundManager::cleanup() {
     alGetSourcei((*it)->getSourceID(), AL_SOURCE_STATE, &state);
     if (state != AL_PLAYING) {
       it = m_activeSources.erase(it);
-      qDebug() << "[SoundManager] Removing a sound source.. Active sources:" << m_activeSources.size();
+      qDebug() << "[SoundManager] Removing a sound source.. Active sources:"
+               << m_activeSources.size();
     } else {
       ++it;
     }
