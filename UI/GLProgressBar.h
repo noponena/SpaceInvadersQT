@@ -1,12 +1,11 @@
 #pragma once
 
 #include "UI/IRenderable.h"
+#include "UISizeMode.h"
 #include <QVector4D>
 #include <qopenglshaderprogram.h>
 
 namespace UI {
-
-enum class UISizeMode { Pixels, Fraction };
 
 class GLProgressBar : public IRenderable {
 public:
@@ -29,6 +28,7 @@ public:
               float screenHeight, float x = 0.f, float y = 0.f);
 
   void setCenter(float x, float y, UISizeMode mode = UISizeMode::Pixels);
+  void destroyGL(QOpenGLFunctions_3_3_Core *glFuncs);
 
 private:
   void initialize(QOpenGLFunctions_3_3_Core *gl);

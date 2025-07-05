@@ -62,6 +62,11 @@ void Projectile::removeProperty(const ProjectileProperty property) {
   m_properties.erase(property);
 }
 
+QString Projectile::hudPixmapResourcePath() const
+{
+    return m_hudPixmapResourcePath;
+}
+
 void Projectile::initializeObjectType() {
   m_objectTypes.insert(ObjectType::PROJECTILE);
 }

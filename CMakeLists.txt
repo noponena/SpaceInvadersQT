@@ -45,12 +45,9 @@ set(HEADERS
     Game/Audio/SoundInfo.h
     Game/Audio/SoundManager.h
     Game/Audio/SoundSource.h
-    Game/CollisionDetection/BruteForce.h
     Game/CollisionDetection/BVHNode.h
     Game/CollisionDetection/BVHTree.h
     Game/CollisionDetection/CollisionDetector.h
-    Game/CollisionDetection/Quadtree.h
-    Game/CollisionDetection/ThreadedCollisionDetector.h
     Game/Core/GameRunnerView.h
     Game/Core/GameState.h
     Game/Core/LevelSelectorView.h
@@ -87,27 +84,22 @@ set(HEADERS
     GameObjects/Ships/EnemyShip.h
     GameObjects/Ships/PlayerShip.h
     GameObjects/Ships/Ship.h
-
     Graphics/Animations/AnimationPlayer.h
     Graphics/CooldownItem.h
     Graphics/GLBar.h
     Graphics/GLCooldownItem.h
-    Graphics/Effects/Effect.h
     Graphics/Effects/EffectManager.h
     Graphics/Effects/Particle.h
     Graphics/Effects/ParticleSystem.h
-    Graphics/EnergyBar.h
-    Graphics/HealthBar.h
-    Graphics/PixmapRegistry.h
-    Graphics/PixmapLibrary.h
-    Graphics/ProgressBar.h
     Graphics/TextureRegistry.h
     UI/FPSCounter.h
     UI/GameObjectCounter.h
     UI/GLProgressBar.h
+    UI/GLWeaponBar.h
     UI/IRenderable.h
     UI/MainWindow.h
     UI/Panel.h
+    UI/UISizeMode.h
     Utils/Math/MathConstants.h
     Utils/Math/MathFunctions.h
     Utils/BoundsChecker.h
@@ -160,19 +152,16 @@ set(SOURCES
     GameObjects/Ships/EnemyShip.cpp
     GameObjects/Ships/PlayerShip.cpp
     GameObjects/Ships/Ship.cpp
-
     Graphics/GLBar.cpp
     Graphics/GLCooldownItem.cpp
     Graphics/Effects/EffectManager.cpp
     Graphics/Effects/ParticleSystem.cpp
-    Graphics/EnergyBar.cpp
-    Graphics/HealthBar.cpp
-    Graphics/ProgressBar.cpp
     Graphics/TextureRegistry.cpp
     Main/main.cpp
     UI/FPSCounter.cpp
     UI/GameObjectCounter.cpp
     UI/GLProgressBar.cpp
+    UI/GLWeaponBar.cpp
     UI/MainWindow.cpp
     UI/Panel.cpp
     Utils/BoundsChecker.cpp

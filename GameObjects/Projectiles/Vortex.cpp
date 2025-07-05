@@ -20,6 +20,8 @@ Vortex::Vortex(Config::GameContext ctx)
   onHitData.imagePath = ":/Images/black_hole.png";
   addRenderData(State::OnHit, onHitData);
 
+  m_hudPixmapResourcePath = ":/Images/black_hole_hud.png";
+
   /*
   RenderData hudData;
   hudData.size = QVector2D(25, 25);

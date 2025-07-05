@@ -32,16 +32,13 @@ public:
   void addProperty(const ProjectileProperty property);
   void removeProperty(const ProjectileProperty property);
 
-protected:
+  QString hudPixmapResourcePath() const;
+
+  protected:
   int m_damage;
+  QString m_hudPixmapResourcePath = "";
   std::unordered_set<ProjectileProperty> m_properties;
-
-  // GameObject interface
-protected:
   void initializeObjectType() override;
-
-  // GameObject interface
-protected:
   void initializeSounds() override {};
 };
 } // namespace Projectiles

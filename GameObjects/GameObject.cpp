@@ -99,11 +99,6 @@ void GameObject::executeDestructionProcedure() {
 
 QRectF GameObject::getBoundingBox() const { return m_transform.colliderRect(); }
 
-QString GameObject::hudPixmapPath() const {
-  // return m_pixmapData.hudPixmapResourcePath;
-  return "";
-}
-
 void GameObject::disableMovement() { m_movementStrategy.clear(); }
 
 Game::Movement::MovementStrategy GameObject::movementStrategy() const {

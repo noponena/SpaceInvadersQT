@@ -43,15 +43,15 @@ PerformanceBenchmark::PerformanceBenchmark(int logIntervalMs,
 }
 
 std::vector<float>
-PerformanceBenchmark::filteredFrameTimes(float maxAllowedMs,
+PerformanceBenchmark::filteredFrameTimes(float maxAllowedSec,
                                          size_t skipFirstN) const {
   std::vector<float> filtered;
-  filtered.reserve(m_frameTimesMs.size() > skipFirstN
-                       ? m_frameTimesMs.size() - skipFirstN
+  filtered.reserve(m_frameTimesSec.size() > skipFirstN
+                       ? m_frameTimesSec.size() - skipFirstN
                        : 0);
-  for (size_t i = skipFirstN; i < m_frameTimesMs.size(); ++i) {
-    float ft = m_frameTimesMs[i];
-    if (ft > 0.0f && ft <= maxAllowedMs) {
+  for (size_t i = skipFirstN; i < m_frameTimesSec.size(); ++i) {
+    float ft = m_frameTimesSec[i];
+    if (ft > 0.0f && ft <= maxAllowedSec) {
       filtered.push_back(ft);
     }
   }
@@ -175,8 +175,8 @@ void PerformanceBenchmark::writeHeader() {
             << "p99_fps" << m_csvDelimiter << "mem_usage\n";
 }
 
-void PerformanceBenchmark::recordFrameTime(int frameTimeMs) {
-  m_frameTimesMs.push_back(static_cast<float>(frameTimeMs));
+void PerformanceBenchmark::recordFrameTime(float frameTimeSec) {
+  m_frameTimesSec.push_back(frameTimeSec);
 }
 
 void PerformanceBenchmark::logPerformanceScore() {
@@ -206,10 +206,10 @@ void PerformanceBenchmark::logPerformanceScore() {
     p99FrameTime = 0.0f;
   }
 
-  float avgFps = avgFrameTime > 0.0f ? 1000.0f / avgFrameTime : 0.0f;
-  float minFps = maxFrameTime > 0.0f ? 1000.0f / maxFrameTime : 0.0f;
-  float p95Fps = p95FrameTime > 0.0f ? 1000.0f / p95FrameTime : 0.0f;
-  float p99Fps = p99FrameTime > 0.0f ? 1000.0f / p99FrameTime : 0.0f;
+  float avgFps = avgFrameTime > 0.0f ? 1.0f / avgFrameTime : 0.0f;
+  float minFps = maxFrameTime > 0.0f ? 1.0f / maxFrameTime : 0.0f;
+  float p95Fps = p95FrameTime > 0.0f ? 1.0f / p95FrameTime : 0.0f;
+  float p99Fps = p99FrameTime > 0.0f ? 1.0f / p99FrameTime : 0.0f;
 
   float memUsage = getMemUsage();
 
@@ -221,7 +221,7 @@ void PerformanceBenchmark::logPerformanceScore() {
          << m_csvDelimiter << p95Fps << m_csvDelimiter << p99Fps
          << m_csvDelimiter << memUsage << std::endl;
   }
-  m_frameTimesMs.clear();
+  m_frameTimesSec.clear();
 }
 
 } // namespace Utils

@@ -8,42 +8,7 @@ namespace CollisionDetection {
 CollisionDetector::CollisionDetector(
     const std::vector<std::shared_ptr<GameObjects::GameObject>> &gameObjects,
     QRectF screenRect)
-    : m_gameObjects(gameObjects) {
-  m_quadtree = std::make_unique<Quadtree>(0, screenRect);
-}
-
-void CollisionDetector::detectQuadTree() {
-  // Clear the quadtree for fresh insertion of objects.
-  m_quadtree->clear();
-
-  // Insert all game objects into the quadtree.
-  for (const auto &object : m_gameObjects) {
-    m_quadtree->insert(object.get());
-  }
-
-  // Check for potential collisions.
-  std::set<std::pair<std::uint64_t, std::uint64_t>> checkedPairs;
-
-  for (const auto &object : m_gameObjects) {
-    auto potentialCollisions = m_quadtree->query(object.get());
-
-    for (auto &potentialObject : potentialCollisions) {
-      auto sortedPair =
-          (object->id() < potentialObject->id())
-              ? std::make_pair(object->id(), potentialObject->id())
-              : std::make_pair(potentialObject->id(), object->id());
-
-      if (checkedPairs.find(sortedPair) == checkedPairs.end()) {
-        if (object->isCollidingWith(*potentialObject)) {
-          object->collide(*potentialObject);
-        }
-        checkedPairs.insert(sortedPair);
-      }
-    }
-  }
-
-  checkedPairs.clear();
-}
+    : m_gameObjects(gameObjects) {}
 
 void CollisionDetector::detectBVH() {
   std::vector<GameObjects::GameObject *> vec;
@@ -107,10 +72,6 @@ void CollisionDetector::detectBVHParallel() {
   }
 
   m_collisionPairs.clear();
-}
-
-void CollisionDetector::detectBruteForce() {
-  m_bruteForce.detect(m_gameObjects);
 }
 
 } // namespace CollisionDetection

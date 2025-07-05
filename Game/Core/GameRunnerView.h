@@ -6,6 +6,7 @@
 #include "Game/Levels/LevelManager.h"
 #include "UI/FPSCounter.h"
 #include "UI/GLProgressBar.h"
+#include "UI/GLWeaponBar.h"
 #include "UI/GameObjectCounter.h"
 #include "UI/Panel.h"
 #include <QElapsedTimer>
@@ -46,9 +47,11 @@ private:
   Config::GameContext m_gameCtx;
   QOpenGLShaderProgram *m_program = nullptr;
   QOpenGLShaderProgram *m_lineProgram = nullptr;
+  std::chrono::high_resolution_clock::time_point m_gameStartTime;
   std::unique_ptr<UI::Panel> m_uiPanel;
   std::unique_ptr<UI::GLProgressBar> m_healthBar;
   std::unique_ptr<UI::GLProgressBar> m_energyBar;
+  std::unique_ptr<UI::GLWeaponBar> m_weaponBar;
   GameState *m_gameState;
   std::unique_ptr<Levels::LevelManager> m_levelManager;
   QTimer m_gameTimer;
@@ -82,7 +85,7 @@ private:
   void setupView();
   void setupCounters();
   void setupConnections();
-  inline void gameLoop();
+  inline void gameTick();
 
   inline void processInput(float deltaTimeInSeconds);
   inline void processGameAction(float deltaTimeInSeconds);
@@ -156,7 +159,7 @@ private:
 
   inline float calculateRenderTime(
       const std::chrono::high_resolution_clock::time_point &loopStartTime);
-  inline float calculateDeltaTime();
+  inline float calculateDeltaTimeSec();
   inline void manageLevelProgression();
   template <typename Func> inline float measureFunctionDuration(Func &&func);
   inline void logFrameStatistics(float renderTimeUs, float updateTimeUs,
@@ -189,6 +192,21 @@ private slots:
   void onPlayerMaxHealthSet(float value) { m_healthBar->setRange(0, value); }
   void onPlayerEnergyUpdated(float value) { m_energyBar->setValue(value); }
   void onPlayerMaxEnergySet(float value) { m_energyBar->setRange(0, value); }
+  void onPlayerSecondaryWeaponsChanged(const std::array<QString, 4> &weapons) {
+      int i = 0;
+      for (const auto & weapon : weapons) {
+          qDebug() << "weapon =" << weapon;
+          m_weaponBar->setSlotImage(i, weapon);
+          i++;
+      }
+  }
+  void onPlayerSecondaryWeaponFired(std::uint32_t weaponIndex,
+                                    std::uint32_t cooldownMs) {
+      auto now = std::chrono::high_resolution_clock::now();
+      float nowSec = std::chrono::duration_cast<std::chrono::duration<float>>(now - m_gameStartTime).count();
+      float cooldownSec = cooldownMs / 1000.0f;
+      m_weaponBar->startCooldown(weaponIndex, cooldownSec, nowSec);
+  }
   void onSpawnEventsFinished() { m_spawnEventsFinished = true; }
   void pause() {
     m_gameTimer.stop();

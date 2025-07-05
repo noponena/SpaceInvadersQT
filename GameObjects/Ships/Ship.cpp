@@ -13,7 +13,7 @@ Ship::Ship(const Config::GameContext &ctx)
       m_maxHealth(1), m_speed(1), m_energyRegenerationRate(0) {
   m_healthBar = std::make_unique<UI::GLProgressBar>(
       0.f, m_maxHealth, // Min/max
-      m_pixelWidth, 5,     // 30% width, 6% height (fractions)
+      m_pixelWidth, 5,  // 30% width, 6% height (fractions)
       UI::UISizeMode::Pixels);
   m_healthBar->setBarColors(QVector4D(0.1f, 0.7f, 0.2f, 1.f),    // Green
                             QVector4D(0.95f, 0.83f, 0.29f, 1.f), // Yellow
@@ -191,7 +191,8 @@ bool Ship::shouldBeDeleted() {
 }
 
 const RenderData Ship::getRenderData() const {
-  if (m_state == State::OnDestruction) return GameObject::getRenderData();
+  if (m_state == State::OnDestruction)
+    return GameObject::getRenderData();
   auto renderData = GameObject::getRenderData();
   QRectF bbox = getBoundingBox();
   qreal x = bbox.center().x();

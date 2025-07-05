@@ -15,8 +15,6 @@ public:
   static std::shared_ptr<Stellar>
   getCollectable(const Transform &transform, const Config::GameContext &ctx) {
     if (pool.empty()) {
-      // If the pool is empty, create a new one (this should ideally not happen
-      // often)
       auto newCollectable = std::make_shared<Stellar>(ctx);
       newCollectable->setTransform(transform);
       newCollectable->initialize();
@@ -24,7 +22,6 @@ public:
     } else {
       auto collectable = pool.front();
       pool.pop();
-      // collectable->reset();
       collectable->moveAbsolute(transform.position);
       qDebug() << "pool size:" << pool.size();
       return collectable;

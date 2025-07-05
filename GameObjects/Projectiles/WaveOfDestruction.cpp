@@ -16,6 +16,8 @@ WaveOfDestruction::WaveOfDestruction(Config::GameContext ctx)
   m_transform = Transform(QVector2D(0.0f, 0.0f), QVector2D(0.0f, 0.0f),
                           QVector2D(250.0f, 20.0f));
 
+  m_hudPixmapResourcePath = ":/Images/wave_of_destruction_hud.png";
+
   /*
   RenderData onHitData;
   onHitData.size = QVector2D(100, 100);

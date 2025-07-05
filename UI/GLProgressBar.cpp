@@ -35,7 +35,6 @@ GLProgressBar::GLProgressBar(float minValue, float maxValue, float width,
 GLProgressBar::~GLProgressBar() {
   if (m_program)
     delete m_program;
-  // Optionally: delete VAO/VBO if desired
 }
 
 void GLProgressBar::initialize(QOpenGLFunctions_3_3_Core *gl) {
@@ -74,6 +73,11 @@ void GLProgressBar::setCenter(float x, float y, UISizeMode mode) {
   m_centerY = y;
   m_useCenter = true;
   m_uiPosMode = mode;
+}
+
+void GLProgressBar::destroyGL(QOpenGLFunctions_3_3_Core *gl) {
+    if (m_vao) gl->glDeleteVertexArrays(1, &m_vao);
+    if (m_vbo) gl->glDeleteBuffers(1, &m_vbo);
 }
 
 void GLProgressBar::setRange(float minValue, float maxValue) {
@@ -131,10 +135,9 @@ void GLProgressBar::render(QOpenGLFunctions_3_3_Core *gl, float screenWidth,
   float border_y = ypos - m_borderThickness;
 
   QVector2D uScale_border(bw * 2.0f / screenWidth, bh * 2.0f / screenHeight);
-  QVector2D uOffset_border(
-      (border_x * 2.0f / screenWidth) - 1.0f,
-      1.0f - (border_y * 2.0f / screenHeight) - uScale_border.y()
-      );
+  QVector2D uOffset_border((border_x * 2.0f / screenWidth) - 1.0f,
+                           1.0f - (border_y * 2.0f / screenHeight) -
+                               uScale_border.y());
 
   // Value to percentage
   float percent = (m_maxValue > m_minValue)

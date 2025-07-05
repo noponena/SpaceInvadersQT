@@ -149,8 +149,6 @@ public:
   const QVector2D &getPosition() const;
   QPointF getCenterPosition() const;
   QRectF getBoundingBox() const;
-  QString hudPixmapPath() const;
-  ;
   bool isCollidable() const;
   bool isVisible() const;
   std::uint64_t id() const;

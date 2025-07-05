@@ -94,6 +94,8 @@ GameRunnerView::GameRunnerView(Config::GameContext ctx, QWidget *parent)
       m_spawnEventsFinished(false), m_benchmarkMode(false),
       m_debugVbo(QOpenGLBuffer::VertexBuffer),
       m_vbo(QOpenGLBuffer::VertexBuffer) {
+
+  m_gameTimer.setInterval(static_cast<int>(MIN_FRAME_TIME * 1000));
   m_gameState = new GameState(ctx);
   m_levelManager = std::make_unique<Levels::LevelManager>(m_gameState);
   m_gameObjects = &(m_gameState->gameObjects());
@@ -108,9 +110,6 @@ GameRunnerView::GameRunnerView(Config::GameContext ctx, QWidget *parent)
 }
 
 GameRunnerView::~GameRunnerView() {
-  // We have to make sure that the game objects
-  // are destroyed before the scene (QGraphicsScene)
-  // destroys the graphics items in the scene.
   delete m_gameState;
   delete m_program;
   delete m_lineProgram;
@@ -125,6 +124,10 @@ GameRunnerView::~GameRunnerView() {
   m_vbo.destroy();
   if (m_texture != 0)
     glDeleteTextures(1, &m_texture);
+
+  m_healthBar->destroyGL(this);
+  m_energyBar->destroyGL(this);
+  m_weaponBar->destroyGL(this);
 }
 
 void GameRunnerView::setupView() {
@@ -169,8 +172,7 @@ void GameRunnerView::setupCounters() {
 void GameRunnerView::setupConnections() {
   connect(m_gameState, &GameState::playerShipDestroyed, this,
           &GameRunnerView::onPlayerShipDestroyed);
-
-  connect(&m_gameTimer, &QTimer::timeout, this, &GameRunnerView::gameLoop);
+  connect(&m_gameTimer, &QTimer::timeout, this, &GameRunnerView::gameTick);
   connect(m_levelManager.get(), &Levels::LevelManager::enemyLimitReached, this,
           &GameRunnerView::onEnemyLimitReached);
   connect(m_levelManager.get(), &Levels::LevelManager::spawnEventsFinished,
@@ -200,24 +202,14 @@ void GameRunnerView::startLevel(const Levels::Level &level,
           &GameObjects::Ships::PlayerShip::playerMaxEnergySet, this,
           &GameRunnerView::onPlayerMaxEnergySet);
 
-  /*
+
   connect(m_playerShip.get(),
           &GameObjects::Ships::PlayerShip::playerSecondaryWeaponsChanged,
-          m_gameHUD, &GameHUD::onPlayerSecondaryWeaponsChanged);
+          this, &GameRunnerView::onPlayerSecondaryWeaponsChanged);
 
   connect(m_playerShip.get(),
           &GameObjects::Ships::PlayerShip::playerSecondaryWeaponFired,
-          m_gameHUD, &GameHUD::onPlayerSecondaryWeaponFired);
-
-
-  connect(m_playerShip.get(),
-          &GameObjects::Ships::PlayerShip::playerEnergyUpdated, m_gameHUD,
-          &GameHUD::onPlayerEnergyUpdated);
-
-  connect(m_playerShip.get(),
-          &GameObjects::Ships::PlayerShip::playerMaxEnergySet, m_gameHUD,
-          &GameHUD::onPlayerMaxEnergySet);
-*/
+          this, &GameRunnerView::onPlayerSecondaryWeaponFired);
 
   m_gameState->initialize();
 
@@ -225,9 +217,10 @@ void GameRunnerView::startLevel(const Levels::Level &level,
     initializeBenchmark();
   }
 
+  m_gameStartTime = std::chrono::high_resolution_clock::now();
   m_levelManager->setLevel(level);
   m_levelManager->startLevel();
-  m_gameTimer.start(0);
+  m_gameTimer.start();
 }
 
 void GameRunnerView::quitLevel() {
@@ -240,13 +233,14 @@ void GameRunnerView::quitLevel() {
   m_levelFailedOrPassedInfoDisplayed = false;
   m_gameState->deinitialize();
   m_playerShip = nullptr;
+  m_weaponBar->clearSlotImages();
   Graphics::Effects::EffectManager::instance().clear();
 }
 
 void GameRunnerView::resumeGame() {
   qDebug() << "resuming game..";
   m_elapsedTimer.start();
-  m_gameTimer.start(0);
+  m_gameTimer.start();
 }
 
 void GameRunnerView::initializeGL() {
@@ -276,6 +270,9 @@ void GameRunnerView::initializeGL() {
   m_energyBar->setCenter(0.5f, 0.97f, UI::UISizeMode::Fraction);
 
   m_uiPanel = std::make_unique<UI::Panel>();
+  m_weaponBar = std::make_unique<UI::GLWeaponBar>();
+  m_weaponBar->setSlotSize(0.025f, UI::UISizeMode::Fraction); // 10% of screen width
+  m_weaponBar->setPosition(0.5f, 0.91f, UI::UISizeMode::Fraction); // Centered, near top
 
   // === 1. Compile and link shaders ===
   // Main sprite shader
@@ -344,6 +341,7 @@ void GameRunnerView::initializeGL() {
 
   Graphics::TextureRegistry::instance().setGlContext(this);
   Graphics::TextureRegistry::instance().preloadAllFromDir(":/Images/");
+  m_weaponBar->setSlotCount(4);
 }
 
 void GameRunnerView::resizeGL(int w, int h) { QOpenGLWidget::resizeGL(w, h); }
@@ -354,8 +352,13 @@ void GameRunnerView::paintGL() {
 
   m_uiPanel->render(this, m_gameCtx.screenGeometry.width(),
                     m_gameCtx.screenGeometry.height());
+
   m_healthBar->render(this, width(), height());
   m_energyBar->render(this, width(), height());
+  auto now = std::chrono::high_resolution_clock::now();
+  float nowSec = std::chrono::duration_cast<std::chrono::duration<float>>(now - m_gameStartTime).count();
+
+  m_weaponBar->render(this, width(), height(), nowSec);
   renderAllSprites();
 
   Graphics::Effects::EffectManager::instance().render(
@@ -446,38 +449,36 @@ void GameRunnerView::drawColliderBox(const GameObjects::GameObject *obj) {
   m_debugVbo.release();
 }
 
-void GameRunnerView::gameLoop() {
+void GameRunnerView::gameTick() {
   // auto loopStartTime = std::chrono::high_resolution_clock::now();
   // float renderTimeUs = calculateRenderTime(loopStartTime);
-  float deltaTimeInSeconds = calculateDeltaTime();
-  capFrameRate(MIN_FRAME_TIME, deltaTimeInSeconds);
+  float deltaTimeSec = calculateDeltaTimeSec();
 
-  if (deltaTimeInSeconds > MAX_FRAME_TIME)
-    deltaTimeInSeconds = MAX_FRAME_TIME;
+  if (deltaTimeSec > MAX_FRAME_TIME)
+    deltaTimeSec = MAX_FRAME_TIME;
 
   manageLevelProgression();
 
   if (!m_benchmarkMode)
-    processInput(deltaTimeInSeconds);
+    processInput(deltaTimeSec);
 
   /*
   float updateTimeUs =
-      measureFunctionDuration([&]() { updateGameState(deltaTimeInSeconds); });
+      measureFunctionDuration([&]() { updateGameState(deltaTimeSec); });
   float collisionDetectionTimeUs =
       measureFunctionDuration([&]() { m_collisionDetector->detectBVH(); });
 
   logFrameStatistics(renderTimeUs, updateTimeUs, collisionDetectionTimeUs);
   */
 
-  updateGameState(deltaTimeInSeconds);
+  updateGameState(deltaTimeSec);
   m_collisionDetector->detectBVHParallel();
-  Graphics::Effects::EffectManager::instance().update(deltaTimeInSeconds);
-  updateFps();
 
+  Graphics::Effects::EffectManager::instance().update(deltaTimeSec);
+  updateFps();
   updateGameCounters();
   checkLevelFailedOrPassed();
   Game::Audio::SoundManager::getInstance().cleanup();
-  m_lastFrameEndTime = std::chrono::high_resolution_clock::now();
   this->update();
 }
 
@@ -491,22 +492,16 @@ float GameRunnerView::calculateRenderTime(
   return 0;
 }
 
-float GameRunnerView::calculateDeltaTime() {
-  int frameTimeMs = m_elapsedTimer.restart();
+float GameRunnerView::calculateDeltaTimeSec() {
+  auto now = std::chrono::high_resolution_clock::now();
+  float frameTimeSeconds =
+      std::chrono::duration<float>(now - m_lastFrameEndTime).count();
+  m_lastFrameEndTime = now;
   if (m_benchmarkMode) {
     Utils::PerformanceBenchmark::getInstance(m_gameCtx).recordFrameTime(
-        frameTimeMs);
+        frameTimeSeconds);
   }
-  return static_cast<float>(frameTimeMs) / 1000.0f;
-}
-
-void GameRunnerView::capFrameRate(float desiredMinFrameTimeSeconds,
-                                  float frameTimeSeconds) {
-  int msToSleep = static_cast<int>(
-      (desiredMinFrameTimeSeconds - frameTimeSeconds) * 1000.0f);
-  if (msToSleep > 0) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(msToSleep));
-  }
+  return frameTimeSeconds;
 }
 
 void GameRunnerView::manageLevelProgression() {

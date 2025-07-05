@@ -20,7 +20,7 @@ public:
   ~PerformanceBenchmark();
   void initializeBenchmark(
       std::shared_ptr<GameObjects::Ships::PlayerShip> playerShipplayerShip);
-  void recordFrameTime(int frameTimeMs);
+  void recordFrameTime(float frameTimeSec);
   void logPerformanceScore();
 
 private:
@@ -34,9 +34,9 @@ private:
   int m_gameObjectThreshold;
   char m_csvDelimiter;
   const float m_gain = 1000.0f;
-  std::vector<float> m_frameTimesMs;
+  std::vector<float> m_frameTimesSec;
 
-  std::vector<float> filteredFrameTimes(float maxAllowedMs = 1000.0f,
+  std::vector<float> filteredFrameTimes(float maxAllowedSec = 1.0f,
                                         size_t skipFirstN = 100) const;
   float getMemUsage();
 
