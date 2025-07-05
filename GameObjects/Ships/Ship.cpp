@@ -1,8 +1,6 @@
 #include "Ship.h"
 #include "Graphics/TextureRegistry.h"
 #include "Weapons/Weapon.h"
-#include <QGraphicsColorizeEffect>
-#include <QGraphicsScene>
 #include <QTimer>
 #include <QTimerEvent>
 

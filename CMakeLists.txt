@@ -51,7 +51,6 @@ set(HEADERS
     Game/CollisionDetection/CollisionDetector.h
     Game/CollisionDetection/Quadtree.h
     Game/CollisionDetection/ThreadedCollisionDetector.h
-    Game/Core/GameHUD.h
     Game/Core/GameRunnerView.h
     Game/Core/GameState.h
     Game/Core/LevelSelectorView.h
@@ -128,7 +127,6 @@ set(SOURCES
     Game/CollisionDetection/BVHNode.cpp
     Game/CollisionDetection/BVHTree.cpp
     Game/CollisionDetection/CollisionDetector.cpp
-    Game/Core/GameHUD.cpp
     Game/Core/GameRunnerView.cpp
     Game/Core/GameState.cpp
     Game/Core/LevelSelectorView.cpp

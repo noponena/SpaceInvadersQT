@@ -2,7 +2,6 @@
 #define GAMEOBJECTS_SHIP_H
 
 #include "GameObjects/AttractableGameObject.h"
-#include "Utils/BoundsChecker.h"
 #include "Weapons/Weapon.h"
 #include <QElapsedTimer>
 #include <QTimer>

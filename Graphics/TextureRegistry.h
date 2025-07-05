@@ -1,7 +1,6 @@
 #ifndef TEXTUREREGISTRY_H
 #define TEXTUREREGISTRY_H
 
-#include <GL/gl.h>
 #include <QDir>
 #include <QHash>
 #include <QImage>
