@@ -238,8 +238,8 @@ void GameState::initPlayerShip() {
   m_playerShip->setSecondaryWeapon(std::move(vortex), 1);
   m_playerShip->setMaxEnergy(1000);
   m_playerShip->setMaxHealth(50);
-  m_playerShip->fullyRestoreEnergy();
-  m_playerShip->fullyRestoreHealth();
+  m_playerShip->restoreEnergy();
+  m_playerShip->restoreHealth();
   m_playerShip->setEnergyRegenerationRate(5);
 
   addGameObject(m_playerShip);

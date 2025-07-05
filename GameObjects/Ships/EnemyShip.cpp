@@ -3,6 +3,7 @@
 #include "GameObjects/Collectables/Health.h"
 #include "GameObjects/Collectables/Stellar.h"
 #include "GameObjects/PrototypeRegistry.h"
+#include "Utils/BoundsChecker.h"
 #include "Utils/Utils.h"
 #include "Weapons/PrimaryWeapon.h"
 #include <QColor>
@@ -14,7 +15,7 @@
 namespace GameObjects {
 namespace Ships {
 EnemyShip::EnemyShip(const Config::GameContext &ctx)
-    : ShipWithHealthBar(ctx), m_bottomEdgeSignalEmitted(false) {
+    : Ship(ctx), m_bottomEdgeSignalEmitted(false) {
 
   static auto &prototypeRegistry =
       PrototypeRegistry<PrototypeKey, GameObject>::instance();
@@ -41,6 +42,7 @@ EnemyShip::EnemyShip(const Config::GameContext &ctx)
 
   m_magneticTargets = {ObjectType::PROJECTILE};
   setMaxHealth(5);
+  restoreHealth();
 
   const PrototypeKey projectileKey{ObjectType::ENEMY_PROJECTILE,
                                    "BasicEnemyProjectile"};
@@ -208,7 +210,7 @@ bool EnemyShip::shouldBeDeleted() {
     m_bottomEdgeSignalEmitted = true;
   }
 
-  bool shouldBeDeleted = ShipWithHealthBar::shouldBeDeleted();
+  bool shouldBeDeleted = Ship::shouldBeDeleted();
   if (shouldBeDeleted)
     emit enemyShipDeleted();
   return shouldBeDeleted;

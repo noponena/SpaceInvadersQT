@@ -30,8 +30,10 @@ PlayerShip::PlayerShip(const Config::GameContext &ctx) : Ship(ctx) {
 
 void PlayerShip::update(const UpdateContext &context) {
   Ship::update(context);
+  float prevEnergy = m_currentEnergy;
   regenerateEnergy(context.deltaTimeInSeconds);
-  emit playerEnergyUpdated(m_currentEnergy);
+  if (prevEnergy != m_currentEnergy)
+    emit playerEnergyUpdated(m_currentEnergy);
 }
 
 bool PlayerShip::shouldBeDeleted() {
@@ -135,14 +137,14 @@ void PlayerShip::decelerateY(float deltaTimeInSeconds) {
 float PlayerShip::maxEnergy() const { return m_maxEnergy; }
 
 void PlayerShip::setMaxEnergy(float newMaxEnergy) {
-  m_maxEnergy = newMaxEnergy;
+  Ship::setMaxEnergy(newMaxEnergy);
   emit playerMaxEnergySet(m_maxEnergy);
 }
 
 float PlayerShip::maxHealth() const { return m_maxHealth; }
 
 void PlayerShip::setMaxHealth(float newMaxHealth) {
-  m_maxHealth = newMaxHealth;
+  Ship::setMaxHealth(newMaxHealth);
   emit playerMaxHealthSet(newMaxHealth);
   emit playerHealthUpdated(newMaxHealth);
 }
@@ -167,6 +169,16 @@ bool PlayerShip::fireSecondaryWeapon(std::uint32_t weaponIndex) {
     emit playerEnergyUpdated(m_currentEnergy);
   }
   return success;
+}
+
+void PlayerShip::restoreHealth() {
+  Ship::restoreHealth();
+  emit playerHealthUpdated(m_currentHealth);
+}
+
+void PlayerShip::restoreEnergy() {
+  Ship::restoreEnergy();
+  emit playerEnergyUpdated(m_currentEnergy);
 }
 
 void PlayerShip::moveRelativeX(float displacement) {

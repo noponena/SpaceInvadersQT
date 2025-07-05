@@ -1,4 +1,5 @@
 #include "WaveOfDestruction.h"
+#include "Utils/BoundsChecker.h"
 
 namespace GameObjects {
 namespace Projectiles {

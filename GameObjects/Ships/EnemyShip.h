@@ -3,12 +3,12 @@
 
 #include "GameObjects/GameObjectBuilder.h"
 #include "GameObjects/Projectiles/Projectile.h"
-#include "ShipWithHealthBar.h"
+#include "GameObjects/Ships/Ship.h"
 #include "Weapons/WeaponBuilder.h"
 
 namespace GameObjects {
 namespace Ships {
-class EnemyShip : public ShipWithHealthBar {
+class EnemyShip : public Ship {
   Q_OBJECT
 public:
   EnemyShip(const Config::GameContext &ctx);

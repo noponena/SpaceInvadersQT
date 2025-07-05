@@ -87,7 +87,7 @@ set(HEADERS
     GameObjects/Ships/EnemyShip.h
     GameObjects/Ships/PlayerShip.h
     GameObjects/Ships/Ship.h
-    GameObjects/Ships/ShipWithHealthBar.h
+
     Graphics/Animations/AnimationPlayer.h
     Graphics/CooldownItem.h
     Graphics/GLBar.h
@@ -105,6 +105,7 @@ set(HEADERS
     UI/FPSCounter.h
     UI/GameObjectCounter.h
     UI/GLProgressBar.h
+    UI/IRenderable.h
     UI/MainWindow.h
     UI/Panel.h
     Utils/Math/MathConstants.h
@@ -159,7 +160,7 @@ set(SOURCES
     GameObjects/Ships/EnemyShip.cpp
     GameObjects/Ships/PlayerShip.cpp
     GameObjects/Ships/Ship.cpp
-    GameObjects/Ships/ShipWithHealthBar.cpp
+
     Graphics/GLBar.cpp
     Graphics/GLCooldownItem.cpp
     Graphics/Effects/EffectManager.cpp

@@ -10,7 +10,17 @@ namespace Ships {
 Ship::Ship(const Config::GameContext &ctx)
     : AttractableGameObject(ctx), m_immortal(false), m_pixelWidth(50),
       m_pixelHeight(50), m_destructionParticleCount(200), m_currentHealth(1),
-      m_maxHealth(1), m_speed(1), m_energyRegenerationRate(0) {}
+      m_maxHealth(1), m_speed(1), m_energyRegenerationRate(0) {
+  m_healthBar = std::make_unique<UI::GLProgressBar>(
+      0.f, m_maxHealth, // Min/max
+      m_pixelWidth, 5,     // 30% width, 6% height (fractions)
+      UI::UISizeMode::Pixels);
+  m_healthBar->setBarColors(QVector4D(0.1f, 0.7f, 0.2f, 1.f),    // Green
+                            QVector4D(0.95f, 0.83f, 0.29f, 1.f), // Yellow
+                            QVector4D(0.93f, 0.24f, 0.24f, 1.f)  // Red
+  );
+  m_healthBar->setThresholds(0.6f, 0.3f); // 60%/30% thresholds
+}
 
 Ship::~Ship() {}
 
@@ -41,8 +51,7 @@ void Ship::takeDamage(std::uint32_t amount) {
     else
       m_currentHealth -= amount;
 
-    qDebug() << "A ship took dmg for " << amount
-             << ". HP remaining: " << m_currentHealth;
+    m_healthBar->setValue(m_currentHealth);
   }
 }
 
@@ -52,12 +61,18 @@ void Ship::heal(std::uint32_t amount) {
     if (m_currentHealth > m_maxHealth) {
       m_currentHealth = m_maxHealth;
     }
+    m_healthBar->setValue(m_currentHealth);
   }
 }
 
 void Ship::kill() { m_currentHealth = 0; }
 
-void Ship::restoreHealth() { m_currentHealth = m_maxHealth; }
+void Ship::restoreHealth() {
+  m_currentHealth = m_maxHealth;
+  m_healthBar->setValue(m_currentHealth);
+}
+
+void Ship::restoreEnergy() { m_currentEnergy = m_maxEnergy; }
 
 bool Ship::isDead() { return m_currentHealth <= 0; }
 
@@ -153,10 +168,6 @@ void Ship::setDestructionParticleCount(int newDestructionParticleCount) {
   m_destructionParticleCount = newDestructionParticleCount;
 }
 
-void Ship::fullyRestoreEnergy() { m_currentEnergy = m_maxEnergy; }
-
-void Ship::fullyRestoreHealth() { m_currentHealth = m_maxHealth; }
-
 std::uint32_t Ship::energyRegenerationRate() const {
   return m_energyRegenerationRate;
 }
@@ -165,7 +176,10 @@ void Ship::setEnergyRegenerationRate(std::uint32_t newEnergyRegenerationRate) {
   m_energyRegenerationRate = newEnergyRegenerationRate;
 }
 
-void Ship::setMaxHealth(float newMaxHealth) { m_maxHealth = newMaxHealth; }
+void Ship::setMaxHealth(float newMaxHealth) {
+  m_maxHealth = newMaxHealth;
+  m_healthBar->setRange(0, m_maxHealth);
+}
 
 void Ship::setMaxEnergy(float newMaxEnergy) { m_maxEnergy = newMaxEnergy; }
 
@@ -174,6 +188,18 @@ int Ship::currentHp() const { return m_currentHealth; }
 bool Ship::shouldBeDeleted() {
   return GameObject::shouldBeDeleted() ||
          (isDead() && m_animationPlayer.isFinished());
+}
+
+const RenderData Ship::getRenderData() const {
+  if (m_state == State::OnDestruction) return GameObject::getRenderData();
+  auto renderData = GameObject::getRenderData();
+  QRectF bbox = getBoundingBox();
+  qreal x = bbox.center().x();
+  qreal y = bbox.bottom();
+  int h = m_gameContext.screenGeometry.height();
+  m_healthBar->setCenter(x, y + 0.005f * h);
+  renderData.additionalRenderables.push_back(m_healthBar.get());
+  return renderData;
 }
 
 void Ship::playOnHitAnimation() {

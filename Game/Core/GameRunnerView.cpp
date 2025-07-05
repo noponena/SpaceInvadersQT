@@ -1,11 +1,10 @@
 #include "Game/Core/GameRunnerView.h"
 #include "Game/Audio/SoundManager.h"
-#include <QOpenGLContext>
-#include <QOpenGLFunctions_3_3_Core>
 #include "Graphics/Effects/EffectManager.h"
 #include "Graphics/TextureRegistry.h"
 #include "Utils/PerformanceBenchmark.h"
 #include <QOpenGLContext>
+#include <QOpenGLFunctions_3_3_Core>
 #include <QTimer>
 #include <QVector2D>
 #include <chrono>
@@ -186,8 +185,7 @@ void GameRunnerView::startLevel(const Levels::Level &level,
   m_playerShip = m_gameState->playerShip();
 
   connect(m_playerShip.get(),
-          &GameObjects::Ships::PlayerShip::playerHealthUpdated,
-          this,
+          &GameObjects::Ships::PlayerShip::playerHealthUpdated, this,
           &GameRunnerView::onPlayerHealthUpdated);
 
   connect(m_playerShip.get(),
@@ -195,8 +193,7 @@ void GameRunnerView::startLevel(const Levels::Level &level,
           &GameRunnerView::onPlayerMaxHealthSet);
 
   connect(m_playerShip.get(),
-          &GameObjects::Ships::PlayerShip::playerEnergyUpdated,
-          this,
+          &GameObjects::Ships::PlayerShip::playerEnergyUpdated, this,
           &GameRunnerView::onPlayerEnergyUpdated);
 
   connect(m_playerShip.get(),
@@ -258,29 +255,25 @@ void GameRunnerView::initializeGL() {
   Graphics::Effects::EffectManager::instance().initializeGL(this);
 
   m_healthBar = std::make_unique<UI::GLProgressBar>(
-      0.f, 100.f,      // Min/max
-      0.7f, 0.015f,     // 30% width, 6% height (fractions)
-      UI::UISizeMode::Fraction
-      );
-  m_healthBar->setBarColors(
-      QVector4D(0.1f, 0.7f, 0.2f, 1.f),   // Green
-      QVector4D(0.95f, 0.83f, 0.29f, 1.f),// Yellow
-      QVector4D(0.93f, 0.24f, 0.24f, 1.f) // Red
-      );
+      0.f, 100.f,   // Min/max
+      0.7f, 0.015f, // 30% width, 6% height (fractions)
+      UI::UISizeMode::Fraction);
+  m_healthBar->setBarColors(QVector4D(0.1f, 0.7f, 0.2f, 1.f),    // Green
+                            QVector4D(0.95f, 0.83f, 0.29f, 1.f), // Yellow
+                            QVector4D(0.93f, 0.24f, 0.24f, 1.f)  // Red
+  );
   m_healthBar->setThresholds(0.6f, 0.3f); // 60%/30% thresholds
-  m_healthBar->setCenter(0.5f, 0.952f);
+  m_healthBar->setCenter(0.5f, 0.952f, UI::UISizeMode::Fraction);
 
   m_energyBar = std::make_unique<UI::GLProgressBar>(
-      0.f, 100.f,      // Min/max
-      0.7f, 0.015f,     // 30% width, 6% height (fractions)
-      UI::UISizeMode::Fraction
-      );
+      0.f, 100.f,   // Min/max
+      0.7f, 0.015f, // 30% width, 6% height (fractions)
+      UI::UISizeMode::Fraction);
   m_energyBar->setBarColors(
-      QVector4D(24.f/255.f, 40.f/255.f, 119.f/255.f, 1.f), // Blue
-      QVector4D(24.f/255.f, 40.f/255.f, 119.f/255.f, 1.f),
-      QVector4D(24.f/255.f, 40.f/255.f, 119.f/255.f, 1.f)
-      );
-  m_energyBar->setCenter(0.5f, 0.97f);
+      QVector4D(24.f / 255.f, 40.f / 255.f, 119.f / 255.f, 1.f), // Blue
+      QVector4D(24.f / 255.f, 40.f / 255.f, 119.f / 255.f, 1.f),
+      QVector4D(24.f / 255.f, 40.f / 255.f, 119.f / 255.f, 1.f));
+  m_energyBar->setCenter(0.5f, 0.97f, UI::UISizeMode::Fraction);
 
   m_uiPanel = std::make_unique<UI::Panel>();
 
@@ -359,7 +352,8 @@ void GameRunnerView::paintGL() {
   glClearColor(0, 0, 0, 1);
   glClear(GL_COLOR_BUFFER_BIT);
 
-  m_uiPanel->render(this, m_gameCtx.screenGeometry.width(), m_gameCtx.screenGeometry.height());
+  m_uiPanel->render(this, m_gameCtx.screenGeometry.width(),
+                    m_gameCtx.screenGeometry.height());
   m_healthBar->render(this, width(), height());
   m_energyBar->render(this, width(), height());
   renderAllSprites();
@@ -375,40 +369,46 @@ void GameRunnerView::paintGL() {
 
 // -- Main sprite rendering for all objects --
 void GameRunnerView::renderAllSprites() {
-  m_program->bind();
-  m_vao.bind();
-  glActiveTexture(GL_TEXTURE0);
-  m_program->setUniformValue("tex", 0);
-  m_program->setUniformValue("viewport", QVector2D(width(), height()));
-
   for (const auto &obj : *m_gameObjects) {
     if (!obj->isVisible())
       continue;
     renderSprite(obj.get());
   }
-
-  glBindVertexArray(0);
-  m_vao.release();
-  m_program->release();
 }
 
 void GameRunnerView::renderSprite(const GameObjects::GameObject *obj) {
   const auto &pos = obj->getPosition();
   const GameObjects::RenderData renderData = obj->getRenderData();
+
+  // 1. Render any additional renderables (e.g., health bars, overlays)
+  for (auto &renderable : renderData.additionalRenderables) {
+    renderable->render(this, width(), height());
+  }
+
+  // 2. *** Restore all necessary OpenGL state for sprite drawing ***
+  m_program->bind();
+  m_vao.bind();
+  glActiveTexture(GL_TEXTURE0);
+
   const auto &texInfo =
       Graphics::TextureRegistry::instance().getOrCreateTexture(
           renderData.imagePath);
   GLuint texture = texInfo.handle;
-
   glBindTexture(GL_TEXTURE_2D, texture);
 
+  m_program->setUniformValue("tex", 0);
+  m_program->setUniformValue("viewport", QVector2D(width(), height()));
   m_program->setUniformValue("uvMin", renderData.uvMin);
   m_program->setUniformValue("uvMax", renderData.uvMax);
   m_program->setUniformValue("spritePos", pos);
   m_program->setUniformValue("spriteSize", renderData.size);
   m_program->setUniformValue("spriteRotation", renderData.rotation);
 
+  // 3. Now safely draw the sprite
   glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+  // 4. Optionally: unbind VAO/program if you want to be extra safe (not always
+  // needed in Qt) m_vao.release(); m_program->release();
 }
 
 // -- Debug collider rendering for all objects --
@@ -452,7 +452,6 @@ void GameRunnerView::gameLoop() {
   float deltaTimeInSeconds = calculateDeltaTime();
   capFrameRate(MIN_FRAME_TIME, deltaTimeInSeconds);
 
-
   if (deltaTimeInSeconds > MAX_FRAME_TIME)
     deltaTimeInSeconds = MAX_FRAME_TIME;
 
@@ -494,10 +493,10 @@ float GameRunnerView::calculateRenderTime(
 
 float GameRunnerView::calculateDeltaTime() {
   int frameTimeMs = m_elapsedTimer.restart();
-    if (m_benchmarkMode) {
-        Utils::PerformanceBenchmark::getInstance(m_gameCtx).recordFrameTime(
-            frameTimeMs);
-    }
+  if (m_benchmarkMode) {
+    Utils::PerformanceBenchmark::getInstance(m_gameCtx).recordFrameTime(
+        frameTimeMs);
+  }
   return static_cast<float>(frameTimeMs) / 1000.0f;
 }
 

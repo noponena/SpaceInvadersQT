@@ -1,6 +1,7 @@
 #include "GameObject.h"
 #include "Game/Audio/SoundManager.h"
 #include "Graphics/Effects/EffectManager.h"
+#include "Utils/BoundsChecker.h"
 #include <QGraphicsScene>
 #include <cmath>
 
@@ -123,7 +124,7 @@ void GameObject::setState(State newState) { m_state = newState; }
 
 State GameObject::state() const { return m_state; }
 
-const RenderData &GameObject::getRenderData() const {
+const RenderData GameObject::getRenderData() const {
   auto it = m_renderDataByState.find(m_state);
 
   if (it != m_renderDataByState.end())

@@ -5,7 +5,7 @@
 #include "Game/Audio/SoundInfo.h"
 #include "Game/Movement/MovementStrategy.h"
 #include "Graphics/Animations/AnimationPlayer.h"
-#include "Utils/BoundsChecker.h"
+#include "UI/IRenderable.h"
 #include <QGraphicsItem>
 #include <QObject>
 #include <QUrl>
@@ -80,6 +80,8 @@ struct RenderData {
 
   QVector2D uvMin = QVector2D(0.0f, 0.0f); // lower-left
   QVector2D uvMax = QVector2D(1.0f, 1.0f); // upper-right
+
+  std::vector<UI::IRenderable *> additionalRenderables;
 
   RenderData(const QVector2D &sz = QVector2D(10.0f, 10.0f),
              const QString &path = QString(":/Images/placeholder.png"),
@@ -181,7 +183,7 @@ public:
   void setState(State newState);
   State state() const;
 
-  const RenderData &getRenderData() const;
+  virtual const RenderData getRenderData() const;
 
   void addRenderData(State state, const RenderData &data);
 

@@ -2,6 +2,7 @@
 #define GAMEOBJECTS_SHIP_H
 
 #include "GameObjects/AttractableGameObject.h"
+#include "UI/GLProgressBar.h"
 #include "Weapons/Weapon.h"
 #include <QElapsedTimer>
 #include <QTimer>
@@ -20,11 +21,13 @@ public:
   virtual ~Ship();
   virtual void update(const UpdateContext &context) override;
   virtual bool shouldBeDeleted() override;
+  virtual const RenderData getRenderData() const override;
   bool isDead() override;
   virtual void takeDamage(std::uint32_t amount);
   virtual void heal(std::uint32_t amount);
   virtual void kill();
   virtual void restoreHealth();
+  virtual void restoreEnergy();
   void firePrimaryWeapons();
   virtual bool fireSecondaryWeapon(std::uint32_t weaponIndex);
   void updateFireRate(int amount = 1);
@@ -39,7 +42,6 @@ public:
 
   void setDestructionParticleCount(int newDestructionParticleCount);
   void fullyRestoreEnergy();
-  void fullyRestoreHealth();
 
   std::uint32_t energyRegenerationRate() const;
 
@@ -58,6 +60,7 @@ protected:
   std::unique_ptr<Weapons::Weapon> m_secondaryWeapons[4];
   bool m_onHitAnimationInProgress = false;
   bool m_autoFire = false;
+  std::unique_ptr<UI::GLProgressBar> m_healthBar;
   QColor m_originalColor;
 
   virtual void initializeDestructionAnimation() override;

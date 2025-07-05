@@ -31,6 +31,8 @@ public:
   void setSecondaryWeapon(std::unique_ptr<Weapons::Weapon> newWeapon,
                           std::uint32_t weaponIndex) override;
   bool fireSecondaryWeapon(std::uint32_t weaponIndex) override;
+  void restoreHealth() override;
+  void restoreEnergy() override;
 
   inline void moveRelativeX(float displacement);
   inline void moveRelativeY(float displacement);
