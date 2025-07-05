@@ -1,16 +1,17 @@
 #ifndef GAMEOBJECTS_ENEMYSHIP_H
 #define GAMEOBJECTS_ENEMYSHIP_H
 
+#include "GameObjects/GameObjectBuilder.h"
 #include "GameObjects/Projectiles/Projectile.h"
-#include "ShipWithHealthBar.h"
+#include "GameObjects/Ships/Ship.h"
+#include "Weapons/WeaponBuilder.h"
 
 namespace GameObjects {
 namespace Ships {
-class EnemyShip : public ShipWithHealthBar {
+class EnemyShip : public Ship {
   Q_OBJECT
 public:
-  EnemyShip(const std::uint32_t maxHp, const Position &position);
-  static void registerPixmaps();
+  EnemyShip(const Config::GameContext &ctx);
   void collideWith(GameObject &other) override;
   void collideWithProjectile(Projectiles::Projectile &projectile) override;
   void collideWithEnemyShip(EnemyShip &enemyShip) override;
@@ -31,6 +32,9 @@ protected:
 
   void initializeObjectType() override;
   void initializeSounds() override;
+
+  GameObjectBuilder m_gameObjectBuilder;
+  Weapons::WeaponBuilder m_weaponBuilder;
 
 private:
   bool m_bottomEdgeSignalEmitted;

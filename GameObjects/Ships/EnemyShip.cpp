@@ -2,30 +2,110 @@
 #include "Game/Audio/SoundInfo.h"
 #include "GameObjects/Collectables/Health.h"
 #include "GameObjects/Collectables/Stellar.h"
-#include "Graphics/PixmapLibrary.h"
-#include "Graphics/PixmapRegistry.h"
+#include "GameObjects/PrototypeRegistry.h"
+#include "Utils/BoundsChecker.h"
 #include "Utils/Utils.h"
+#include "Weapons/PrimaryWeapon.h"
 #include <QColor>
-#include <QGraphicsScene>
 #include <QPen>
 #include <QTimer>
 #include <QTimerEvent>
 
 namespace GameObjects {
 namespace Ships {
-EnemyShip::EnemyShip(const std::uint32_t maxHp, const Position &position)
-    : ShipWithHealthBar(maxHp, 0, position), m_bottomEdgeSignalEmitted(false) {
+EnemyShip::EnemyShip(const Config::GameContext &ctx)
+    : Ship(ctx), m_bottomEdgeSignalEmitted(false) {
+
+  static auto &prototypeRegistry =
+      PrototypeRegistry<PrototypeKey, GameObject>::instance();
   m_stellarCoinSpawnRange = QPoint(2, 5);
   m_healthSpawnProbability = 0.10;
-  m_pixmapData.pixmapResourcePath = ":/Images/alien.png";
-  m_pixmapData.onHitPixmapResourcePath = ":/Images/alien_on_hit.png";
-  m_pixmapData.pixmapScale = QPointF(50.0, 50.0);
-  m_magneticTargets = {ObjectType::PROJECTILE};
-}
 
-void EnemyShip::registerPixmaps() {
-  Graphics::PixmapLibrary::getPixmap(":/Images/alien.png", 50.0, 50.0);
-  Graphics::PixmapLibrary::getPixmap(":/Images/alien_on_hit.png", 50.0, 50.0);
+  RenderData normalData;
+  normalData.size = QVector2D(50, 50);
+  normalData.imagePath = ":/Images/alien.png";
+  addRenderData(State::Normal, normalData);
+
+  RenderData onHitData;
+  onHitData.size = QVector2D(50, 50);
+  onHitData.imagePath = ":/Images/alien_on_hit.png";
+  addRenderData(State::OnHit, onHitData);
+
+  RenderData onDestructionData;
+  onDestructionData.size = QVector2D(50, 50);
+  onDestructionData.imagePath = ":/Images/explosion.png";
+  addRenderData(State::OnDestruction, onDestructionData);
+
+  m_transform.colliderSize = {30, 30};
+  m_hasDestructionEffect = true;
+
+  m_magneticTargets = {ObjectType::PROJECTILE};
+  setMaxHealth(5);
+  restoreHealth();
+
+  const PrototypeKey projectileKey{ObjectType::ENEMY_PROJECTILE,
+                                   "BasicEnemyProjectile"};
+  std::unique_ptr<Projectiles::Projectile> projectile;
+
+  if (!prototypeRegistry.hasPrototype(projectileKey)) {
+
+    Transform projectileTransform;
+    projectileTransform.colliderSize = {10, 10};
+
+    GameObjects::RenderDataMap renderDataMap{
+        {State::Normal,
+         RenderData({30, 30}, ":/Images/enemy_laser_projectile.png")}};
+
+    projectile = m_gameObjectBuilder
+                     .setConcreteType(GameObjects::ConcreteType::PROJECTILE)
+                     .withObjectType(GameObjects::ObjectType::ENEMY_PROJECTILE)
+                     .withTransform(projectileTransform)
+                     .withMovementStrategy(
+                         Game::Movement::VerticalMovementStrategy(500, 1))
+                     .withGraphics(renderDataMap)
+                     .withSpawnSound(Game::Audio::SoundInfo(
+                         {true, Game::Audio::SoundEffect::LESSER_ENEMY_LASER}))
+                     .buildAs<Projectiles::Projectile>(m_gameContext);
+
+    projectile->setDamage(1);
+
+    prototypeRegistry.registerPrototype({projectileKey}, std::move(projectile));
+  }
+
+  projectile =
+      prototypeRegistry.cloneAs<Projectiles::Projectile>({projectileKey});
+
+  m_weaponBuilder.createWeapon<Weapons::PrimaryWeapon>()
+      .withProjectile(std::move(projectile))
+      .withWeaponCooldownMs(2500);
+
+  Game::Movement::MovementStrategy horizontalStrategyLeft =
+      Game::Movement::HorizontalMovementStrategy(200, -1);
+  Game::Movement::MovementStrategy horizontalStrategyRight =
+      Game::Movement::HorizontalMovementStrategy(200, 1);
+  Game::Movement::MovementStrategy horizontalCombined =
+      horizontalStrategyLeft + horizontalStrategyRight;
+
+  Game::Movement::MovementStrategy verticalStrategy =
+      Game::Movement::VerticalMovementStrategy(200, 1);
+  Game::Movement::MovementStrategy stationaryStrategy =
+      Game::Movement::StationaryMovementStrategy();
+  std::vector<std::pair<Game::Movement::MovementStrategy, float>>
+      verticalCombined = {std::make_pair(verticalStrategy, 0.25f),
+                          std::make_pair(stationaryStrategy, 3.0f)};
+
+  Game::Movement::IntervalMovementStrategy horizontalIntervalStrategy =
+      Game::Movement::IntervalMovementStrategy(horizontalCombined, 1.0f);
+  Game::Movement::IntervalMovementStrategy verticalIntervalStrategy =
+      Game::Movement::IntervalMovementStrategy(verticalCombined);
+
+  Game::Movement::MovementStrategy combined =
+      horizontalIntervalStrategy + verticalIntervalStrategy;
+
+  setMovementStrategy(combined);
+
+  addPrimaryWeapon(m_weaponBuilder.build());
+  setAutoShoot(true);
 }
 
 void EnemyShip::initializeObjectType() {
@@ -48,11 +128,11 @@ void EnemyShip::spawnStellarCoins() {
   int amount = QRandomGenerator::global()->bounded(m_stellarCoinSpawnRange.x(),
                                                    m_stellarCoinSpawnRange.y());
   QPointF center = getBoundingBox().center();
-  GameObjects::Position position(center.x(), center.y());
-  position.setBounds(getPosition().getBounds());
+  QVector2D position(center.x(), center.y());
   for (int i = 0; i < amount; i++) {
     std::unique_ptr<GameObjects::Collectables::Stellar> stellar =
-        std::make_unique<GameObjects::Collectables::Stellar>(position);
+        std::make_unique<GameObjects::Collectables::Stellar>(m_gameContext);
+    stellar->moveAbsolute(position);
     stellar->initialize();
     emit objectCreated(std::move(stellar));
   }
@@ -61,11 +141,11 @@ void EnemyShip::spawnStellarCoins() {
 void EnemyShip::spawnHealth() {
   if (Utils::probabilityCheck(m_healthSpawnProbability)) {
     QPointF center = getBoundingBox().center();
-    GameObjects::Position position(center.x(), center.y());
-    position.setBounds(getPosition().getBounds());
+    QVector2D position(center.x(), center.y());
 
     std::unique_ptr<GameObjects::Collectables::Health> health =
-        std::make_unique<GameObjects::Collectables::Health>(position);
+        std::make_unique<GameObjects::Collectables::Health>(m_gameContext);
+    health->moveAbsolute(position);
     health->initialize();
     emit objectCreated(std::move(health));
   }
@@ -94,8 +174,10 @@ void EnemyShip::clampHealthSpawnProbability() {
 
 std::unique_ptr<GameObject> EnemyShip::clone() const {
   std::unique_ptr<EnemyShip> enemyShip =
-      std::make_unique<EnemyShip>(m_maxHealth, m_position);
-  enemyShip->m_pixmapData = m_pixmapData;
+      std::make_unique<EnemyShip>(m_gameContext);
+
+  enemyShip->setTransform(m_transform);
+  enemyShip->setMaxHealth(m_maxHealth);
   enemyShip->m_destructionSoundInfo = m_destructionSoundInfo;
   enemyShip->m_objectTypes = m_objectTypes;
   enemyShip->m_healthSpawnProbability = m_healthSpawnProbability;
@@ -105,11 +187,9 @@ std::unique_ptr<GameObject> EnemyShip::clone() const {
   enemyShip->setMovementStrategy(movementStrategy());
 
   enemyShip->m_energyRegenerationRate = m_energyRegenerationRate;
-  enemyShip->m_currentHealth = m_currentHealth;
   enemyShip->m_currentEnergy = m_currentEnergy;
   enemyShip->m_currentHealth = m_currentHealth;
   enemyShip->m_maxEnergy = m_maxEnergy;
-  enemyShip->m_originalColor = m_originalColor;
   enemyShip->m_autoFire = m_autoFire;
 
   for (auto &weapon : m_primaryWeapons) {
@@ -121,12 +201,14 @@ std::unique_ptr<GameObject> EnemyShip::clone() const {
 }
 
 bool EnemyShip::shouldBeDeleted() {
-  if (m_position.isBeyondScreenBottomLimit() && !m_bottomEdgeSignalEmitted) {
+  if (Utils::BoundsChecker::isBeyondScreenBottom(
+          m_transform.position, m_gameContext.movementBounds) &&
+      !m_bottomEdgeSignalEmitted) {
     emit bottomEdgeReached();
     m_bottomEdgeSignalEmitted = true;
   }
 
-  bool shouldBeDeleted = ShipWithHealthBar::shouldBeDeleted();
+  bool shouldBeDeleted = Ship::shouldBeDeleted();
   if (shouldBeDeleted)
     emit enemyShipDeleted();
   return shouldBeDeleted;
@@ -147,15 +229,5 @@ void EnemyShip::collideWithEnemyShip(EnemyShip &enemyShip) {
   takeDamage(0);
 }
 
-namespace {
-struct PixmapRegistrar {
-  PixmapRegistrar() {
-    PixmapRegistry::instance().add(&EnemyShip::registerPixmaps);
-  }
-};
-static PixmapRegistrar _enemyship_pixmap_registrar;
-} // namespace
-
 } // namespace Ships
-
 } // namespace GameObjects

@@ -8,17 +8,12 @@ namespace Collectables {
 
 class Stellar : public Collectable {
 public:
-  Stellar(const Position &position);
-  static void registerPixmaps();
+  Stellar(const Config::GameContext &ctx);
+  std::unique_ptr<GameObject> clone() const override;
 
-  // GameObject interface
 protected:
   void initializeSounds() override;
   void initializeObjectType() override;
-
-  // GameObject interface
-public:
-  std::unique_ptr<GameObject> clone() const override;
 };
 } // namespace Collectables
 

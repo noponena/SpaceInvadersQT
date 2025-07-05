@@ -1,20 +1,26 @@
 #include "Ship.h"
-#include "Graphics/PixmapLibrary.h"
+#include "Graphics/TextureRegistry.h"
 #include "Weapons/Weapon.h"
-#include <QGraphicsColorizeEffect>
-#include <QGraphicsScene>
 #include <QTimer>
 #include <QTimerEvent>
 
 namespace GameObjects {
 namespace Ships {
 
-Ship::Ship(const std::uint32_t maxHp, const float speed,
-           const Position &position)
-    : AttractableGameObject(position), m_immortal(false), m_pixelWidth(50),
-      m_pixelHeight(50), m_destructionParticleCount(200),
-      m_currentHealth(maxHp), m_maxHealth(maxHp), m_speed(speed),
-      m_energyRegenerationRate(0) {}
+Ship::Ship(const Config::GameContext &ctx)
+    : AttractableGameObject(ctx), m_immortal(false), m_pixelWidth(50),
+      m_pixelHeight(50), m_destructionParticleCount(200), m_currentHealth(1),
+      m_maxHealth(1), m_speed(1), m_energyRegenerationRate(0) {
+  m_healthBar = std::make_unique<UI::GLProgressBar>(
+      0.f, m_maxHealth, // Min/max
+      m_pixelWidth, 5,  // 30% width, 6% height (fractions)
+      UI::UISizeMode::Pixels);
+  m_healthBar->setBarColors(QVector4D(0.1f, 0.7f, 0.2f, 1.f),    // Green
+                            QVector4D(0.95f, 0.83f, 0.29f, 1.f), // Yellow
+                            QVector4D(0.93f, 0.24f, 0.24f, 1.f)  // Red
+  );
+  m_healthBar->setThresholds(0.6f, 0.3f); // 60%/30% thresholds
+}
 
 Ship::~Ship() {}
 
@@ -44,6 +50,8 @@ void Ship::takeDamage(std::uint32_t amount) {
       m_currentHealth = 0;
     else
       m_currentHealth -= amount;
+
+    m_healthBar->setValue(m_currentHealth);
   }
 }
 
@@ -53,12 +61,18 @@ void Ship::heal(std::uint32_t amount) {
     if (m_currentHealth > m_maxHealth) {
       m_currentHealth = m_maxHealth;
     }
+    m_healthBar->setValue(m_currentHealth);
   }
 }
 
 void Ship::kill() { m_currentHealth = 0; }
 
-void Ship::restoreHealth() { m_currentHealth = m_maxHealth; }
+void Ship::restoreHealth() {
+  m_currentHealth = m_maxHealth;
+  m_healthBar->setValue(m_currentHealth);
+}
+
+void Ship::restoreEnergy() { m_currentEnergy = m_maxEnergy; }
 
 bool Ship::isDead() { return m_currentHealth <= 0; }
 
@@ -99,31 +113,46 @@ void Ship::clearWeapons() {
 }
 
 void Ship::initializeDestructionAnimation() {
+  auto renderDataIt = m_renderDataByState.find(State::OnDestruction);
+  if (renderDataIt == m_renderDataByState.end()) {
+    qDebug() << "No destruction spritesheet found.";
+    return;
+  }
+
   int columns = 4;
   int rows = 4;
-  int targetWidth = 200;
-  int targetHeight = 200;
 
-  QPixmap pixmap = Graphics::PixmapLibrary::getPixmap(
-      ":/Images/explosion.png", targetWidth, targetHeight);
+  const QString &texPath = renderDataIt->second.imagePath;
+  const auto &texInfo =
+      Graphics::TextureRegistry::instance().getOrCreateTexture(texPath);
+  QSize sheetSize(texInfo.width, texInfo.height);
 
-  std::vector<QPoint> frameOffsets;
-  // Calculate and store offsets for each frame
+  Graphics::Animations::AnimationInfo animInfo;
+  animInfo.sheetSize = sheetSize;
+  animInfo.columns = columns;
+  animInfo.rows = rows;
+  animInfo.frameDurationMs = 50;
+  animInfo.frameUVs.clear();
+
+  qDebug() << "[Ship] Initializing animation..";
+
   for (int row = 0; row < rows; ++row) {
     for (int col = 0; col < columns; ++col) {
-      int x = col * targetWidth / 4;
-      int y = row * targetHeight / 4;
-      frameOffsets.emplace_back(x, y);
+      float u0 = float(col) / columns;
+      float v0 = float(row) / rows;
+      float u1 = float(col + 1) / columns;
+      float v1 = float(row + 1) / rows;
+      QVector2D uvMin = QVector2D(u0, v0);
+      QVector2D uvMax = QVector2D(u1, v1);
+      animInfo.frameUVs.emplace_back(uvMin, uvMax);
     }
   }
 
-  m_destructionAnimation.setSpritesheet(pixmap);
-  m_destructionAnimation.setFrameOffsets(frameOffsets);
-  m_destructionAnimation.setFrameSize(QSize(m_pixelWidth, m_pixelHeight));
+  m_animationInfoByState[State::OnDestruction] = std::move(animInfo);
 }
 
 void Ship::initializeDestructionEffects() {
-  m_destructionEffect.spawnParticles(m_destructionParticleCount);
+  // m_destructionEffect.spawnParticles(m_destructionParticleCount);
 }
 
 void Ship::onProjectileFired(
@@ -139,10 +168,6 @@ void Ship::setDestructionParticleCount(int newDestructionParticleCount) {
   m_destructionParticleCount = newDestructionParticleCount;
 }
 
-void Ship::fullyRestoreEnergy() { m_currentEnergy = m_maxEnergy; }
-
-void Ship::fullyRestoreHealth() { m_currentHealth = m_maxHealth; }
-
 std::uint32_t Ship::energyRegenerationRate() const {
   return m_energyRegenerationRate;
 }
@@ -151,9 +176,10 @@ void Ship::setEnergyRegenerationRate(std::uint32_t newEnergyRegenerationRate) {
   m_energyRegenerationRate = newEnergyRegenerationRate;
 }
 
-void Ship::setMaxHealth(float newMaxHealth) { m_maxHealth = newMaxHealth; }
-
-void Ship::setSpeed(float newSpeed) { m_speed = newSpeed; }
+void Ship::setMaxHealth(float newMaxHealth) {
+  m_maxHealth = newMaxHealth;
+  m_healthBar->setRange(0, m_maxHealth);
+}
 
 void Ship::setMaxEnergy(float newMaxEnergy) { m_maxEnergy = newMaxEnergy; }
 
@@ -161,17 +187,28 @@ int Ship::currentHp() const { return m_currentHealth; }
 
 bool Ship::shouldBeDeleted() {
   return GameObject::shouldBeDeleted() ||
-         (isDead() && m_destructionAnimation.animationFinished() &&
-          m_destructionEffect.effectFinished());
+         (isDead() && m_animationPlayer.isFinished());
+}
+
+const RenderData Ship::getRenderData() const {
+  if (m_state == State::OnDestruction)
+    return GameObject::getRenderData();
+  auto renderData = GameObject::getRenderData();
+  QRectF bbox = getBoundingBox();
+  qreal x = bbox.center().x();
+  qreal y = bbox.bottom();
+  int h = m_gameContext.screenGeometry.height();
+  m_healthBar->setCenter(x, y + 0.005f * h);
+  renderData.additionalRenderables.push_back(m_healthBar.get());
+  return renderData;
 }
 
 void Ship::playOnHitAnimation() {
   if (m_onHitAnimationInProgress)
     return;
 
-  QPixmap onHitPixmap = getOnHitPixmap();
+  setState(State::OnHit);
   m_onHitAnimationInProgress = true;
-  m_graphicsItem->setPixmap(onHitPixmap);
   m_onHitTimerId = startTimer(100);
 }
 
@@ -186,7 +223,10 @@ void Ship::regenerateEnergy(float deltaTimeInSeconds) {
 void Ship::timerEvent(QTimerEvent *event) {
   if (event->timerId() == m_onHitTimerId) {
     killTimer(m_onHitTimerId);
-    m_graphicsItem->setPixmap(getPixmap());
+    // Only switch back if we're still in OnHit!
+    if (m_state == State::OnHit) {
+      setState(State::Normal);
+    }
     m_onHitAnimationInProgress = false;
     m_onHitTimerId = -1;
   }

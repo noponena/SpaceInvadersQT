@@ -1,17 +1,13 @@
 #include "Health.h"
-#include "Graphics/PixmapLibrary.h"
-#include "Graphics/PixmapRegistry.h"
-
 namespace GameObjects {
 namespace Collectables {
 
-Health::Health(const Position &position) : Collectable(position) {
-  m_pixmapData.pixmapResourcePath = ":/Images/health.png";
-  m_pixmapData.pixmapScale = QPointF(22.0, 22.0);
-}
-
-void Health::registerPixmaps() {
-  Graphics::PixmapLibrary::getPixmap(":/Images/health.png", 22.0, 22.0);
+Health::Health(const Config::GameContext &ctx) : Collectable(ctx) {
+  RenderData normalData;
+  normalData.size = QVector2D(22, 22);
+  normalData.imagePath = ":/Images/health.png";
+  addRenderData(State::Normal, normalData);
+  m_transform.colliderSize = {5, 5};
 }
 
 void Health::initializeSounds() {
@@ -25,21 +21,13 @@ void Health::initializeObjectType() {
 }
 
 std::unique_ptr<GameObject> Health::clone() const {
-  std::unique_ptr<Health> health = std::make_unique<Health>(m_position);
-  health->m_pixmapData = m_pixmapData;
+  std::unique_ptr<Health> health = std::make_unique<Health>(m_gameContext);
+  health->setTransform(m_transform);
   health->m_destructionSoundInfo = m_destructionSoundInfo;
   health->m_objectTypes = m_objectTypes;
+  health->m_renderDataByState = m_renderDataByState;
   return health;
 }
-
-namespace {
-struct PixmapRegistrar {
-  PixmapRegistrar() {
-    PixmapRegistry::instance().add(&Health::registerPixmaps);
-  }
-};
-static PixmapRegistrar _health_pixmap_registrar;
-} // namespace
 
 } // namespace Collectables
 } // namespace GameObjects

@@ -2,6 +2,7 @@
 #define GAMEOBJECTS_SHIP_H
 
 #include "GameObjects/AttractableGameObject.h"
+#include "UI/GLProgressBar.h"
 #include "Weapons/Weapon.h"
 #include <QElapsedTimer>
 #include <QTimer>
@@ -16,15 +17,17 @@ namespace Ships {
 class Ship : public AttractableGameObject {
   Q_OBJECT
 public:
-  Ship(const std::uint32_t maxHp, const float speed, const Position &position);
+  Ship(const Config::GameContext &ctx);
   virtual ~Ship();
   virtual void update(const UpdateContext &context) override;
   virtual bool shouldBeDeleted() override;
+  virtual const RenderData getRenderData() const override;
   bool isDead() override;
   virtual void takeDamage(std::uint32_t amount);
   virtual void heal(std::uint32_t amount);
   virtual void kill();
   virtual void restoreHealth();
+  virtual void restoreEnergy();
   void firePrimaryWeapons();
   virtual bool fireSecondaryWeapon(std::uint32_t weaponIndex);
   void updateFireRate(int amount = 1);
@@ -39,13 +42,11 @@ public:
 
   void setDestructionParticleCount(int newDestructionParticleCount);
   void fullyRestoreEnergy();
-  void fullyRestoreHealth();
 
   std::uint32_t energyRegenerationRate() const;
 
   void setEnergyRegenerationRate(std::uint32_t newEnergyRegenerationRate);
   void setMaxHealth(float newMaxHealth);
-  void setSpeed(float newSpeed);
   void setMaxEnergy(float newMaxEnergy);
 
 protected:
@@ -59,7 +60,7 @@ protected:
   std::unique_ptr<Weapons::Weapon> m_secondaryWeapons[4];
   bool m_onHitAnimationInProgress = false;
   bool m_autoFire = false;
-  QColor m_originalColor;
+  std::unique_ptr<UI::GLProgressBar> m_healthBar;
 
   virtual void initializeDestructionAnimation() override;
   void initializeDestructionEffects() override;

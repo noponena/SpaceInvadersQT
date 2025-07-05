@@ -1,74 +1,139 @@
 #include "Game/Core/GameRunnerView.h"
-#include "GameObjects/Ships/PlayerShip.h"
+#include "Game/Audio/SoundManager.h"
+#include "Graphics/Effects/EffectManager.h"
+#include "Graphics/TextureRegistry.h"
 #include "Utils/PerformanceBenchmark.h"
-#include <QOpenGLWidget>
+#include <QOpenGLContext>
+#include <QOpenGLFunctions_3_3_Core>
 #include <QTimer>
-#include <thread>
+#include <QVector2D>
+#include <chrono>
 
 namespace Game {
 namespace Core {
+
+const char *line_vertex = R"(
+#version 330 core
+layout(location = 0) in vec2 position;
+
+uniform vec2 viewport;
+
+void main() {
+    vec2 ndc = (position / viewport) * 2.0 - 1.0;
+    ndc.y = -ndc.y; // OpenGL/Qt Y flip
+    gl_Position = vec4(ndc, 0.0, 1.0);
+}
+)";
+
+const char *line_fragment = R"(
+#version 330 core
+out vec4 fragColor;
+uniform vec3 lineColor;
+void main() {
+    fragColor = vec4(lineColor, 1.0);
+}
+
+)";
+
+const char *vertexShaderSrc = R"(
+#version 330 core
+layout(location = 0) in vec2 vert;
+layout(location = 1) in vec2 uv;
+
+uniform vec2 spritePos;
+uniform vec2 spriteSize;
+uniform float spriteRotation;
+uniform vec2 viewport;
+uniform vec2 uvMin;
+uniform vec2 uvMax;
+
+out vec2 fragUV;
+
+void main() {
+    // centered quad [-0.5, 0.5]
+    vec2 centered = (vert - vec2(0.5, 0.5)) * spriteSize;
+    float c = cos(spriteRotation);
+    float s = sin(spriteRotation);
+    mat2 rot = mat2(c, -s, s, c);
+    vec2 rotated = rot * centered;
+
+    vec2 pos = spritePos + rotated;
+    vec2 ndc = (pos / viewport) * 2.0 - 1.0;
+    ndc.y = -ndc.y; // invert Y for Qt
+    gl_Position = vec4(ndc, 0, 1);
+
+    fragUV = mix(uvMin, uvMax, uv);
+}
+)";
+
+const char *fragmentShaderSrc = R"(
+#version 330 core
+in vec2 fragUV;
+out vec4 color;
+uniform sampler2D tex;
+void main() {
+    color = texture(tex, fragUV);
+}
+)";
+
+static const float quad[] = {
+    // vert.x, vert.y, uv.x, uv.y
+    0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1,
+};
 
 constexpr float MAX_FRAME_TIME =
     0.100f; // 100 ms = 10 FPS min (for game physics clamp)
 constexpr float MIN_FRAME_TIME =
     0.005f; // 5 ms   = 200 FPS max (FPS cap for rendering/physics)
+constexpr bool RENDER_COLLIDER_BOXES = false;
 
-GameRunnerView::GameRunnerView(QRect screenGeometry, QWidget *parent)
-    : QGraphicsView(parent), m_scene(this), m_continuousShoot(false),
-      m_progressLevel(true), m_levelFailed(false),
-      m_levelFailedOrPassedInfoDisplayed(false), m_spawnEventsFinished(false),
-      m_benchmarkMode(false) {
-  m_gameState = new GameState();
+GameRunnerView::GameRunnerView(Config::GameContext ctx, QWidget *parent)
+    : m_gameCtx(ctx), m_continuousShoot(false), m_progressLevel(true),
+      m_levelFailed(false), m_levelFailedOrPassedInfoDisplayed(false),
+      m_spawnEventsFinished(false), m_benchmarkMode(false),
+      m_debugVbo(QOpenGLBuffer::VertexBuffer),
+      m_vbo(QOpenGLBuffer::VertexBuffer) {
+
+  m_gameTimer.setInterval(static_cast<int>(MIN_FRAME_TIME * 1000));
+  m_gameState = new GameState(ctx);
   m_levelManager = std::make_unique<Levels::LevelManager>(m_gameState);
   m_gameObjects = &(m_gameState->gameObjects());
   m_collisionDetector = std::make_unique<CollisionDetection::CollisionDetector>(
-      m_gameState->gameObjects(), screenGeometry);
+      m_gameState->gameObjects());
   setupView();
-  scene()->setSceneRect(screenGeometry);
   setupCounters();
   m_elapsedTimer.start();
   m_fpsTimer.start();
 
-  m_gameHUD =
-      new Core::GameHUD(screenGeometry.width(), screenGeometry.height());
-  m_scene.addItem(m_gameHUD);
-  m_gameHUD->setPos(0, screenGeometry.height() * 0.9);
-
   setupConnections();
-
-  m_gameState->setSize(screenGeometry.width(), screenGeometry.height());
 }
 
 GameRunnerView::~GameRunnerView() {
-  // We have to make sure that the game objects
-  // are destroyed before the scene (QGraphicsScene)
-  // destroys the graphics items in the scene.
   delete m_gameState;
+  delete m_program;
+  delete m_lineProgram;
+  delete m_fpsCounter;
+  delete m_gameObjectCounter;
+  delete m_stellarTokens;
+  delete m_playerHp;
+  delete m_levelEndedInfo;
+
+  m_vao.destroy();
+  m_debugVao.destroy();
+  m_vbo.destroy();
+  if (m_texture != 0)
+    glDeleteTextures(1, &m_texture);
+
+  m_healthBar->destroyGL(this);
+  m_energyBar->destroyGL(this);
+  m_weaponBar->destroyGL(this);
 }
 
 void GameRunnerView::setupView() {
   QSurfaceFormat format;
-  // format.setSwapBehavior(QSurfaceFormat::TripleBuffer);
   format.setSwapInterval(0);
   format.setRenderableType(QSurfaceFormat::RenderableType::OpenGL);
-  QOpenGLWidget *glWidget = new QOpenGLWidget;
-  glWidget->setFormat(format);
   QSurfaceFormat::setDefaultFormat(format);
-  setViewport(glWidget);
-
-  setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
-  setAlignment(Qt::AlignTop);
-  setInteractive(false);
-  setRenderHints(QPainter::SmoothPixmapTransform);
-  setOptimizationFlags(QGraphicsView::DontAdjustForAntialiasing |
-                       QGraphicsView::DontSavePainterState);
-  setViewportMargins(0, 0, 0, 0);
-  setScene(&m_scene);
-  setStyleSheet("border:0px");
-  m_scene.setItemIndexMethod(QGraphicsScene::BspTreeIndex);
-  m_scene.setBackgroundBrush(QBrush(Qt::black));
-  setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-  setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 }
 
 void GameRunnerView::setupCounters() {
@@ -93,23 +158,20 @@ void GameRunnerView::setupCounters() {
   m_stellarTokens->setPos(0, m_fpsCounter->boundingRect().height() - 10 + 20);
   m_playerHp->setPos(0, m_gameObjectCounter->boundingRect().height() - 10 + 40);
 
+  /*
   scene()->addItem(m_fpsCounter);
   scene()->addItem(m_gameObjectCounter);
   scene()->addItem(m_stellarTokens);
   scene()->addItem(m_playerHp);
+*/
   connect(this, &GameRunnerView::fpsUpdated, m_fpsCounter,
           &UI::FPSCounter::updateFPS);
 }
 
 void GameRunnerView::setupConnections() {
-  connect(m_gameState, &GameState::objectAdded, this,
-          &GameRunnerView::onObjectAdded);
-  connect(m_gameState, &GameState::objectDeleted, this,
-          &GameRunnerView::onObjectDeleted);
   connect(m_gameState, &GameState::playerShipDestroyed, this,
           &GameRunnerView::onPlayerShipDestroyed);
-
-  connect(&m_gameTimer, &QTimer::timeout, this, &GameRunnerView::gameLoop);
+  connect(&m_gameTimer, &QTimer::timeout, this, &GameRunnerView::gameTick);
   connect(m_levelManager.get(), &Levels::LevelManager::enemyLimitReached, this,
           &GameRunnerView::onEnemyLimitReached);
   connect(m_levelManager.get(), &Levels::LevelManager::spawnEventsFinished,
@@ -124,28 +186,28 @@ void GameRunnerView::startLevel(const Levels::Level &level,
   m_playerShip = m_gameState->playerShip();
 
   connect(m_playerShip.get(),
-          &GameObjects::Ships::PlayerShip::playerSecondaryWeaponsChanged,
-          m_gameHUD, &Core::GameHUD::onPlayerSecondaryWeaponsChanged);
+          &GameObjects::Ships::PlayerShip::playerHealthUpdated, this,
+          &GameRunnerView::onPlayerHealthUpdated);
 
   connect(m_playerShip.get(),
-          &GameObjects::Ships::PlayerShip::playerSecondaryWeaponFired,
-          m_gameHUD, &Core::GameHUD::onPlayerSecondaryWeaponFired);
+          &GameObjects::Ships::PlayerShip::playerMaxHealthSet, this,
+          &GameRunnerView::onPlayerMaxHealthSet);
 
   connect(m_playerShip.get(),
-          &GameObjects::Ships::PlayerShip::playerEnergyUpdated, m_gameHUD,
-          &Core::GameHUD::onPlayerEnergyUpdated);
+          &GameObjects::Ships::PlayerShip::playerEnergyUpdated, this,
+          &GameRunnerView::onPlayerEnergyUpdated);
 
   connect(m_playerShip.get(),
-          &GameObjects::Ships::PlayerShip::playerMaxEnergySet, m_gameHUD,
-          &Core::GameHUD::onPlayerMaxEnergySet);
+          &GameObjects::Ships::PlayerShip::playerMaxEnergySet, this,
+          &GameRunnerView::onPlayerMaxEnergySet);
 
   connect(m_playerShip.get(),
-          &GameObjects::Ships::PlayerShip::playerHealthUpdated, m_gameHUD,
-          &Core::GameHUD::onPlayerHealthUpdated);
+          &GameObjects::Ships::PlayerShip::playerSecondaryWeaponsChanged, this,
+          &GameRunnerView::onPlayerSecondaryWeaponsChanged);
 
   connect(m_playerShip.get(),
-          &GameObjects::Ships::PlayerShip::playerMaxHealthSet, m_gameHUD,
-          &Core::GameHUD::onPlayerMaxHealthSet);
+          &GameObjects::Ships::PlayerShip::playerSecondaryWeaponFired, this,
+          &GameRunnerView::onPlayerSecondaryWeaponFired);
 
   m_gameState->initialize();
 
@@ -153,9 +215,10 @@ void GameRunnerView::startLevel(const Levels::Level &level,
     initializeBenchmark();
   }
 
+  m_gameStartTime = std::chrono::high_resolution_clock::now();
   m_levelManager->setLevel(level);
   m_levelManager->startLevel();
-  m_gameTimer.start(0);
+  m_gameTimer.start();
 }
 
 void GameRunnerView::quitLevel() {
@@ -163,50 +226,262 @@ void GameRunnerView::quitLevel() {
   m_levelFailed = false;
   m_spawnEventsFinished = false;
   if (m_levelFailedOrPassedInfoDisplayed) {
-    scene()->removeItem(m_levelEndedInfo);
+    // scene()->removeItem(m_levelEndedInfo);
   }
   m_levelFailedOrPassedInfoDisplayed = false;
   m_gameState->deinitialize();
   m_playerShip = nullptr;
+  m_weaponBar->clearSlotImages();
+  Graphics::Effects::EffectManager::instance().clear();
 }
 
 void GameRunnerView::resumeGame() {
   qDebug() << "resuming game..";
   m_elapsedTimer.start();
-  m_gameTimer.start(0);
+  m_gameTimer.start();
 }
 
-void GameRunnerView::gameLoop() {
+void GameRunnerView::initializeGL() {
+
+  initializeOpenGLFunctions();
+  Graphics::Effects::EffectManager::instance().initializeGL(this);
+
+  m_healthBar = std::make_unique<UI::GLProgressBar>(
+      0.f, 100.f,   // Min/max
+      0.7f, 0.015f, // 30% width, 6% height (fractions)
+      UI::UISizeMode::Fraction);
+  m_healthBar->setBarColors(QVector4D(0.1f, 0.7f, 0.2f, 1.f),    // Green
+                            QVector4D(0.95f, 0.83f, 0.29f, 1.f), // Yellow
+                            QVector4D(0.93f, 0.24f, 0.24f, 1.f)  // Red
+  );
+  m_healthBar->setThresholds(0.6f, 0.3f); // 60%/30% thresholds
+  m_healthBar->setCenter(0.5f, 0.952f, UI::UISizeMode::Fraction);
+
+  m_energyBar = std::make_unique<UI::GLProgressBar>(
+      0.f, 100.f,   // Min/max
+      0.7f, 0.015f, // 30% width, 6% height (fractions)
+      UI::UISizeMode::Fraction);
+  m_energyBar->setBarColors(
+      QVector4D(24.f / 255.f, 40.f / 255.f, 119.f / 255.f, 1.f), // Blue
+      QVector4D(24.f / 255.f, 40.f / 255.f, 119.f / 255.f, 1.f),
+      QVector4D(24.f / 255.f, 40.f / 255.f, 119.f / 255.f, 1.f));
+  m_energyBar->setCenter(0.5f, 0.97f, UI::UISizeMode::Fraction);
+
+  m_uiPanel = std::make_unique<UI::Panel>();
+  m_weaponBar = std::make_unique<UI::GLWeaponBar>();
+  m_weaponBar->setSlotSize(0.025f,
+                           UI::UISizeMode::Fraction); // 10% of screen width
+  m_weaponBar->setPosition(0.5f, 0.91f,
+                           UI::UISizeMode::Fraction); // Centered, near top
+
+  // === 1. Compile and link shaders ===
+  // Main sprite shader
+  m_program = new QOpenGLShaderProgram();
+  m_program->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSrc);
+  m_program->addShaderFromSourceCode(QOpenGLShader::Fragment,
+                                     fragmentShaderSrc);
+  m_program->link();
+
+  // Debug line shader
+  m_lineProgram = new QOpenGLShaderProgram();
+  m_lineProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, line_vertex);
+  m_lineProgram->addShaderFromSourceCode(QOpenGLShader::Fragment,
+                                         line_fragment);
+  m_lineProgram->link();
+
+  // === 2. Main sprite VAO/VBO setup ===
+  m_vao.create();
+  m_vao.bind();
+
+  m_vbo.create();
+  m_vbo.bind();
+  m_vbo.allocate(quad, sizeof(quad)); // quad = your quad vertex data
+
+  m_program->enableAttributeArray(0); // vert.xy
+  m_program->setAttributeBuffer(0, GL_FLOAT, 0, 2, 4 * sizeof(float));
+  m_program->enableAttributeArray(1); // uv.xy
+  m_program->setAttributeBuffer(1, GL_FLOAT, 2 * sizeof(float), 2,
+                                4 * sizeof(float));
+
+  m_vbo.release();
+  m_vao.release();
+
+  // === 3. Debug line VAO/VBO setup ===
+  m_debugVao.create();
+  m_debugVao.bind();
+
+  m_debugVbo.create();
+  m_debugVbo.bind();
+  m_debugVbo.setUsagePattern(QOpenGLBuffer::DynamicDraw);
+  m_debugVbo.allocate(sizeof(QVector2D) * 4);
+
+  m_lineProgram->enableAttributeArray(0);
+  m_lineProgram->setAttributeBuffer(0, GL_FLOAT, 0, 2, 0);
+
+  m_debugVbo.release();
+  m_debugVao.release();
+
+  // === 4. Texture setup (unchanged) ===
+  QImage img(32, 32, QImage::Format_RGBA8888);
+  img.fill(Qt::white);
+  for (int x = 0; x < 32; ++x)
+    for (int y = 0; y < 32; ++y)
+      if (x == 0 || y == 0 || x == 31 || y == 31)
+        img.setPixelColor(x, y, Qt::red);
+
+  glGenTextures(1, &m_texture);
+  glBindTexture(GL_TEXTURE_2D, m_texture);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 32, 32, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+               img.bits());
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+  Graphics::TextureRegistry::instance().setGlContext(this);
+  Graphics::TextureRegistry::instance().preloadAllFromDir(":/Images/");
+  m_weaponBar->setSlotCount(4);
+}
+
+void GameRunnerView::resizeGL(int w, int h) { QOpenGLWidget::resizeGL(w, h); }
+
+void GameRunnerView::paintGL() {
+  glClearColor(0, 0, 0, 1);
+  glClear(GL_COLOR_BUFFER_BIT);
+
+  m_uiPanel->render(this, m_gameCtx.screenGeometry.width(),
+                    m_gameCtx.screenGeometry.height());
+
+  m_healthBar->render(this, width(), height());
+  m_energyBar->render(this, width(), height());
+  auto now = std::chrono::high_resolution_clock::now();
+  float nowSec = std::chrono::duration_cast<std::chrono::duration<float>>(
+                     now - m_gameStartTime)
+                     .count();
+
+  m_weaponBar->render(this, width(), height(), nowSec);
+  renderAllSprites();
+
+  Graphics::Effects::EffectManager::instance().render(
+      QVector2D(width(), height()));
+
+#ifndef NDEBUG
+  if (RENDER_COLLIDER_BOXES)
+    renderAllDebugColliders();
+#endif
+}
+
+// -- Main sprite rendering for all objects --
+void GameRunnerView::renderAllSprites() {
+  for (const auto &obj : *m_gameObjects) {
+    if (!obj->isVisible())
+      continue;
+    renderSprite(obj.get());
+  }
+}
+
+void GameRunnerView::renderSprite(const GameObjects::GameObject *obj) {
+  const auto &pos = obj->getPosition();
+  const GameObjects::RenderData renderData = obj->getRenderData();
+
+  // 1. Render any additional renderables (e.g., health bars, overlays)
+  for (auto &renderable : renderData.additionalRenderables) {
+    renderable->render(this, width(), height());
+  }
+
+  // 2. *** Restore all necessary OpenGL state for sprite drawing ***
+  m_program->bind();
+  m_vao.bind();
+  glActiveTexture(GL_TEXTURE0);
+
+  const auto &texInfo =
+      Graphics::TextureRegistry::instance().getOrCreateTexture(
+          renderData.imagePath);
+  GLuint texture = texInfo.handle;
+  glBindTexture(GL_TEXTURE_2D, texture);
+
+  m_program->setUniformValue("tex", 0);
+  m_program->setUniformValue("viewport", QVector2D(width(), height()));
+  m_program->setUniformValue("uvMin", renderData.uvMin);
+  m_program->setUniformValue("uvMax", renderData.uvMax);
+  m_program->setUniformValue("spritePos", pos);
+  m_program->setUniformValue("spriteSize", renderData.size);
+  m_program->setUniformValue("spriteRotation", renderData.rotation);
+
+  // 3. Now safely draw the sprite
+  glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+  // 4. Optionally: unbind VAO/program if you want to be extra safe (not always
+  // needed in Qt) m_vao.release(); m_program->release();
+}
+
+// -- Debug collider rendering for all objects --
+void GameRunnerView::renderAllDebugColliders() {
+  m_debugVao.bind();
+  m_lineProgram->bind();
+  m_lineProgram->setUniformValue("viewport", QVector2D(width(), height()));
+  m_lineProgram->setUniformValue("lineColor", QVector3D(1, 0, 0)); // Red
+
+  for (const auto &obj : *m_gameObjects) {
+    if (!obj->isVisible())
+      continue;
+    drawColliderBox(obj.get());
+  }
+
+  glBindVertexArray(0);
+  m_lineProgram->release();
+  m_debugVao.release();
+}
+
+void GameRunnerView::drawColliderBox(const GameObjects::GameObject *obj) {
+  QVector2D collider = obj->transform().colliderSize;
+  QVector2D center = obj->getPosition();
+
+  float x1 = center.x() - 0.5f * collider.x();
+  float x2 = center.x() + 0.5f * collider.x();
+  float y1 = center.y() - 0.5f * collider.y();
+  float y2 = center.y() + 0.5f * collider.y();
+
+  QVector2D colliderVerts[] = {{x1, y1}, {x2, y1}, {x2, y2}, {x1, y2}};
+
+  m_debugVbo.bind();
+  glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(colliderVerts), colliderVerts);
+  glDrawArrays(GL_LINE_LOOP, 0, 4);
+  m_debugVbo.release();
+}
+
+void GameRunnerView::gameTick() {
   // auto loopStartTime = std::chrono::high_resolution_clock::now();
   // float renderTimeUs = calculateRenderTime(loopStartTime);
-  float deltaTimeInSeconds = calculateDeltaTime();
-  capFrameRate(MIN_FRAME_TIME, deltaTimeInSeconds);
+  float deltaTimeSec = calculateDeltaTimeSec();
 
-  if (deltaTimeInSeconds > MAX_FRAME_TIME)
-    deltaTimeInSeconds = MAX_FRAME_TIME;
+  if (deltaTimeSec > MAX_FRAME_TIME)
+    deltaTimeSec = MAX_FRAME_TIME;
 
   manageLevelProgression();
 
   if (!m_benchmarkMode)
-    processInput(deltaTimeInSeconds);
+    processInput(deltaTimeSec);
 
   /*
   float updateTimeUs =
-      measureFunctionDuration([&]() { updateGameState(deltaTimeInSeconds); });
+      measureFunctionDuration([&]() { updateGameState(deltaTimeSec); });
   float collisionDetectionTimeUs =
       measureFunctionDuration([&]() { m_collisionDetector->detectBVH(); });
 
   logFrameStatistics(renderTimeUs, updateTimeUs, collisionDetectionTimeUs);
   */
 
-  updateGameState(deltaTimeInSeconds);
-  // m_collisionDetector->detectBVH();
+  updateGameState(deltaTimeSec);
   m_collisionDetector->detectBVHParallel();
-  updateFps();
 
+  Graphics::Effects::EffectManager::instance().update(deltaTimeSec);
+  updateFps();
   updateGameCounters();
   checkLevelFailedOrPassed();
-  m_lastFrameEndTime = std::chrono::high_resolution_clock::now();
+  Game::Audio::SoundManager::getInstance().cleanup();
+  this->update();
 }
 
 float GameRunnerView::calculateRenderTime(
@@ -219,21 +494,16 @@ float GameRunnerView::calculateRenderTime(
   return 0;
 }
 
-float GameRunnerView::calculateDeltaTime() {
-  int frameTimeMs = m_elapsedTimer.restart();
+float GameRunnerView::calculateDeltaTimeSec() {
+  auto now = std::chrono::high_resolution_clock::now();
+  float frameTimeSeconds =
+      std::chrono::duration<float>(now - m_lastFrameEndTime).count();
+  m_lastFrameEndTime = now;
   if (m_benchmarkMode) {
-    Utils::PerformanceBenchmark::getInstance().recordFrameTime(frameTimeMs);
+    Utils::PerformanceBenchmark::getInstance(m_gameCtx).recordFrameTime(
+        frameTimeSeconds);
   }
-  return static_cast<float>(frameTimeMs) / 1000.0f;
-}
-
-void GameRunnerView::capFrameRate(float desiredMinFrameTimeSeconds,
-                                  float frameTimeSeconds) {
-  int msToSleep = static_cast<int>(
-      (desiredMinFrameTimeSeconds - frameTimeSeconds) * 1000.0f);
-  if (msToSleep > 0) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(msToSleep));
-  }
+  return frameTimeSeconds;
 }
 
 void GameRunnerView::manageLevelProgression() {
@@ -290,9 +560,10 @@ void GameRunnerView::checkLevelFailedOrPassed() {
 }
 
 void GameRunnerView::initializeBenchmark() {
-  Utils::PerformanceBenchmark::getInstance().initializeBenchmark(m_playerShip);
+  Utils::PerformanceBenchmark::getInstance(m_gameCtx).initializeBenchmark(
+      m_playerShip);
   connect(&m_benchmarkTimer, &QTimer::timeout, this, ([this]() {
-    Utils::PerformanceBenchmark::getInstance().logPerformanceScore();
+    Utils::PerformanceBenchmark::getInstance(m_gameCtx).logPerformanceScore();
     onBenchmarkFinished();
   }));
   m_benchmarkMode = true;
@@ -363,6 +634,7 @@ void GameRunnerView::updateFps() {
 void GameRunnerView::displayLevelFailedInfo() {
   m_levelEndedInfo->setPlainText("LEVEL FAILED");
   QRectF textBoundingRect = m_levelEndedInfo->boundingRect();
+  /*
   QRectF sceneRect = scene()->sceneRect();
   QPointF centerPosition =
       QPointF((sceneRect.width() - textBoundingRect.width()) / 2.0,
@@ -370,11 +642,13 @@ void GameRunnerView::displayLevelFailedInfo() {
   m_levelEndedInfo->setPos(centerPosition);
   m_levelFailedOrPassedInfoDisplayed = true;
   scene()->addItem(m_levelEndedInfo);
+ */
 }
 
 void GameRunnerView::displayLevelPassedInfo() {
   m_levelEndedInfo->setPlainText("LEVEL SUCCESSFUL");
   QRectF textBoundingRect = m_levelEndedInfo->boundingRect();
+  /*
   QRectF sceneRect = scene()->sceneRect();
   QPointF centerPosition =
       QPointF((sceneRect.width() - textBoundingRect.width()) / 2.0,
@@ -382,6 +656,7 @@ void GameRunnerView::displayLevelPassedInfo() {
   m_levelEndedInfo->setPos(centerPosition);
   m_levelFailedOrPassedInfoDisplayed = true;
   scene()->addItem(m_levelEndedInfo);
+ */
 }
 
 void GameRunnerView::keyPressEvent(QKeyEvent *event) {
@@ -394,3 +669,4 @@ void GameRunnerView::keyReleaseEvent(QKeyEvent *event) {
 
 } // namespace Core
 } // namespace Game
+// namespace Game

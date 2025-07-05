@@ -9,31 +9,34 @@ namespace Utils {
 
 class PerformanceBenchmark {
 public:
-  static PerformanceBenchmark &getInstance(int logIntervalMs = 0,
+  static PerformanceBenchmark &getInstance(Config::GameContext ctx,
+                                           int logIntervalMs = 0,
                                            int gameObjectThreshold = 50,
                                            char csvDelimiter = ';') {
     static PerformanceBenchmark instance(logIntervalMs, gameObjectThreshold,
-                                         csvDelimiter);
+                                         csvDelimiter, ctx);
     return instance;
   }
   ~PerformanceBenchmark();
   void initializeBenchmark(
       std::shared_ptr<GameObjects::Ships::PlayerShip> playerShipplayerShip);
-  void recordFrameTime(int frameTimeMs);
+  void recordFrameTime(float frameTimeSec);
   void logPerformanceScore();
 
 private:
   PerformanceBenchmark(int logIntervalMs, int gameObjectThreshold,
-                       char csvDelimiter);
+                       char csvDelimiter, const Config::GameContext ctx);
+
+  Config::GameContext m_gameCtx;
   std::ofstream m_outFile;
   std::filesystem::path m_filePath;
   int m_logIntervalMs;
   int m_gameObjectThreshold;
   char m_csvDelimiter;
   const float m_gain = 1000.0f;
-  std::vector<float> m_frameTimesMs;
+  std::vector<float> m_frameTimesSec;
 
-  std::vector<float> filteredFrameTimes(float maxAllowedMs = 1000.0f,
+  std::vector<float> filteredFrameTimes(float maxAllowedSec = 1.0f,
                                         size_t skipFirstN = 100) const;
   float getMemUsage();
 

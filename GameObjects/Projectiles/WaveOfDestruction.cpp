@@ -1,51 +1,57 @@
 #include "WaveOfDestruction.h"
-#include "Graphics/PixmapLibrary.h"
-#include "Graphics/PixmapRegistry.h"
+#include "Utils/BoundsChecker.h"
 
 namespace GameObjects {
 namespace Projectiles {
 
-WaveOfDestruction::WaveOfDestruction() {
+WaveOfDestruction::WaveOfDestruction(Config::GameContext ctx)
+    : Projectile(ctx) {
   m_spawnSoundInfo.enabled = false;
-  m_pixmapData.pixmapResourcePath = ":/Images/wave.png";
-  m_pixmapData.hudPixmapResourcePath = ":/Images/wave_of_destruction_hud.png";
-  m_pixmapData.pixmapScale = QPointF(250, 20);
-  m_pixmapData.keepAspectRatio = false;
-}
 
-void WaveOfDestruction::registerPixmaps() {
-  Graphics::PixmapLibrary::getPixmap(":/Images/wave.png", 250, 20, false);
-  Graphics::PixmapLibrary::getPixmap(":/Images/wave_of_destruction_hud.png",
-                                     250, 20, false);
+  RenderData normalData;
+  normalData.size = QVector2D(250, 20);
+  normalData.imagePath = ":/Images/wave.png";
+  addRenderData(State::Normal, normalData);
+
+  m_transform = Transform(QVector2D(0.0f, 0.0f), QVector2D(0.0f, 0.0f),
+                          QVector2D(250.0f, 20.0f));
+
+  m_hudPixmapResourcePath = ":/Images/wave_of_destruction_hud.png";
+
+  /*
+  RenderData onHitData;
+  onHitData.size = QVector2D(100, 100);
+  onHitData.imagePath = ":/Images/black_hole.png";
+  addRenderData(State::OnHit, onHitData);
+
+
+  RenderData hudData;
+  hudData.size = QVector2D(25, 25);
+  hudData.imagePath = ":/Images/wave_of_destruction_hud.png";
+  addRenderData(State::Hud, hudData);
+ */
 }
 
 bool WaveOfDestruction::shouldBeDeleted() {
-  return m_position.isBeyondScreenBottomLimit(50) ||
-         m_position.isBeyondScreenTopLimit(50);
+  return Utils::BoundsChecker::isBeyondScreenBottom(
+             m_transform.position, m_gameContext.movementBounds, 50) ||
+         Utils::BoundsChecker::isBeyondScreenTop(
+             m_transform.position, m_gameContext.movementBounds, 50);
 }
 
 std::unique_ptr<GameObject> WaveOfDestruction::clone() const {
   std::unique_ptr<WaveOfDestruction> projectile =
-      std::make_unique<WaveOfDestruction>();
+      std::make_unique<WaveOfDestruction>(m_gameContext);
   projectile->m_objectTypes = m_objectTypes;
   projectile->m_magnetism = m_magnetism;
   projectile->setSpawnSoundInfo(m_spawnSoundInfo);
   projectile->setDestructionSoundInfo(m_destructionSoundInfo);
   projectile->setDamage(m_damage);
   projectile->setProperties(m_properties);
-  projectile->setPixmapData(m_pixmapData);
+  projectile->setRenderDataByState(renderDataByState());
   projectile->setMovementStrategy(movementStrategy());
   return projectile;
 }
-
-namespace {
-struct PixmapRegistrar {
-  PixmapRegistrar() {
-    PixmapRegistry::instance().add(&WaveOfDestruction::registerPixmaps);
-  }
-};
-static PixmapRegistrar _waveofdestruction_pixmap_registrar;
-} // namespace
 
 } // namespace Projectiles
 } // namespace GameObjects

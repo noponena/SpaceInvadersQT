@@ -95,7 +95,7 @@ if !CLEAN_BUILD! EQU 1 (
 if not exist build mkdir build
 cd build
 
-cmake .. -G "MinGW Makefiles"
+cmake .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
 if %ERRORLEVEL% NEQ 0 goto error
 cmake --build . --config Release -- -j!CORES!
 if %ERRORLEVEL% NEQ 0 goto error
@@ -112,31 +112,12 @@ if !CLEAN_BUILD! EQU 1 (
     for %%i in (*) do del /f /q "%%i"
 )
 
-cmake .. -G "MinGW Makefiles"
+cmake .. -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
 if %ERRORLEVEL% NEQ 0 goto error
 
 cmake --build . --config Release -- -j!CORES!
 if %ERRORLEVEL% NEQ 0 goto error
 cd ..
-
-REM ==== Copy levels directory ====
-REM Prefer "release", fallback to just RESULT_DIR if no such folder exists
-
-set "TARGET_DIR=%RESULT_DIR%\Release"
-if not exist "%TARGET_DIR%" (
-    set "TARGET_DIR=%RESULT_DIR%"
-)
-
-echo Copying levels directory to %TARGET_DIR%...
-if exist "%TARGET_DIR%\levels" (
-    rmdir /s /q "%TARGET_DIR%\levels"
-)
-if exist "levels" (
-    xcopy "levels" "%TARGET_DIR%\levels" /E /I /Q /Y
-    echo Levels directory copied successfully.
-) else (
-     echo WARNING: levels directory not found in project root!
-)
 
 REM ==== Always remove the debug folder from build result ====
 set "DEBUG_DIR=%RESULT_DIR%\Debug"

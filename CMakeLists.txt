@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 project(SpaceInvadersQT LANGUAGES CXX)
 
+find_package(Qt6 REQUIRED COMPONENTS Widgets OpenGL)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -8,28 +10,44 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
+# Specify resources file
 set(RESOURCES Resources.qrc)
+
+# Specify asset folders
+set(GAME_ASSETS
+    gamedata/levels
+    gamedata/blueprints
+)
 
 if(POLICY CMP0135)
   cmake_policy(SET CMP0135 NEW)
 endif()
 
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    add_compile_definitions(
+        QT_NO_DEBUG_OUTPUT
+        QT_NO_INFO_OUTPUT
+        QT_NO_WARNING_OUTPUT
+        QT_NO_CRITICAL_OUTPUT
+    )
+endif()
+
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets OpenGLWidgets Concurrent)
 
+file(GLOB_RECURSE GAME_LEVEL_FILES
+    "${CMAKE_CURRENT_SOURCE_DIR}/gamedata/*.yaml"
+)
+
 set(HEADERS
+    Config/GameContext.h
     Game/Audio/SoundBuffer.h
     Game/Audio/SoundDevice.h
     Game/Audio/SoundInfo.h
     Game/Audio/SoundManager.h
     Game/Audio/SoundSource.h
-    Game/CollisionDetection/BruteForce.h
     Game/CollisionDetection/BVHNode.h
     Game/CollisionDetection/BVHTree.h
     Game/CollisionDetection/CollisionDetector.h
-    Game/CollisionDetection/Quadtree.h
-    Game/CollisionDetection/ThreadedCollisionDetector.h
-    Game/Core/CustomGraphicsItem.h
-    Game/Core/GameHUD.h
     Game/Core/GameRunnerView.h
     Game/Core/GameState.h
     Game/Core/LevelSelectorView.h
@@ -47,39 +65,45 @@ set(HEADERS
     Game/Levels/SpawnEvent.h
     Game/Movement/AxisMovementStrategy.h
     Game/Movement/MovementStrategy.h
+    Game/Movement/MovementStrategyLoader.h
     GameObjects/AttractableGameObject.h
     GameObjects/Collectables/Collectable.h
     GameObjects/Collectables/Health.h
     GameObjects/Collectables/Stellar.h
     GameObjects/Collectables/StellarPool.h
     GameObjects/GameObject.h
-    GameObjects/Position.h
+    GameObjects/GameObjectBlueprint.h
+    GameObjects/GameObjectBuilder.h
+    GameObjects/GameObjectLoader.h
+    GameObjects/PrototypeRegistry.h
     GameObjects/Projectiles/EnemyProjectile.h
     GameObjects/Projectiles/PlayerProjectile.h
     GameObjects/Projectiles/Projectile.h
-    GameObjects/Projectiles/ProjectileBuilder.h
     GameObjects/Projectiles/Vortex.h
     GameObjects/Projectiles/WaveOfDestruction.h
     GameObjects/Ships/EnemyShip.h
     GameObjects/Ships/PlayerShip.h
     GameObjects/Ships/Ship.h
-    GameObjects/Ships/ShipBuilder.h
-    GameObjects/Ships/ShipWithHealthBar.h
-    Graphics/Animations/AnimatedItem.h
-    Graphics/CooldownItem.h
-    Graphics/Effects/Effect.h
+    Graphics/Animations/AnimationPlayer.h
+
+
+
+    Graphics/Effects/EffectManager.h
     Graphics/Effects/Particle.h
     Graphics/Effects/ParticleSystem.h
-    Graphics/EnergyBar.h
-    Graphics/HealthBar.h
-    Graphics/PixmapRegistry.h
-    Graphics/PixmapLibrary.h
-    Graphics/ProgressBar.h
+    Graphics/TextureRegistry.h
     UI/FPSCounter.h
     UI/GameObjectCounter.h
+    UI/GLProgressBar.h
+    UI/GLWeaponBar.h
+    UI/IRenderable.h
     UI/MainWindow.h
+    UI/Panel.h
+    UI/UISizeMode.h
     Utils/Math/MathConstants.h
     Utils/Math/MathFunctions.h
+    Utils/BoundsChecker.h
+    Utils/CustomMessageHandler.h
     Utils/PerformanceBenchmark.h
     Utils/Utils.h
     Weapons/PrimaryWeapon.h
@@ -96,7 +120,6 @@ set(SOURCES
     Game/CollisionDetection/BVHNode.cpp
     Game/CollisionDetection/BVHTree.cpp
     Game/CollisionDetection/CollisionDetector.cpp
-    Game/Core/GameHUD.cpp
     Game/Core/GameRunnerView.cpp
     Game/Core/GameState.cpp
     Game/Core/LevelSelectorView.cpp
@@ -112,38 +135,42 @@ set(SOURCES
     Game/Levels/LevelLoader.cpp
     Game/Levels/LevelManager.cpp
     Game/Levels/SpawnEvent.cpp
+    Game/Movement/MovementStrategyLoader.cpp
     GameObjects/AttractableGameObject.cpp
     GameObjects/Collectables/Collectable.cpp
     GameObjects/Collectables/Health.cpp
     GameObjects/Collectables/Stellar.cpp
     GameObjects/Collectables/StellarPool.cpp
     GameObjects/GameObject.cpp
+    GameObjects/GameObjectBuilder.cpp
+    GameObjects/GameObjectLoader.cpp
     GameObjects/Projectiles/EnemyProjectile.cpp
     GameObjects/Projectiles/PlayerProjectile.cpp
     GameObjects/Projectiles/Projectile.cpp
-    GameObjects/Projectiles/ProjectileBuilder.cpp
     GameObjects/Projectiles/Vortex.cpp
     GameObjects/Projectiles/WaveOfDestruction.cpp
     GameObjects/Ships/EnemyShip.cpp
     GameObjects/Ships/PlayerShip.cpp
     GameObjects/Ships/Ship.cpp
-    GameObjects/Ships/ShipBuilder.cpp
-    GameObjects/Ships/ShipWithHealthBar.cpp
+
+
+    Graphics/Effects/EffectManager.cpp
     Graphics/Effects/ParticleSystem.cpp
-    Graphics/EnergyBar.cpp
-    Graphics/HealthBar.cpp
-    Graphics/ProgressBar.cpp
+    Graphics/TextureRegistry.cpp
     Main/main.cpp
     UI/FPSCounter.cpp
     UI/GameObjectCounter.cpp
+    UI/GLProgressBar.cpp
+    UI/GLWeaponBar.cpp
     UI/MainWindow.cpp
+    UI/Panel.cpp
+    Utils/BoundsChecker.cpp
     Utils/PerformanceBenchmark.cpp
     Utils/Utils.cpp
     Weapons/PrimaryWeapon.cpp
     Weapons/SecondaryWeapon.cpp
     Weapons/Weapon.cpp
     Weapons/WeaponBuilder.cpp
-    Tests/test_collisions.cpp
 )
 
 set(UIS
@@ -167,6 +194,7 @@ target_link_libraries(${PROJECT_NAME}
         Qt6::Gui
         Qt6::Widgets
         Qt6::OpenGLWidgets
+        Qt6::OpenGL
         Qt6::Concurrent
 )
 
@@ -174,6 +202,20 @@ target_compile_definitions(${PROJECT_NAME}
     PRIVATE
         YAML_CPP_STATIC_DEFINE
 )
+
+target_sources(${PROJECT_NAME}
+  PRIVATE
+    ${GAME_LEVEL_FILES}
+)
+
+# Copy asset folders to build output dir
+foreach(asset_dir ${GAME_ASSETS})
+    add_custom_command(TARGET SpaceInvadersQT POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_SOURCE_DIR}/${asset_dir}"
+            "$<TARGET_FILE_DIR:SpaceInvadersQT>/${asset_dir}"
+    )
+endforeach()
 
 option(PERFORMANCE_BENCHMARK "Build with performance benchmark" OFF)
 if(PERFORMANCE_BENCHMARK)

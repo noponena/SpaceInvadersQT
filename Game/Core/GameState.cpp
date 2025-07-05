@@ -1,24 +1,27 @@
 #include "GameState.h"
 #include "GameObjects/Projectiles/Vortex.h"
 #include "GameObjects/Projectiles/WaveOfDestruction.h"
+#include "GameObjects/PrototypeRegistry.h"
 #include "GameObjects/Ships/EnemyShip.h"
 #include "Weapons/PrimaryWeapon.h"
 #include "Weapons/SecondaryWeapon.h"
 
+using ProjectilePrototypeRegistry =
+    GameObjects::PrototypeRegistry<PrototypeKey, GameObjects::GameObject>;
+
 namespace Game {
 namespace Core {
-GameState::GameState(QObject *parent)
-    : QObject(parent), m_playerShipDeletedFromScene(false) {
+GameState::GameState(Config::GameContext gameCtx, QObject *parent)
+    : QObject(parent), m_gameCtx(gameCtx), m_playerShipDeletedFromScene(false) {
   m_playersShipStartSpeed = 500;
 }
 
 void GameState::createPlayerShip() {
-  m_playerShip = std::make_shared<GameObjects::Ships::PlayerShip>(
-      m_playersShipStartSpeed, GameObjects::Position(0, 0));
+  m_playerShip = std::make_shared<GameObjects::Ships::PlayerShip>(m_gameCtx);
+  m_playerShip->setSpeed(m_playersShipStartSpeed);
 }
 
 void GameState::initialize() {
-  initMovementConstrains();
   initPlayerShip();
   m_stellarTokens = 0;
   m_enemyShipsReachedBottomLimit = 0;
@@ -29,6 +32,10 @@ void GameState::deinitialize() {
   m_playerShip = nullptr;
   m_gameObjects.clear();
   m_magneticGameObjectMap.clear();
+
+  // std::vector<std::shared_ptr<GameObjects::GameObject>>{}.swap(m_gameObjects);
+  // std::unordered_map<std::uint64_t,
+  //                    std::shared_ptr<GameObjects::GameObject>>{}.swap(m_magneticGameObjectMap);
 
   // disconnect(m_playerShip.get(), &GameObjects::GameObject::objectCreated,
   // this,
@@ -56,12 +63,6 @@ void GameState::addGameObject(std::shared_ptr<GameObjects::GameObject> object) {
   m_gameObjects.emplace_back(object);
   if (object->magnetism().isMagnetic)
     m_magneticGameObjectMap[object->id()] = object;
-  emit objectAdded(object->getGraphicsItem());
-}
-
-void GameState::setSize(int width, int height) {
-  m_windowWidth = width;
-  m_windowHeight = height;
 }
 
 void GameState::update(float deltaTimeInSeconds) {
@@ -70,6 +71,12 @@ void GameState::update(float deltaTimeInSeconds) {
                                    m_magneticGameObjectMap};
     m_gameObjects[i]->update(ctx);
     if (m_gameObjects[i]->shouldBeDeleted()) {
+#ifndef NDEBUG
+      int useCount = m_gameObjects[i].use_count();
+      if (useCount > 1)
+        qCritical() << "More than 1 owners at the moment of deletion:"
+                    << useCount;
+#endif
       m_magneticGameObjectMap.erase(m_gameObjects[i]->id());
       std::swap(m_gameObjects[i], m_gameObjects.back());
       m_gameObjects.pop_back();
@@ -85,6 +92,8 @@ GameState::gameObjects() const {
 }
 
 void GameState::initPlayerShip() {
+
+  qDebug() << "Initializing player ship..";
   connect(m_playerShip.get(),
           &GameObjects::Ships::PlayerShip::stellarTokenCollected, this,
           &GameState::onStellarTokenCollected);
@@ -92,82 +101,135 @@ void GameState::initPlayerShip() {
           &GameState::onPlayerShipDestroyed);
 
   m_playerShip->initialize();
-  GameObjects::Position pos(m_windowWidth / 2, m_maxY, m_minX, m_maxX, m_minY,
-                            m_maxY);
-  m_playerShip->setPosition(pos);
+  QVector2D posVec(m_gameCtx.screenGeometry.center().x(),
+                   m_gameCtx.movementBounds.bottom());
+  m_playerShip->moveAbsolute(posVec);
 
-  std::unique_ptr<GameObjects::Projectiles::Projectile> vortexProjectile =
-      m_projectileBuilder.createProjectile<GameObjects::Projectiles::Vortex>()
-          .withObjectType(GameObjects::ObjectType::PLAYER_PROJECTILE)
-          .withDamage(0)
-          .withMovementStrategy(
-              Game::Movement::VerticalMovementStrategy(1000, -1))
-          .build();
+  auto &projectileRegistry = ProjectilePrototypeRegistry::instance();
 
-  std::unique_ptr<GameObjects::Projectiles::Projectile>
-      waveOfDestructionProjectile =
-          m_projectileBuilder
-              .createProjectile<GameObjects::Projectiles::WaveOfDestruction>()
-              .withObjectType(GameObjects::ObjectType::PLAYER_PROJECTILE)
-              .withDamage(1000)
-              .withMovementStrategy(
-                  Game::Movement::VerticalMovementStrategy(250, -1))
-              .build();
+  GameObjects::RenderDataMap renderDataMap{
+      {GameObjects::State::Normal,
+       GameObjects::RenderData({30, 30},
+                               ":/Images/player_laser_projectile.png")}};
 
-  std::unique_ptr<Weapons::Weapon> waveOfDestruction =
+  // 1. Register Vortex Projectile prototype
+  {
+    qDebug() << "Building Vortex projectile..";
+    auto vortexProjectile =
+        m_gameObjectBuilder.setConcreteType(GameObjects::ConcreteType::VORTEX)
+            .withObjectType(GameObjects::ObjectType::PLAYER_PROJECTILE)
+            .withMovementStrategy(
+                Game::Movement::VerticalMovementStrategy(1000, -1))
+            .buildAs<GameObjects::Projectiles::Vortex>(m_gameCtx);
+
+    vortexProjectile->setDamage(0);
+
+    qDebug() << "Vortex projectile built!";
+
+    projectileRegistry.registerPrototype(
+        {GameObjects::ObjectType::PROJECTILE, "VORTEX"},
+        std::move(vortexProjectile), true);
+  }
+
+  // 2. Register Wave of Destruction Projectile prototype
+  {
+    qDebug() << "Building WaveOfDestruction projectile..";
+    auto waveOfDestructionProjectile =
+        m_gameObjectBuilder
+            .setConcreteType(GameObjects::ConcreteType::WAVE_OF_DESTRUCTION)
+            .withObjectType(GameObjects::ObjectType::PLAYER_PROJECTILE)
+            .withMovementStrategy(
+                Game::Movement::VerticalMovementStrategy(250, -1))
+            .buildAs<GameObjects::Projectiles::WaveOfDestruction>(m_gameCtx);
+
+    waveOfDestructionProjectile->setDamage(1000);
+
+    qDebug() << "WaveOfDestruction projectile built!";
+
+    projectileRegistry.registerPrototype(
+        {GameObjects::ObjectType::PROJECTILE, "WAVE_OF_DESTRUCTION"},
+        std::move(waveOfDestructionProjectile), true);
+  }
+
+  // 3. Register Primary Projectile prototype
+  {
+    qDebug() << "Building primary projectile..";
+    auto primaryProjectile =
+        m_gameObjectBuilder
+            .setConcreteType(GameObjects::ConcreteType::PROJECTILE)
+            .withObjectType(GameObjects::ObjectType::PLAYER_PROJECTILE)
+            .withMovementStrategy(
+                Game::Movement::VerticalMovementStrategy(1000, -1))
+            .withGraphics(renderDataMap)
+            .withSpawnSound(
+                Audio::SoundInfo({true, Game::Audio::SoundEffect::LASER}))
+            .buildAs<GameObjects::Projectiles::Projectile>(m_gameCtx);
+
+    primaryProjectile->setDamage(1);
+
+    qDebug() << "Primary projectile built!";
+
+    projectileRegistry.registerPrototype(
+        {GameObjects::ObjectType::PROJECTILE, "PRIMARY"},
+        std::move(primaryProjectile), true);
+  }
+
+  auto vortexProjectile =
+      projectileRegistry.cloneAs<GameObjects::Projectiles::Vortex>(
+          {GameObjects::ObjectType::PROJECTILE, "VORTEX"});
+
+  auto waveOfDestructionProjectile =
+      projectileRegistry.cloneAs<GameObjects::Projectiles::WaveOfDestruction>(
+          {GameObjects::ObjectType::PROJECTILE, "WAVE_OF_DESTRUCTION"});
+
+  auto primaryProjectile =
+      projectileRegistry.cloneAs<GameObjects::Projectiles::Projectile>(
+          {GameObjects::ObjectType::PROJECTILE, "PRIMARY"});
+
+  // Build Vortex Weapon
+  auto vortex = m_weaponBuilder.createWeapon<Weapons::SecondaryWeapon>()
+                    .withProjectile(std::move(vortexProjectile))
+                    .withWeaponCooldownMs(5000)
+                    .withEnergyConsuption(300)
+                    .build();
+
+  // Build Wave of Destruction Weapon
+  auto waveOfDestruction =
       m_weaponBuilder.createWeapon<Weapons::SecondaryWeapon>()
           .withProjectile(std::move(waveOfDestructionProjectile))
           .withWeaponCooldownMs(5000)
           .withEnergyConsuption(200)
           .build();
 
-  std::unique_ptr<Weapons::Weapon> vortex =
-      m_weaponBuilder.createWeapon<Weapons::SecondaryWeapon>()
-          .withProjectile(std::move(vortexProjectile))
-          .withWeaponCooldownMs(5000)
-          .withEnergyConsuption(300)
-          .build();
+  // Build Primary Weapon
+  auto weapon = m_weaponBuilder.createWeapon<Weapons::PrimaryWeapon>()
+                    .withProjectile(std::move(primaryProjectile))
+                    .withWeaponCooldownMs(0)
+                    .build();
 
-  std::unique_ptr<GameObjects::Projectiles::Projectile> primaryProjectile =
-      m_projectileBuilder
-          .createProjectile<GameObjects::Projectiles::Projectile>()
+  // Clone and customize for second weapon
+  auto secondWeaponProjectile =
+      m_gameObjectBuilder.setConcreteType(GameObjects::ConcreteType::PROJECTILE)
           .withObjectType(GameObjects::ObjectType::PLAYER_PROJECTILE)
-          .withDamage(1)
           .withMovementStrategy(
-              Game::Movement::VerticalMovementStrategy(1000, -1))
-          //.withProperty(GameObjects::Projectiles::ProjectileProperty::PIERCING)
-          .withGrahpics(GameObjects::PixmapData{
-              QPointF(30, 30), ":/Images/player_laser_projectile.png", "", ""})
-          .withSpawnSound(
-              Audio::SoundInfo({true, Game::Audio::SoundEffect::LASER}))
-          .build();
+              Game::Movement::AngledMovementStrategy(1000, 1, 10))
+          .buildAs<GameObjects::Projectiles::Projectile>(m_gameCtx);
 
-  // Create the primary weapon using WeaponBuilder
-  std::unique_ptr<Weapons::Weapon> weapon =
-      m_weaponBuilder.createWeapon<Weapons::PrimaryWeapon>()
-          .withProjectile(std::move(primaryProjectile))
-          .withWeaponCooldownMs(0)
-          .build();
+  auto secondWeapon = m_weaponBuilder.clone()
+                          .withProjectile(std::move(secondWeaponProjectile))
+                          .build();
 
-  // Clone the primary weapon and modify the projectile for the second weapon
-  std::unique_ptr<Weapons::Weapon> secondWeapon =
-      m_weaponBuilder.clone()
-          .withProjectile(
-              m_projectileBuilder
-                  .withMovementStrategy(
-                      Game::Movement::AngledMovementStrategy(1000, -1, 80))
-                  .build())
-          .build();
+  // Clone and customize for third weapon
+  auto thirdWeaponProjectile =
+      m_gameObjectBuilder.setConcreteType(GameObjects::ConcreteType::PROJECTILE)
+          .withObjectType(GameObjects::ObjectType::PLAYER_PROJECTILE)
+          .withMovementStrategy(
+              Game::Movement::AngledMovementStrategy(1000, 1, -10))
+          .buildAs<GameObjects::Projectiles::Projectile>(m_gameCtx);
 
-  // Clone the primary weapon and modify the projectile for the third weapon
-  std::unique_ptr<Weapons::Weapon> thirdWeapon =
-      m_weaponBuilder.clone()
-          .withProjectile(
-              m_projectileBuilder
-                  .withMovementStrategy(
-                      Game::Movement::AngledMovementStrategy(1000, 1, -80))
-                  .build())
-          .build();
+  auto thirdWeapon = m_weaponBuilder.clone()
+                         .withProjectile(std::move(thirdWeaponProjectile))
+                         .build();
 
   m_playerShip->addPrimaryWeapon(std::move(weapon));
   m_playerShip->addPrimaryWeapon(std::move(secondWeapon));
@@ -176,18 +238,11 @@ void GameState::initPlayerShip() {
   m_playerShip->setSecondaryWeapon(std::move(vortex), 1);
   m_playerShip->setMaxEnergy(1000);
   m_playerShip->setMaxHealth(50);
-  m_playerShip->fullyRestoreEnergy();
-  m_playerShip->fullyRestoreHealth();
+  m_playerShip->restoreEnergy();
+  m_playerShip->restoreHealth();
   m_playerShip->setEnergyRegenerationRate(5);
 
   addGameObject(m_playerShip);
-}
-
-void GameState::initMovementConstrains() {
-  m_minX = 0;
-  m_maxX = m_windowWidth * 0.98;
-  m_minY = 0;
-  m_maxY = m_windowHeight * 0.865;
 }
 
 std::shared_ptr<GameObjects::Ships::PlayerShip> GameState::playerShip() const {

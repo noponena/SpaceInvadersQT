@@ -2,9 +2,8 @@
 #define GAME_LEVELS_LEVELLOADER_H
 
 #include "Formation.h"
-#include "GameObjects/Projectiles/ProjectileBuilder.h"
-#include "GameObjects/Ships/EnemyShip.h"
-#include "GameObjects/Ships/ShipBuilder.h"
+#include "Game/Movement/MovementStrategyLoader.h"
+#include "GameObjects/GameObjectLoader.h"
 #include "Level.h"
 #include "Weapons/WeaponBuilder.h"
 
@@ -13,29 +12,19 @@ namespace Levels {
 
 class LevelLoader {
 public:
-  LevelLoader();
+  LevelLoader() = default;
   void initialize();
-  Level loadLevel(const std::string &filepath);
-  std::map<int, Level> loadLevels();
-  void setScreenSize(QPoint screenSize);
-  void setPositionConstraints(QPoint positionConstraintMin,
-                              QPoint positionConstraintMax);
-
+  Level loadLevel(const std::string &filepath) const;
+  std::map<int, Level> loadLevels() const;
   Level loadBenchmarkLevel();
+  void setGameCtx(Config::GameContext &ctx);
 
 private:
-  std::unique_ptr<GameObjects::Ships::EnemyShip> m_enemyShip;
+  std::unique_ptr<Config::GameContext> m_gameCtx;
+  Game::Movement::MovementStrategyLoader m_movementLoader;
+  GameObjects::GameObjectLoader m_gameObjectLoader;
   Weapons::WeaponBuilder m_weaponBuilder;
-  GameObjects::Projectiles::ProjectileBuilder m_projectileBuilder;
-  GameObjects::Ships::ShipBuilder m_shipBuilder;
-  int m_screenWidth;
-  int m_screenHeight;
-  int m_minX;
-  int m_maxX;
-  int m_minY;
-  int m_maxY;
-
-  Formation::Type stringToFormationType(std::string formationTypeStr);
+  Formation::Type stringToFormationType(std::string formationTypeStr) const;
 };
 
 } // namespace Levels

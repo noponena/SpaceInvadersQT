@@ -1,5 +1,6 @@
 #include "LevelLoader.h"
-#include "Weapons/PrimaryWeapon.h"
+#include "Config/GameContext.h"
+#include "Utils/Utils.h"
 #include <QDebug>
 #include <algorithm>
 #include <filesystem>
@@ -17,63 +18,13 @@ bool iequals(const std::string &a, const std::string &b) {
          });
 }
 
-LevelLoader::LevelLoader() {}
-
 void LevelLoader::initialize() {
-  GameObjects::Position pos(0, 0, m_minX, m_maxX, m_minY, m_maxY);
-
-  GameObjects::PixmapData pixmapData{
-      QPointF(30, 30), ":/Images/enemy_laser_projectile.png", "", ""};
-
-  std::unique_ptr<GameObjects::Projectiles::Projectile> projectile =
-      m_projectileBuilder
-          .createProjectile<GameObjects::Projectiles::Projectile>()
-          .withDamage(1)
-          .withMovementStrategy(
-              Game::Movement::VerticalMovementStrategy(500, 1))
-          .withGrahpics(pixmapData)
-          .withSpawnSound(Audio::SoundInfo(
-              {true, Game::Audio::SoundEffect::LESSER_ENEMY_LASER}))
-          .withObjectType(GameObjects::ObjectType::ENEMY_PROJECTILE)
-          .build();
-
-  m_weaponBuilder.createWeapon<Weapons::PrimaryWeapon>()
-      .withProjectile(std::move(projectile))
-      .withWeaponCooldownMs(2500);
-
-  m_enemyShip = std::make_unique<GameObjects::Ships::EnemyShip>(5, pos);
-  m_enemyShip->initialize();
-
-  m_enemyShip->addPrimaryWeapon(m_weaponBuilder.build());
-  m_enemyShip->setAutoShoot(true);
-
-  Game::Movement::MovementStrategy horizontalStrategyLeft =
-      Game::Movement::HorizontalMovementStrategy(200, -1);
-  Game::Movement::MovementStrategy horizontalStrategyRight =
-      Game::Movement::HorizontalMovementStrategy(200, 1);
-  Game::Movement::MovementStrategy horizontalCombined =
-      horizontalStrategyLeft + horizontalStrategyRight;
-
-  Game::Movement::MovementStrategy verticalStrategy =
-      Game::Movement::VerticalMovementStrategy(200, 1);
-  Game::Movement::MovementStrategy stationaryStrategy =
-      Game::Movement::StationaryMovementStrategy();
-  std::vector<std::pair<Game::Movement::MovementStrategy, float>>
-      verticalCombined = {std::make_pair(verticalStrategy, 0.25f),
-                          std::make_pair(stationaryStrategy, 3.0f)};
-
-  Game::Movement::IntervalMovementStrategy horizontalIntervalStrategy =
-      Game::Movement::IntervalMovementStrategy(horizontalCombined, 1.0f);
-  Game::Movement::IntervalMovementStrategy verticalIntervalStrategy =
-      Game::Movement::IntervalMovementStrategy(verticalCombined);
-
-  Game::Movement::MovementStrategy combined =
-      horizontalIntervalStrategy + verticalIntervalStrategy;
-
-  m_enemyShip->setMovementStrategy(combined);
+  if (!m_gameCtx) {
+    throw std::invalid_argument("Game context has not been set.");
+  }
 }
 
-Level LevelLoader::loadLevel(const std::string &filepath) {
+Level LevelLoader::loadLevel(const std::string &filepath) const {
   try {
     qDebug() << "loading level:"
              << QString::fromStdString(
@@ -106,9 +57,9 @@ Level LevelLoader::loadLevel(const std::string &filepath) {
           formation.withType(formationType)
               .withSize(formationWidth, formationHeight)
               .withSolidity(formationSolidity)
-              .withSpacing(QPoint(formationSpacingX, formationSpacingY));
+              .withSpacing(QVector2D(formationSpacingX, formationSpacingY));
       auto positionNode = eventNode["Position"];
-      QPoint lowerLimit, upperLimit;
+      QVector2D lowerLimit, upperLimit;
 
       if (positionNode["Min"] && positionNode["Max"]) {
         auto minNode = positionNode["Min"];
@@ -119,25 +70,41 @@ Level LevelLoader::loadLevel(const std::string &filepath) {
         float maxXRatio = maxNode["X"].as<float>();
         float maxYRatio = maxNode["Y"].as<float>();
 
-        lowerLimit = QPoint(static_cast<int>(minXRatio * m_screenWidth),
-                            static_cast<int>(minYRatio * m_screenHeight));
-        upperLimit = QPoint(static_cast<int>(maxXRatio * m_screenWidth),
-                            static_cast<int>(maxYRatio * m_screenHeight));
+        qDebug() << "minXRatio=" << minXRatio << " minYRatio=" << minYRatio
+                 << " maxXRatio=" << maxXRatio << " maxYRatio=" << maxYRatio;
+        qDebug() << "screenGeometry=" << m_gameCtx->screenGeometry;
+
+        lowerLimit = QVector2D(
+            static_cast<int>(minXRatio * m_gameCtx->screenGeometry.width()),
+            static_cast<int>(minYRatio * m_gameCtx->screenGeometry.height()));
+        upperLimit = QVector2D(
+            static_cast<int>(maxXRatio * m_gameCtx->screenGeometry.width()),
+            static_cast<int>(maxYRatio * m_gameCtx->screenGeometry.height()));
+
+        qDebug() << "lowerLimit=" << lowerLimit << " upperLimit=" << upperLimit;
       } else {
         float xRatio = positionNode["X"].as<float>();
         float yRatio = positionNode["Y"].as<float>();
 
-        lowerLimit = QPoint(static_cast<int>(xRatio * m_screenWidth),
-                            static_cast<int>(yRatio * m_screenHeight));
+        lowerLimit = QVector2D(
+            static_cast<int>(xRatio * m_gameCtx->screenGeometry.width()),
+            static_cast<int>(yRatio * m_gameCtx->screenGeometry.height()));
         upperLimit = lowerLimit;
       }
-      SpawnEvent event;
+      const std::filesystem::path objectYaml =
+          eventNode["Object"].as<std::string>();
+      const std::filesystem::path blueprintDirPath =
+          Utils::getDataFolderPath(GameDataType::BLUEPRINT);
+      const std::filesystem::path fullPath = blueprintDirPath / objectYaml;
+      auto objBlueprint = m_gameObjectLoader.loadFromFile(fullPath);
+
+      SpawnEvent event(*m_gameCtx);
       event = event.withCount(eventNode["Count"].as<int>())
                   .withTriggerTime(eventNode["Time"].as<int>())
                   .withInterval(eventNode["IntervalMs"].as<int>())
                   .withPositionRange(lowerLimit, upperLimit)
                   .withFormation(formation)
-                  .withGameObject(m_enemyShip->clone());
+                  .withGameObjectBlueprint(objBlueprint);
 
       qDebug() << "adding spawn event...";
       level.spawnEvents.push_back(event);
@@ -151,10 +118,11 @@ Level LevelLoader::loadLevel(const std::string &filepath) {
   }
 }
 
-std::map<int, Level> LevelLoader::loadLevels() {
+std::map<int, Level> LevelLoader::loadLevels() const {
   std::map<int, Level> levels;
 
-  std::filesystem::path levelsPath = std::filesystem::current_path() / "levels";
+  std::filesystem::path levelsPath =
+      Utils::getDataFolderPath(GameDataType::LEVEL);
   qDebug() << "Attempting to load levels from path:"
            << QString::fromStdString(levelsPath.string());
 
@@ -181,7 +149,8 @@ std::map<int, Level> LevelLoader::loadLevels() {
 }
 
 Level LevelLoader::loadBenchmarkLevel() {
-  std::filesystem::path levelsPath = std::filesystem::current_path() / "levels";
+  std::filesystem::path levelsPath =
+      Utils::getDataFolderPath(GameDataType::LEVEL);
   qDebug() << "Looking for benchmark.yaml in path:"
            << QString::fromStdString(levelsPath.string());
 
@@ -208,21 +177,12 @@ Level LevelLoader::loadBenchmarkLevel() {
   return Level{};
 }
 
-void LevelLoader::setScreenSize(QPoint screenSize) {
-  m_screenWidth = screenSize.x();
-  m_screenHeight = screenSize.y();
-}
-
-void LevelLoader::setPositionConstraints(QPoint positionConstraintMin,
-                                         QPoint positionConstraintMax) {
-  m_minX = positionConstraintMin.x();
-  m_maxX = positionConstraintMax.x();
-  m_minY = positionConstraintMin.y();
-  m_maxY = positionConstraintMax.y();
+void LevelLoader::setGameCtx(Config::GameContext &ctx) {
+  m_gameCtx = std::make_unique<Config::GameContext>(ctx);
 }
 
 Formation::Type
-LevelLoader::stringToFormationType(std::string formationTypeStr) {
+LevelLoader::stringToFormationType(std::string formationTypeStr) const {
   std::string upperStr = formationTypeStr;
   std::transform(upperStr.begin(), upperStr.end(), upperStr.begin(),
                  [](unsigned char c) { return std::toupper(c); });

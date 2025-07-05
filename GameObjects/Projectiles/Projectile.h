@@ -16,7 +16,7 @@ enum class ProjectileProperty { PIERCING, HOMING };
 
 class Projectile : public GameObject {
 public:
-  Projectile();
+  Projectile(const Config::GameContext &ctx);
   virtual ~Projectile() = default;
   virtual std::unique_ptr<GameObject> clone() const override;
 
@@ -32,16 +32,13 @@ public:
   void addProperty(const ProjectileProperty property);
   void removeProperty(const ProjectileProperty property);
 
+  QString hudPixmapResourcePath() const;
+
 protected:
   int m_damage;
+  QString m_hudPixmapResourcePath = "";
   std::unordered_set<ProjectileProperty> m_properties;
-
-  // GameObject interface
-protected:
   void initializeObjectType() override;
-
-  // GameObject interface
-protected:
   void initializeSounds() override {};
 };
 } // namespace Projectiles

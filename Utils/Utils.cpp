@@ -1,4 +1,6 @@
 #include "Utils.h"
+#include <QColor>
+#include <QRandomGenerator>
 #include <chrono>
 #include <ctime>
 #include <iomanip>
@@ -48,6 +50,27 @@ std::string getTimestampStr() {
      << broken_down_time->tm_sec;
 
   return ss.str();
+}
+
+std::filesystem::path getDataFolderPath(GameDataType type) {
+  switch (type) {
+  case GameDataType::ROOT:
+    return std::filesystem::current_path() / "gamedata";
+  case GameDataType::LEVEL:
+    return std::filesystem::current_path() / "gamedata/levels";
+  case GameDataType::BLUEPRINT:
+    return std::filesystem::current_path() / "gamedata/blueprints";
+  }
+
+  throw std::invalid_argument("Invalid GameDataType!");
+}
+
+QColor getRandomColor() {
+  int r = QRandomGenerator::global()->bounded(256);
+  int g = QRandomGenerator::global()->bounded(256);
+  int b = QRandomGenerator::global()->bounded(256);
+
+  return QColor(r, g, b);
 }
 
 } // namespace Utils

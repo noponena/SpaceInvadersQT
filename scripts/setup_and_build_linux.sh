@@ -84,21 +84,6 @@ if [[ $? -ne 0 ]]; then
 fi
 cd ..
 
-# ==== Copy levels directory to actual executable folder ====
-TARGET_DIR="$RESULT_DIR/release"
-if [[ ! -d "$TARGET_DIR" ]]; then
-    TARGET_DIR="$RESULT_DIR"
-fi
-
-echo "Copying levels directory to $TARGET_DIR..."
-rm -rf "$TARGET_DIR/levels"
-if [[ -d levels ]]; then
-    cp -r levels "$TARGET_DIR/"
-    echo "Levels directory copied successfully."
-else
-    echo "WARNING: levels directory not found in project root!"
-fi
-
 # ==== Always remove the debug folder from build result ====
 DEBUG_DIR="$RESULT_DIR/debug"
 if [[ -d "$DEBUG_DIR" ]]; then

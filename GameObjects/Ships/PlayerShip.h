@@ -8,8 +8,7 @@ namespace Ships {
 class PlayerShip : public Ship {
   Q_OBJECT
 public:
-  PlayerShip(const float speed, const Position &position);
-  static void registerPixmaps();
+  PlayerShip(const Config::GameContext &ctx);
 
   // GameObject interface
 public:
@@ -32,15 +31,19 @@ public:
   void setSecondaryWeapon(std::unique_ptr<Weapons::Weapon> newWeapon,
                           std::uint32_t weaponIndex) override;
   bool fireSecondaryWeapon(std::uint32_t weaponIndex) override;
+  void restoreHealth() override;
+  void restoreEnergy() override;
 
-  inline void moveX(float amount);
-  inline void moveY(float amount);
+  inline void moveRelativeX(float displacement);
+  inline void moveRelativeY(float displacement);
 
   float maxEnergy() const;
   void setMaxEnergy(float newMaxEnergy);
 
   float maxHealth() const;
   void setMaxHealth(float newMaxHealth);
+
+  void setSpeed(float newSpeed);
 
   // GameObject interface
 protected:
@@ -52,8 +55,7 @@ private:
   float m_acceleration = 1250;
 signals:
   void stellarTokenCollected();
-  void
-  playerSecondaryWeaponsChanged(std::unique_ptr<Weapons::Weapon> weapons[]);
+  void playerSecondaryWeaponsChanged(const std::array<QString, 4> &);
   void playerSecondaryWeaponFired(std::uint32_t weaponIndex,
                                   std::uint32_t cooldownMs);
   void healthUpdated(int amount);

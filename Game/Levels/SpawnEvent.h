@@ -3,6 +3,7 @@
 
 #include "Game/Levels/Formation.h"
 #include "GameObjects/GameObject.h"
+#include "GameObjects/GameObjectBlueprint.h"
 #include <functional>
 #include <memory>
 
@@ -11,25 +12,26 @@ namespace Levels {
 
 class SpawnEvent {
 public:
-  SpawnEvent();
+  SpawnEvent(Config::GameContext ctx);
   void execute(int elapsedTimeMs,
                std::function<void(std::shared_ptr<GameObjects::GameObject>)>
                    addGameObjectFunc);
   bool isFinished() const;
 
   SpawnEvent &withTriggerTime(int triggerTimeMs);
-  SpawnEvent &withPosition(QPoint position);
-  SpawnEvent &withPositionRange(QPoint minPosition, QPoint maxPosition);
+  SpawnEvent &withPosition(QVector2D position);
+  SpawnEvent &withPositionRange(QVector2D minPosition, QVector2D maxPosition);
   SpawnEvent &withCount(int count);
   SpawnEvent &withInterval(int intervalMs);
   SpawnEvent &withFormation(const Formation formation);
-  SpawnEvent &
-  withGameObject(std::shared_ptr<GameObjects::GameObject> gameObject);
+  SpawnEvent &withGameObjectBlueprint(
+      GameObjects::GameObjectBlueprint &gameObjectBlueprint);
 
 private:
-  std::shared_ptr<GameObjects::GameObject> m_gameObject;
+  Config::GameContext m_gameCtx;
+  GameObjects::GameObjectBlueprint m_gameObjectBlueprint;
   Formation m_formation;
-  std::pair<QPoint, QPoint> m_positionRange;
+  std::pair<QVector2D, QVector2D> m_positionRange;
   int m_triggerTimeMs;
   int m_count;
   int m_intervalMs;

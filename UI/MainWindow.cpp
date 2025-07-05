@@ -1,4 +1,5 @@
 #include "MainWindow.h"
+#include "Config/GameContext.h"
 #include "Game/Core/GameRunnerView.h"
 #include "ui_MainWindow.h"
 #include <QTimer>
@@ -13,24 +14,41 @@ MainWindow::MainWindow(QWidget *parent)
 
   QScreen *screen = QGuiApplication::primaryScreen();
   QRect screenGeometry = screen->geometry();
+  float screenWidth = screenGeometry.width();
+  float screenHeight = screenGeometry.height();
+
+#ifdef NDEBUG
+  // Release build: Borderless fullscreen
+  setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
+  screenWidth = screenGeometry.width();
+  screenHeight = screenGeometry.height();
+#else
+  // Debug build: Windowed, slightly smaller for convenience
+  setWindowFlags(Qt::Window);
+  screenWidth *= 0.95;
+  screenHeight *= 0.95;
+#endif
+
+  QRect windowGeometry(0, 0, screenWidth, screenHeight);
+  auto gameCtx = Config::GameContext(windowGeometry);
 
   // Create the game runner scene and view
-  m_gameRunnerView = new Game::Core::GameRunnerView(screenGeometry);
+  m_gameRunnerView = new Game::Core::GameRunnerView(gameCtx);
   m_gameRunnerView->setSizePolicy(QSizePolicy::Expanding,
                                   QSizePolicy::Expanding);
 
-  m_mainMenuView = new Game::Core::MainMenuView(screenGeometry);
+  m_mainMenuView = new Game::Core::MainMenuView(windowGeometry);
   m_mainMenuView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-  m_levelSelectorView = new Game::Core::LevelSelectorView(screenGeometry);
+  m_levelSelectorView = new Game::Core::LevelSelectorView(windowGeometry);
   m_levelSelectorView->setSizePolicy(QSizePolicy::Expanding,
                                      QSizePolicy::Expanding);
 
-  m_pauseMenuView = new Game::Core::PauseMenuView(screenGeometry);
+  m_pauseMenuView = new Game::Core::PauseMenuView(windowGeometry);
   m_pauseMenuView->setSizePolicy(QSizePolicy::Expanding,
                                  QSizePolicy::Expanding);
 
-  m_benchmarkPromptView = new Game::Core::BenchmarkPromptView(screenGeometry);
+  m_benchmarkPromptView = new Game::Core::BenchmarkPromptView(windowGeometry);
   m_benchmarkPromptView->setSizePolicy(QSizePolicy::Expanding,
                                        QSizePolicy::Expanding);
 
@@ -79,19 +97,18 @@ MainWindow::MainWindow(QWidget *parent)
 
   m_stackedWidget->setCurrentWidget(m_mainMenuView);
 
-  m_levelLoader.setScreenSize(
-      QPoint(screenGeometry.width(), screenGeometry.height()));
-  m_levelLoader.setPositionConstraints(
-      QPoint(0, 0),
-      QPoint(screenGeometry.width() * 0.98, screenGeometry.height() * 0.865));
+  m_levelLoader.setGameCtx(gameCtx);
   m_levelLoader.initialize();
   m_levels = m_levelLoader.loadLevels();
   m_benchmarkLevel = m_levelLoader.loadBenchmarkLevel();
   m_levelSelectorView->setLevelData(m_levels);
-  resize(screenGeometry.width(), screenGeometry.height());
+  resize(screenWidth, screenHeight);
 
-  setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
+#ifdef NDEBUG
   showFullScreen();
+#else
+  show();
+#endif
 }
 
 MainWindow::~MainWindow() { delete ui; }
@@ -126,7 +143,7 @@ void MainWindow::onLevelQuit() {
 void MainWindow::adjustGameRunnerSize() {
   if (m_gameRunnerView) {
     QRectF newRect(0, 0, width(), height());
-    m_gameRunnerView->scene()->setSceneRect(newRect);
+    // m_gameRunnerView->scene()->setSceneRect(newRect);
   }
 }
 

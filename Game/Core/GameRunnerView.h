@@ -2,15 +2,21 @@
 #define GAMERUNNERVIEW_H
 
 #include "Game/CollisionDetection/CollisionDetector.h"
-#include "Game/Core/GameHUD.h"
 #include "Game/Core/GameState.h"
 #include "Game/Levels/LevelManager.h"
 #include "UI/FPSCounter.h"
+#include "UI/GLProgressBar.h"
+#include "UI/GLWeaponBar.h"
 #include "UI/GameObjectCounter.h"
+#include "UI/Panel.h"
 #include <QElapsedTimer>
-#include <QGraphicsView>
 #include <QKeyEvent>
 #include <QLabel>
+#include <QOpenGLBuffer>
+#include <QOpenGLFunctions_3_3_Core>
+#include <QOpenGLShaderProgram>
+#include <QOpenGLVertexArrayObject>
+#include <QOpenGLWidget>
 #include <QThread>
 #include <QTimer>
 #include <QWheelEvent>
@@ -18,23 +24,34 @@
 namespace Game {
 namespace Core {
 
-class GameRunnerView : public QGraphicsView {
+class GameRunnerView : public QOpenGLWidget, QOpenGLFunctions_3_3_Core {
   Q_OBJECT
 public:
-  explicit GameRunnerView(QRect screenGeometry, QWidget *parent = nullptr);
+  explicit GameRunnerView(Config::GameContext gameCtx,
+                          QWidget *parent = nullptr);
   ~GameRunnerView();
   void startLevel(const Levels::Level &level, bool benchmarkMode = false);
   void quitLevel();
   void resumeGame();
 
 protected:
+  void initializeGL() override;
+  void resizeGL(int w, int h) override;
+  void paintGL() override;
   void keyPressEvent(QKeyEvent *event) override;
   void keyReleaseEvent(QKeyEvent *event) override;
   void wheelEvent(QWheelEvent *event) override { event->ignore(); }
 
 private:
+  Config::GameContext m_gameCtx;
+  QOpenGLShaderProgram *m_program = nullptr;
+  QOpenGLShaderProgram *m_lineProgram = nullptr;
+  std::chrono::high_resolution_clock::time_point m_gameStartTime;
+  std::unique_ptr<UI::Panel> m_uiPanel;
+  std::unique_ptr<UI::GLProgressBar> m_healthBar;
+  std::unique_ptr<UI::GLProgressBar> m_energyBar;
+  std::unique_ptr<UI::GLWeaponBar> m_weaponBar;
   GameState *m_gameState;
-  Core::GameHUD *m_gameHUD;
   std::unique_ptr<Levels::LevelManager> m_levelManager;
   QTimer m_gameTimer;
   QTimer m_benchmarkTimer;
@@ -43,7 +60,6 @@ private:
   QElapsedTimer m_elapsedTimer;
   QElapsedTimer m_fpsTimer;
   QSet<int> m_pressedKeys;
-  QGraphicsScene m_scene;
   int m_frameCount = 0;
   QGraphicsTextItem *m_stellarTokens;
   QGraphicsTextItem *m_playerHp;
@@ -56,13 +72,19 @@ private:
   bool m_benchmarkMode;
   std::chrono::high_resolution_clock::time_point m_lastFrameEndTime;
 
+  GLuint m_texture = 0;
+  QOpenGLVertexArrayObject m_vao;
+  QOpenGLVertexArrayObject m_debugVao;
+  QOpenGLBuffer m_debugVbo;
+  QOpenGLBuffer m_vbo;
+
   UI::FPSCounter *m_fpsCounter;
   UI::GameObjectCounter *m_gameObjectCounter;
 
   void setupView();
   void setupCounters();
   void setupConnections();
-  inline void gameLoop();
+  inline void gameTick();
 
   inline void processInput(float deltaTimeInSeconds);
   inline void processGameAction(float deltaTimeInSeconds);
@@ -136,7 +158,7 @@ private:
 
   inline float calculateRenderTime(
       const std::chrono::high_resolution_clock::time_point &loopStartTime);
-  inline float calculateDeltaTime();
+  inline float calculateDeltaTimeSec();
   inline void manageLevelProgression();
   template <typename Func> inline float measureFunctionDuration(Func &&func);
   inline void logFrameStatistics(float renderTimeUs, float updateTimeUs,
@@ -145,7 +167,10 @@ private:
   inline void checkLevelFailedOrPassed();
   void initializeBenchmark();
   void deinitializeBenchmark();
-  void capFrameRate(float desiredMinFrameTimeSeconds, float frameTimeSeconds);
+  void renderAllDebugColliders();
+  void drawColliderBox(const GameObjects::GameObject *obj);
+  void renderSprite(const GameObjects::GameObject *obj);
+  void renderAllSprites();
 signals:
   void fpsUpdated(int fps);
   void gamePaused();
@@ -153,8 +178,6 @@ signals:
   void benchmarkFinished();
 
 private slots:
-  void onObjectAdded(QGraphicsItem *object) { m_scene.addItem(object); }
-  void onObjectDeleted(QGraphicsItem *object) { m_scene.removeItem(object); }
   void onPlayerShipDestroyed() {
     m_levelFailed = true;
     m_playerShip = nullptr;
@@ -162,6 +185,27 @@ private slots:
   void onEnemyLimitReached() {
     m_levelFailed = true;
     m_playerShip = nullptr;
+  }
+  void onPlayerHealthUpdated(float value) { m_healthBar->setValue(value); }
+  void onPlayerMaxHealthSet(float value) { m_healthBar->setRange(0, value); }
+  void onPlayerEnergyUpdated(float value) { m_energyBar->setValue(value); }
+  void onPlayerMaxEnergySet(float value) { m_energyBar->setRange(0, value); }
+  void onPlayerSecondaryWeaponsChanged(const std::array<QString, 4> &weapons) {
+    int i = 0;
+    for (const auto &weapon : weapons) {
+      qDebug() << "weapon =" << weapon;
+      m_weaponBar->setSlotImage(i, weapon);
+      i++;
+    }
+  }
+  void onPlayerSecondaryWeaponFired(std::uint32_t weaponIndex,
+                                    std::uint32_t cooldownMs) {
+    auto now = std::chrono::high_resolution_clock::now();
+    float nowSec = std::chrono::duration_cast<std::chrono::duration<float>>(
+                       now - m_gameStartTime)
+                       .count();
+    float cooldownSec = cooldownMs / 1000.0f;
+    m_weaponBar->startCooldown(weaponIndex, cooldownSec, nowSec);
   }
   void onSpawnEventsFinished() { m_spawnEventsFinished = true; }
   void pause() {

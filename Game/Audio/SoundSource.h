@@ -1,5 +1,6 @@
 #pragma once
 #include <AL/al.h>
+#include <chrono>
 
 namespace Game {
 namespace Audio {
@@ -10,9 +11,14 @@ public:
   ~SoundSource();
 
   void Play(const ALuint buffer_to_play);
+  bool isPlaying() const;
+  void reset(float gain);
   ALuint getSourceID() const;
 
+  std::chrono::steady_clock::time_point getPlayStartTime() const;
+
 private:
+  std::chrono::steady_clock::time_point m_playStartTime;
   ALuint p_Source;
   float p_Pitch = 1.f;
   float p_Position[3] = {0, 0, 0};

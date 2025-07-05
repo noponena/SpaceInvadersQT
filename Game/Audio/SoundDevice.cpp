@@ -1,5 +1,6 @@
 #include "SoundDevice.h"
 #include <AL/al.h>
+#include <qlogging.h>
 #include <stdio.h>
 
 namespace Game {
@@ -32,14 +33,14 @@ SoundDevice::SoundDevice() {
 
 SoundDevice::~SoundDevice() {
   if (!alcMakeContextCurrent(nullptr))
-    throw("failed to set context to nullptr");
+    qWarning("SoundDevice: failed to set context to nullptr");
 
   alcDestroyContext(p_ALCContext);
   if (p_ALCContext)
-    throw("failed to unset during close");
+    qWarning("SoundDevice: failed to unset context during close");
 
   if (!alcCloseDevice(p_ALCDevice))
-    throw("failed to close sound device");
+    qWarning("SoundDevice: failed to close sound device");
 }
 } // namespace Audio
 } // namespace Game

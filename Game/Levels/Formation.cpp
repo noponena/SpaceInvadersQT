@@ -1,6 +1,7 @@
 #include "Formation.h"
 #include "Utils/Math/MathConstants.h"
 #include <algorithm>
+#include <qvectornd.h>
 #include <stdexcept>
 
 namespace Game {
@@ -24,12 +25,12 @@ Formation &Formation::withSolidity(bool solidity) {
   return *this;
 }
 
-Formation &Formation::withSpacing(const QPoint spacing) {
+Formation &Formation::withSpacing(const QVector2D spacing) {
   m_spacing = spacing;
   return *this;
 }
 
-std::vector<QPoint> Formation::getPoints(QPoint referencePosition) const {
+std::vector<QVector2D> Formation::getPoints(QVector2D referencePosition) const {
   switch (m_type) {
   case Type::RECTANGLE:
     return getRectPoints(referencePosition);
@@ -42,8 +43,9 @@ std::vector<QPoint> Formation::getPoints(QPoint referencePosition) const {
   throw std::invalid_argument("Uknown formation type!");
 }
 
-std::vector<QPoint> Formation::getRectPoints(QPoint referencePosition) const {
-  std::vector<QPoint> points;
+std::vector<QVector2D>
+Formation::getRectPoints(QVector2D referencePosition) const {
+  std::vector<QVector2D> points;
 
   for (int row = 0; row < m_height; ++row) {
     for (int col = 0; col < m_width; ++col) {
@@ -54,16 +56,16 @@ std::vector<QPoint> Formation::getRectPoints(QPoint referencePosition) const {
       }
       int x = referencePosition.x() + col * m_spacing.x();
       int y = referencePosition.y() + row * m_spacing.y();
-      points.push_back(QPoint(x, y));
+      points.push_back(QVector2D(x, y));
     }
   }
 
   return points;
 }
 
-std::vector<QPoint>
-Formation::getTrianglePoints(QPoint referencePosition) const {
-  std::vector<QPoint> points;
+std::vector<QVector2D>
+Formation::getTrianglePoints(QVector2D referencePosition) const {
+  std::vector<QVector2D> points;
 
   for (int row = 0; row < m_height; ++row) {
     int numPointsInRow = m_width - row;
@@ -75,27 +77,29 @@ Formation::getTrianglePoints(QPoint referencePosition) const {
       }
       int x = referencePosition.x() + xOffset + col * m_spacing.x();
       int y = referencePosition.y() + row * m_spacing.y();
-      points.push_back(QPoint(x, y));
+      points.push_back(QVector2D(x, y));
     }
   }
 
   return points;
 }
 
-std::vector<QPoint> Formation::getCirclePoints(QPoint referencePosition) const {
-  std::vector<QPoint> points;
+std::vector<QVector2D>
+Formation::getCirclePoints(QVector2D referencePosition) const {
+  std::vector<QVector2D> points;
   int pointsInDiameter = m_width;
   int radiusInPoints = pointsInDiameter / 2;
   int spacing = m_spacing.x();
 
   int radius = radiusInPoints * spacing;
-  QPoint center = QPoint(referencePosition.x(), referencePosition.y() + radius);
+  QVector2D center =
+      QVector2D(referencePosition.x(), referencePosition.y() + radius);
 
   if (m_solid) {
     for (int i = -radius; i <= radius; i += spacing) {
       for (int j = -radius; j <= radius; j += spacing) {
         if (i * i + j * j <= radius * radius) {
-          points.push_back(QPoint(center.x() + i, center.y() + j));
+          points.push_back(QVector2D(center.x() + i, center.y() + j));
         }
       }
     }
@@ -107,7 +111,7 @@ std::vector<QPoint> Formation::getCirclePoints(QPoint referencePosition) const {
       double angle = 2 * PI * i / numPoints;
       int x = center.x() + static_cast<int>(radius * std::cos(angle));
       int y = center.y() + static_cast<int>(radius * std::sin(angle));
-      points.push_back(QPoint(x, y));
+      points.push_back(QVector2D(x, y));
     }
   }
 

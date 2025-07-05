@@ -8,17 +8,12 @@ namespace Collectables {
 
 class Health : public Collectable {
 public:
-  Health(const Position &position);
-  static void registerPixmaps();
+  Health(const Config::GameContext &ctx);
+  std::unique_ptr<GameObject> clone() const override;
 
-  // GameObject interface
 protected:
   void initializeSounds() override;
   void initializeObjectType() override;
-
-  // GameObject interface
-public:
-  std::unique_ptr<GameObject> clone() const override;
 };
 
 } // namespace Collectables

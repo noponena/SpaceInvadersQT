@@ -1,0 +1,6 @@
+name: "EnemyBasicProjectile"
+type: "ENEMY_PROJECTILE"
+damage: 1
+movement: "Vertical.yaml"
+graphics: ":/Images/enemy_laser_projectile.png"
+spawnSound: "LESSER_ENEMY_LASER"

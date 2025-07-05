@@ -1,70 +1,66 @@
 #include "GameObject.h"
 #include "Game/Audio/SoundManager.h"
-#include "Graphics/PixmapLibrary.h"
-#include <QGraphicsScene>
+#include "Graphics/Effects/EffectManager.h"
+#include "Utils/BoundsChecker.h"
 #include <cmath>
 
 namespace GameObjects {
 
-std::uint64_t GameObject::counter = 0;
+std::uint32_t GameObject::counter = 0;
 
-GameObject::GameObject(const Position &position)
-    : m_position(position), m_hasCollided(false), m_collidable(true),
-      m_soundEnabled(true), m_magnetism({false, 0, 0}), m_id(counter++),
-      m_destructionInitiated(false) {
+GameObject::GameObject(const Config::GameContext &ctx)
+    : m_hasCollided(false), m_collidable(true), m_soundEnabled(true),
+      m_magnetism({false, 0, 0}), m_id(counter++),
+      m_hasDestructionEffect(false), m_destructionInitiated(false),
+      m_gameContext(ctx) {
+
+  m_state = State::Normal;
   m_objectTypes = {ObjectType::BASE};
-  m_pixmapData = PixmapData{QPointF(30, 30), ":/Images/placeholder.png", ""};
 }
 
 void GameObject::initialize() {
   initializeObjectType();
   initializeSounds();
   playSpawnSound();
-  m_graphicsItem = std::make_unique<QGraphicsPixmapItem>(getPixmap());
   initializeDestructionAnimation();
   initializeDestructionEffects();
 }
 
 bool GameObject::shouldBeDeleted() {
-  return m_position.isBeyondLimits(25, 25, 50, 30);
+  return Utils::BoundsChecker::isBeyondLimits(
+      m_transform.position, m_gameContext.movementBounds, 25, 25, 50, 30);
 }
 
 void GameObject::update(const UpdateContext &context) {
   if (isDead() && !m_destructionInitiated)
     executeDestructionProcedure();
+
   applyMovementStrategy(context.deltaTimeInSeconds);
-  updateGraphicsItemPosition();
-  if (m_destructionInitiated) {
-    m_destructionAnimation.showNextFrame();
-    m_destructionEffect.update(context.deltaTimeInSeconds);
+
+  if (m_animationPlayer.isPlaying()) {
+    auto frameUvs = m_animationPlayer.currentFrameUVs();
+    setFrameUvsForCurrentState(frameUvs);
+    m_animationPlayer.update(
+        static_cast<int>(context.deltaTimeInSeconds * 1000));
   }
 }
 
-void GameObject::show() { m_graphicsItem->show(); }
+void GameObject::show() { m_visible = true; }
 
-void GameObject::hide() { m_graphicsItem->hide(); }
+void GameObject::hide() { m_visible = false; }
 
-void GameObject::playDestructionAnimation() {
-  hide();
-  m_destructionAnimation.setPos(m_graphicsItem->pos());
-  getScene()->addItem(&m_destructionAnimation);
-  m_destructionAnimation.start();
-}
+void GameObject::playDestructionAnimation() {}
 
 void GameObject::playDestructionEffects() {
-  QRectF rect = m_graphicsItem->boundingRect();
-  qreal halfWidth = rect.width() / 2;
-  qreal halfHeight = rect.height() / 2;
-  QPointF p(m_position.x() + halfWidth, m_position.y() + halfHeight);
-  m_destructionEffect.setPosition(p);
-  getScene()->addItem(&m_destructionEffect);
+  Graphics::Effects::EffectManager::instance().spawnDestructionEffect(
+      QVector2D(getCenterPosition()), 1.0, 2000, 200);
 }
 
 void GameObject::applyMovementStrategy(float deltaTimeInSeconds) {
-  std::pair<QPointF, QPointF> newPos = m_movementStrategy.move(
-      m_position.pos, m_position.anchorPos, deltaTimeInSeconds);
-  m_position.pos = newPos.first;
-  m_position.anchorPos = newPos.second;
+  auto newPos = m_movementStrategy.move(
+      m_transform.position, m_transform.anchorPosition, deltaTimeInSeconds);
+  m_transform.position = QVector2D(newPos.first);
+  m_transform.anchorPosition = QVector2D(newPos.second);
 }
 
 void GameObject::playSpawnSound() {
@@ -76,64 +72,36 @@ void GameObject::playDestructionSound() {
       m_destructionSoundInfo);
 }
 
-void GameObject::updateGraphicsItemPosition() {
-  if (m_graphicsItem) {
-    m_graphicsItem->setPos(m_position.pos);
-  }
+void GameObject::setFrameUvsForCurrentState(
+    const std::pair<QVector2D, QVector2D> frameUvs) {
+  m_renderDataByState[m_state].uvMin = frameUvs.first;
+  m_renderDataByState[m_state].uvMax = frameUvs.second;
 }
 
 void GameObject::executeDestructionProcedure() {
+  m_state = State::OnDestruction;
   m_collidable = false;
   m_destructionInitiated = true;
-
+  if (hasDestructionAnimation()) {
+    m_animationPlayer.setAnimation(
+        m_animationInfoByState[State::OnDestruction]);
+    m_animationPlayer.play();
+  }
   playDestructionSound();
   disableMovement();
 
-  if (m_destructionEffect)
+  if (m_hasDestructionEffect)
     playDestructionEffects();
-  if (m_destructionAnimation)
-    playDestructionAnimation();
 
   emit objectDestroyed();
 }
 
-QGraphicsPixmapItem *GameObject::getGraphicsItem() const {
-  return m_graphicsItem.get();
-}
-
-QRectF GameObject::getBoundingBox() const {
-  QRectF localRect = m_graphicsItem->boundingRect();
-  QRectF sceneRect = m_graphicsItem->mapToScene(localRect).boundingRect();
-  return sceneRect;
-}
-
-QString GameObject::getHudPixmapPath() const {
-  return m_pixmapData.hudPixmapResourcePath;
-}
+QRectF GameObject::getBoundingBox() const { return m_transform.colliderRect(); }
 
 void GameObject::disableMovement() { m_movementStrategy.clear(); }
 
-QPixmap GameObject::getPixmap() const {
-  return Graphics::PixmapLibrary::getPixmap(
-      m_pixmapData.pixmapResourcePath, m_pixmapData.pixmapScale.x(),
-      m_pixmapData.pixmapScale.y(), m_pixmapData.keepAspectRatio);
-}
-
-QPixmap GameObject::getOnHitPixmap() const {
-  QString path = m_pixmapData.onHitPixmapResourcePath;
-  if (path.isEmpty())
-    return getPixmap();
-  return Graphics::PixmapLibrary::getPixmap(path, m_pixmapData.pixmapScale.x(),
-                                            m_pixmapData.pixmapScale.y(),
-                                            m_pixmapData.keepAspectRatio);
-}
-
 Game::Movement::MovementStrategy GameObject::movementStrategy() const {
   return m_movementStrategy;
-}
-
-void GameObject::setPixmapData(const PixmapData &newPixmapData) {
-  m_pixmapData = newPixmapData;
 }
 
 void GameObject::setSpawnSoundInfo(
@@ -145,6 +113,51 @@ void GameObject::setDestructionSoundInfo(
     const Game::Audio::SoundInfo &newDestructionSoundInfo) {
   m_destructionSoundInfo = newDestructionSoundInfo;
 }
+
+void GameObject::setState(State newState) { m_state = newState; }
+
+State GameObject::state() const { return m_state; }
+
+const RenderData GameObject::getRenderData() const {
+  auto it = m_renderDataByState.find(m_state);
+
+  if (it != m_renderDataByState.end())
+    return it->second;
+
+  return m_renderDataByState.at(State::Normal);
+}
+
+const RenderData &GameObject::getRenderData(State state) const {
+  auto it = m_renderDataByState.find(state);
+  if (it != m_renderDataByState.end())
+    return it->second;
+  return m_renderDataByState.at(State::Normal);
+}
+
+RenderDataMap GameObject::renderDataByState() const {
+  return m_renderDataByState;
+}
+
+void GameObject::setRenderDataByState(
+    const RenderDataMap &newRenderDataByState) {
+  m_renderDataByState = newRenderDataByState;
+}
+
+void GameObject::setTransform(const Transform &newTransform) {
+  m_transform = newTransform;
+}
+
+void GameObject::setGameContext(const Config::GameContext &newGameContext) {
+  m_gameContext = newGameContext;
+}
+
+Config::GameContext GameObject::gameContext() const { return m_gameContext; }
+
+void GameObject::addRenderData(State state, const RenderData &data) {
+  m_renderDataByState[state] = data;
+}
+
+Transform GameObject::transform() const { return m_transform; }
 
 void GameObject::setMovementStrategy(
     const Game::Movement::MovementStrategy &newMovementStrategy) {
@@ -161,20 +174,31 @@ std::uint64_t GameObject::id() const { return m_id; }
 const Magnetism &GameObject::magnetism() const { return m_magnetism; }
 
 void GameObject::clampToXBounds() {
-  if (m_position.isBeyondScreenRightLimit())
-    m_position.goToRightLimit();
-  else if (m_position.isBeyondScreenLeftLimit())
-    m_position.goToLeftLimit();
+  if (Utils::BoundsChecker::isBeyondScreenRight(m_transform.position,
+                                                m_gameContext.movementBounds))
+    m_transform.position.setX(m_gameContext.movementBounds.right());
+  else if (Utils::BoundsChecker::isBeyondScreenLeft(
+               m_transform.position, m_gameContext.movementBounds))
+    m_transform.position.setX(m_gameContext.movementBounds.left());
 }
 
 void GameObject::clampToYBounds() {
-  if (m_position.isBeyondScreenTopLimit())
-    m_position.goToTopLimit();
-  else if (m_position.isBeyondScreenBottomLimit())
-    m_position.goToBottomLimit();
+  if (Utils::BoundsChecker::isBeyondScreenTop(m_transform.position,
+                                              m_gameContext.movementBounds))
+    m_transform.position.setY(m_gameContext.movementBounds.top());
+  else if (Utils::BoundsChecker::isBeyondScreenBottom(
+               m_transform.position, m_gameContext.movementBounds))
+    m_transform.position.setY(m_gameContext.movementBounds.bottom());
+}
+
+bool GameObject::hasDestructionAnimation() const {
+  return m_animationInfoByState.find(State::OnDestruction) !=
+         m_animationInfoByState.end();
 }
 
 bool GameObject::isCollidable() const { return m_collidable; }
+
+bool GameObject::isVisible() const { return m_visible; }
 
 void GameObject::collide(GameObject &other) {
   int local_id = id();
@@ -191,33 +215,30 @@ void GameObject::collide(GameObject &other) {
 }
 
 bool GameObject::isCollidingWith(const GameObject &other) const {
-  if (!m_collidable || !other.m_collidable) {
+  if (!m_collidable || !other.m_collidable)
     return false;
-  }
-
-  return getGraphicsItem()->collidesWithItem(other.getGraphicsItem());
-  ;
+  return getBoundingBox().intersects(other.getBoundingBox());
 }
 
-Position GameObject::getPosition() const { return m_position; }
+const QVector2D &GameObject::getPosition() const {
+  return m_transform.position;
+}
 
 QPointF GameObject::getCenterPosition() const {
-  QRectF sceneRect = getBoundingBox();
-  return sceneRect.center();
+  return getBoundingBox().center();
 }
 
-QGraphicsScene *GameObject::getScene() const { return m_graphicsItem->scene(); }
-
-void GameObject::setPosition(const Position &newPosition) {
-  m_position = newPosition;
+void GameObject::moveAbsolute(const QVector2D &newPosition) {
+  m_transform.position = newPosition;
 }
 
-void GameObject::setPosition(const QPointF &newPosition) {
-  m_position.setPos(newPosition);
+void GameObject::moveRelative(const QVector2D &displacement) {
+  m_transform.position += displacement;
 }
 
 void GameObject::setSoundEnabled(const bool newSoundEnabled) {
   m_spawnSoundInfo.enabled = newSoundEnabled;
+  m_destructionSoundInfo.enabled = newSoundEnabled;
 }
 
 void GameObject::addObjectType(const ObjectType objectType) {

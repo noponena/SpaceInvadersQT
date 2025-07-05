@@ -1,32 +1,43 @@
 #include "PlayerShip.h"
 #include "GameObjects/Collectables/Collectable.h"
 #include "GameObjects/Projectiles/Projectile.h"
-#include "Graphics/PixmapLibrary.h"
-#include "Graphics/PixmapRegistry.h"
 #include <QPen>
 
 namespace GameObjects {
 namespace Ships {
-PlayerShip::PlayerShip(const float speed, const Position &position)
-    : Ship(0, speed, position) {
+PlayerShip::PlayerShip(const Config::GameContext &ctx) : Ship(ctx) {
   m_magnetism = {true, true, 100.0f, 100.0f};
-  m_pixmapData.pixmapResourcePath = ":/Images/player_ship.png";
-  m_pixmapData.pixmapScale = QPointF(50.0, 50.0);
-}
 
-void PlayerShip::registerPixmaps() {
-  Graphics::PixmapLibrary::getPixmap(":/Images/player_ship.png", 50.0, 50.0);
+  RenderData normalData;
+  normalData.size = QVector2D(50, 50);
+  normalData.imagePath = ":/Images/player_ship.png";
+  addRenderData(State::Normal, normalData);
+
+  RenderData onDestructionData;
+  onDestructionData.size = QVector2D(50, 50);
+  onDestructionData.imagePath = ":/Images/explosion.png";
+  addRenderData(State::OnDestruction, onDestructionData);
+
+  m_transform.colliderSize = {30, 30};
+
+  /*
+  RenderData onHitData;
+  onHitData.size = QVector2D(100, 100);
+  onHitData.imagePath = ":/Images/player_ship.png";
+  addRenderData(State::OnHit, onHitData);
+ */
 }
 
 void PlayerShip::update(const UpdateContext &context) {
   Ship::update(context);
+  float prevEnergy = m_currentEnergy;
   regenerateEnergy(context.deltaTimeInSeconds);
-  emit playerEnergyUpdated(m_currentEnergy);
+  if (prevEnergy != m_currentEnergy)
+    emit playerEnergyUpdated(m_currentEnergy);
 }
 
 bool PlayerShip::shouldBeDeleted() {
-  return (isDead() && m_destructionAnimation.animationFinished() &&
-          m_destructionEffect.effectFinished());
+  return (isDead() && m_animationPlayer.isFinished());
 }
 
 void PlayerShip::initializeObjectType() {
@@ -41,8 +52,11 @@ void PlayerShip::initializeSounds() {
 
 std::unique_ptr<GameObject> PlayerShip::clone() const {
   std::unique_ptr<PlayerShip> playerShip =
-      std::make_unique<PlayerShip>(m_speed, m_position);
-  playerShip->m_pixmapData = m_pixmapData;
+      std::make_unique<PlayerShip>(m_gameContext);
+
+  playerShip->setTransform(m_transform);
+  playerShip->setSpeed(m_speed);
+  playerShip->m_renderDataByState = m_renderDataByState;
   playerShip->m_destructionSoundInfo = m_destructionSoundInfo;
   playerShip->m_objectTypes = m_objectTypes;
   playerShip->m_magnetism = m_magnetism;
@@ -57,11 +71,11 @@ std::unique_ptr<GameObject> PlayerShip::clone() const {
 }
 
 void PlayerShip::moveHorizontal(float deltaTimeInSeconds) {
-  moveX(m_currentSpeedX * deltaTimeInSeconds);
+  moveRelativeX(m_currentSpeedX * deltaTimeInSeconds);
 }
 
 void PlayerShip::moveVertical(float deltaTimeInSeconds) {
-  moveY(m_currentSpeedY * deltaTimeInSeconds);
+  moveRelativeY(m_currentSpeedY * deltaTimeInSeconds);
 }
 
 void PlayerShip::accelerateLeft(float deltaTimeInSeconds) {
@@ -123,22 +137,28 @@ void PlayerShip::decelerateY(float deltaTimeInSeconds) {
 float PlayerShip::maxEnergy() const { return m_maxEnergy; }
 
 void PlayerShip::setMaxEnergy(float newMaxEnergy) {
-  m_maxEnergy = newMaxEnergy;
+  Ship::setMaxEnergy(newMaxEnergy);
   emit playerMaxEnergySet(m_maxEnergy);
 }
 
 float PlayerShip::maxHealth() const { return m_maxHealth; }
 
 void PlayerShip::setMaxHealth(float newMaxHealth) {
-  m_maxHealth = newMaxHealth;
+  Ship::setMaxHealth(newMaxHealth);
   emit playerMaxHealthSet(newMaxHealth);
   emit playerHealthUpdated(newMaxHealth);
 }
 
+void PlayerShip::setSpeed(float newSpeed) { m_speed = newSpeed; }
+
 void PlayerShip::setSecondaryWeapon(std::unique_ptr<Weapons::Weapon> newWeapon,
                                     std::uint32_t weaponIndex) {
   Ship::setSecondaryWeapon(std::move(newWeapon), weaponIndex);
-  emit playerSecondaryWeaponsChanged(m_secondaryWeapons);
+  std::array<QString, 4> paths;
+  for (int i = 0; i < 4; ++i)
+    paths[i] =
+        m_secondaryWeapons[i] ? m_secondaryWeapons[i]->getHudImagePath() : "";
+  emit playerSecondaryWeaponsChanged(paths);
 }
 
 bool PlayerShip::fireSecondaryWeapon(std::uint32_t weaponIndex) {
@@ -151,15 +171,23 @@ bool PlayerShip::fireSecondaryWeapon(std::uint32_t weaponIndex) {
   return success;
 }
 
-void PlayerShip::moveX(float amount) {
-  float current = m_position.x();
-  m_position.setX(current + amount);
+void PlayerShip::restoreHealth() {
+  Ship::restoreHealth();
+  emit playerHealthUpdated(m_currentHealth);
+}
+
+void PlayerShip::restoreEnergy() {
+  Ship::restoreEnergy();
+  emit playerEnergyUpdated(m_currentEnergy);
+}
+
+void PlayerShip::moveRelativeX(float displacement) {
+  moveRelative({displacement, 0});
   clampToXBounds();
 }
 
-void PlayerShip::moveY(float amount) {
-  float current = m_position.y();
-  m_position.setY(current + amount);
+void PlayerShip::moveRelativeY(float displacement) {
+  moveRelative({0, displacement});
   clampToYBounds();
 }
 
@@ -193,14 +221,5 @@ void PlayerShip::disableMovement() {
   m_acceleration = 0;
 }
 
-namespace {
-struct PixmapRegistrar {
-  PixmapRegistrar() {
-    PixmapRegistry::instance().add(&PlayerShip::registerPixmaps);
-  }
-};
-static PixmapRegistrar _playership_pixmap_registrar;
-} // namespace
 } // namespace Ships
-
 } // namespace GameObjects

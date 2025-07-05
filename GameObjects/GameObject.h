@@ -1,14 +1,14 @@
 #ifndef GAMEOBJECT_H
 #define GAMEOBJECT_H
 
+#include "Config/GameContext.h"
 #include "Game/Audio/SoundInfo.h"
 #include "Game/Movement/MovementStrategy.h"
-#include "Graphics/Animations/AnimatedItem.h"
-#include "Graphics/Effects/ParticleSystem.h"
-#include "Position.h"
-#include <QGraphicsItem>
+#include "Graphics/Animations/AnimationPlayer.h"
+#include "UI/IRenderable.h"
 #include <QObject>
 #include <QUrl>
+#include <qvectornd.h>
 #include <unordered_set>
 
 namespace GameObjects {
@@ -26,6 +26,16 @@ enum class ObjectType {
   ENEMY_PROJECTILE,
 
   COLLECTABLE,
+  STELLAR_COIN,
+  HEALTH
+};
+
+enum class ConcreteType {
+  PLAYER_SHIP,
+  ENEMY_SHIP,
+  PROJECTILE,
+  VORTEX,
+  WAVE_OF_DESTRUCTION,
   STELLAR_COIN,
   HEALTH
 };
@@ -56,20 +66,57 @@ struct UpdateContext {
       &magneticGameObjects;
 };
 
-struct PixmapData {
-  QPointF pixmapScale;
-  QString pixmapResourcePath;
-  QString onHitPixmapResourcePath = "";
-  QString hudPixmapResourcePath = "";
-  bool keepAspectRatio = true;
+enum class State {
+  Normal,
+  OnHit,
+  OnDestruction,
 };
+
+struct RenderData {
+  QVector2D size;    // Floating-point width/height
+  QString imagePath; // Path or key to look up the texture
+  float rotation;    // Radians
+
+  QVector2D uvMin = QVector2D(0.0f, 0.0f); // lower-left
+  QVector2D uvMax = QVector2D(1.0f, 1.0f); // upper-right
+
+  std::vector<UI::IRenderable *> additionalRenderables;
+
+  RenderData(const QVector2D &sz = QVector2D(10.0f, 10.0f),
+             const QString &path = QString(":/Images/placeholder.png"),
+             float rot = 0.0f)
+      : size(sz), imagePath(path), rotation(rot) {}
+};
+
+struct Transform {
+  QVector2D position;
+  QVector2D anchorPosition;
+  QVector2D colliderSize; // Width/height of the collision box
+  float rotation;
+
+  Transform(const QVector2D &pos = QVector2D(0.0f, 0.0f),
+            const QVector2D &anchor = QVector2D(0.0f, 0.0f),
+            const QVector2D &csize = QVector2D(10.0f, 10.0f), float rot = 0.0f)
+      : position(pos), anchorPosition(anchor), colliderSize(csize),
+        rotation(rot) {}
+
+  QRectF colliderRect() const {
+    float left = position.x() - colliderSize.x() * 0.5f;
+    float top = position.y() - colliderSize.y() * 0.5f;
+    return QRectF(left, top, colliderSize.x(), colliderSize.y());
+  }
+};
+
+using RenderDataMap = std::unordered_map<State, RenderData>;
+using AnimationDataMap =
+    std::unordered_map<State, Graphics::Animations::AnimationInfo>;
 
 class GameObject : public QObject {
   Q_OBJECT
 
 public:
   // Constructors & Destructor
-  GameObject(const Position &position);
+  GameObject(const Config::GameContext &ctx);
   virtual ~GameObject() = default;
   virtual std::unique_ptr<GameObject> clone() const = 0;
 
@@ -98,19 +145,15 @@ public:
   void hide();
 
   // Getters & Setters
-  Position getPosition() const;
+  const QVector2D &getPosition() const;
   QPointF getCenterPosition() const;
-  QGraphicsScene *getScene() const;
-  QGraphicsPixmapItem *getGraphicsItem() const;
   QRectF getBoundingBox() const;
-  QString getHudPixmapPath() const;
-  void setPosition(const Position &newPosition);
   bool isCollidable() const;
+  bool isVisible() const;
   std::uint64_t id() const;
   const Magnetism &magnetism() const;
 
   // Actions & Modifiers
-  void moveTo(const QPointF &newPosition);
   void setMovementStrategy(
       const Game::Movement::MovementStrategy &newMovementStrategy);
   void
@@ -118,7 +161,8 @@ public:
   void collide(GameObject &other);
   bool isCollidingWith(const GameObject &other) const;
 
-  void setPosition(const QPointF &newPosition);
+  void moveAbsolute(const QVector2D &newPosition);
+  void moveRelative(const QVector2D &displacement);
   void setSoundEnabled(const bool newSoundEnabled);
   void addObjectType(const ObjectType objectType);
 
@@ -127,28 +171,52 @@ public:
 
   Game::Movement::MovementStrategy movementStrategy() const;
 
-  void setPixmapData(const PixmapData &newPixmapData);
   void setSpawnSoundInfo(const Game::Audio::SoundInfo &newSpawnSoundInfo);
   void setDestructionSoundInfo(
       const Game::Audio::SoundInfo &newDestructionSoundInfo);
 
+  RenderData renderData() const;
+
+  void setState(State newState);
+  State state() const;
+
+  virtual const RenderData getRenderData() const;
+
+  void addRenderData(State state, const RenderData &data);
+
+  Transform transform() const;
+
+  const RenderData &getRenderData(State state) const;
+
+  RenderDataMap renderDataByState() const;
+
+  void setRenderDataByState(const RenderDataMap &newRenderDataByState);
+
+  void setTransform(const Transform &newTransform);
+
+  void setGameContext(const Config::GameContext &newGameContext);
+
+  Config::GameContext gameContext() const;
+
 protected:
   // Member Variables
   std::unordered_set<ObjectType> m_objectTypes;
-  Position m_position;
-  std::unique_ptr<QGraphicsPixmapItem> m_graphicsItem;
+  Transform m_transform;
+  RenderDataMap m_renderDataByState;
+  AnimationDataMap m_animationInfoByState;
+  State m_state = State::Normal;
   bool m_hasCollided;
   bool m_collidable;
   bool m_soundEnabled;
+  bool m_hasDestructionEffect;
   std::unordered_set<int> m_collisions;
-  struct PixmapData m_pixmapData;
-  struct Magnetism m_magnetism;
+  Magnetism m_magnetism;
+  Config::GameContext m_gameContext;
 
-  Graphics::Effects::ParticleSystem m_destructionEffect;
-  Graphics::Animations::AnimatedItem m_destructionAnimation;
+  Graphics::Animations::AnimationPlayer m_animationPlayer;
 
-  struct Game::Audio::SoundInfo m_spawnSoundInfo;
-  struct Game::Audio::SoundInfo m_destructionSoundInfo;
+  Game::Audio::SoundInfo m_spawnSoundInfo;
+  Game::Audio::SoundInfo m_destructionSoundInfo;
 
   // Protected Helpers & Methods
   virtual void initializeObjectType() = 0;
@@ -162,24 +230,26 @@ protected:
   virtual void executeDestructionProcedure();
   virtual void disableMovement();
 
-  QPixmap getPixmap() const;
-  QPixmap getOnHitPixmap() const;
-
   // Protected Helpers & Methods
   void clampToXBounds();
   void clampToYBounds();
 
+  bool hasDestructionAnimation() const;
+
 private:
   // Member Variables
-  std::uint64_t m_id;
+  std::uint32_t m_id;
+  bool m_visible = true;
   bool m_destructionInitiated;
   Game::Movement::MovementStrategy m_movementStrategy;
-  static std::uint64_t counter;
+  static std::uint32_t counter;
 
   inline void applyMovementStrategy(float deltaTimeInSeconds);
   inline void playSpawnSound();
   inline void playDestructionSound();
-  inline void updateGraphicsItemPosition();
+
+  void
+  setFrameUvsForCurrentState(const std::pair<QVector2D, QVector2D> frameUvs);
 
 signals:
   void objectCreated(std::shared_ptr<GameObjects::GameObject> object);
