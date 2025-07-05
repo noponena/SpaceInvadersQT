@@ -168,7 +168,6 @@ private:
   inline void checkLevelFailedOrPassed();
   void initializeBenchmark();
   void deinitializeBenchmark();
-  void capFrameRate(float desiredMinFrameTimeSeconds, float frameTimeSeconds);
   void renderAllDebugColliders();
   void drawColliderBox(const GameObjects::GameObject *obj);
   void renderSprite(const GameObjects::GameObject *obj);

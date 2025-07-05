@@ -8,7 +8,6 @@
 #include <QTimer>
 #include <QVector2D>
 #include <chrono>
-#include <thread>
 
 namespace Game {
 namespace Core {
@@ -100,7 +99,7 @@ GameRunnerView::GameRunnerView(Config::GameContext ctx, QWidget *parent)
   m_levelManager = std::make_unique<Levels::LevelManager>(m_gameState);
   m_gameObjects = &(m_gameState->gameObjects());
   m_collisionDetector = std::make_unique<CollisionDetection::CollisionDetector>(
-      m_gameState->gameObjects(), ctx.screenGeometry);
+      m_gameState->gameObjects());
   setupView();
   setupCounters();
   m_elapsedTimer.start();

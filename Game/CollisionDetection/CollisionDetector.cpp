@@ -6,8 +6,7 @@ namespace Game {
 namespace CollisionDetection {
 
 CollisionDetector::CollisionDetector(
-    const std::vector<std::shared_ptr<GameObjects::GameObject>> &gameObjects,
-    QRectF screenRect)
+    const std::vector<std::shared_ptr<GameObjects::GameObject>> &gameObjects)
     : m_gameObjects(gameObjects) {}
 
 void CollisionDetector::detectBVH() {

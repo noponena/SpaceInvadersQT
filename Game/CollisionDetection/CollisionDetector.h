@@ -12,8 +12,7 @@ namespace CollisionDetection {
 class CollisionDetector {
 public:
   CollisionDetector(
-      const std::vector<std::shared_ptr<GameObjects::GameObject>> &gameObjects,
-      QRectF screenRect);
+      const std::vector<std::shared_ptr<GameObjects::GameObject>> &gameObjects);
   void detectQuadTree();
   void detectBruteForce();
   void detectBVH();

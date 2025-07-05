@@ -171,7 +171,6 @@ set(SOURCES
     Weapons/SecondaryWeapon.cpp
     Weapons/Weapon.cpp
     Weapons/WeaponBuilder.cpp
-    Tests/test_collisions.cpp
 )
 
 set(UIS
