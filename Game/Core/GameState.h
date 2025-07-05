@@ -45,8 +45,6 @@ private:
   GameObjects::GameObjectBuilder m_gameObjectBuilder;
 
 signals:
-  void objectDeleted(QGraphicsItem *object);
-  void objectAdded(QGraphicsItem *object);
   void playerShipDestroyed();
 
 private slots:

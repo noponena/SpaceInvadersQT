@@ -6,7 +6,6 @@
 #include "Game/Movement/MovementStrategy.h"
 #include "Graphics/Animations/AnimationPlayer.h"
 #include "UI/IRenderable.h"
-#include <QGraphicsItem>
 #include <QObject>
 #include <QUrl>
 #include <qvectornd.h>

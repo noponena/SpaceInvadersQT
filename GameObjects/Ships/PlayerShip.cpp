@@ -156,8 +156,8 @@ void PlayerShip::setSecondaryWeapon(std::unique_ptr<Weapons::Weapon> newWeapon,
   Ship::setSecondaryWeapon(std::move(newWeapon), weaponIndex);
   std::array<QString, 4> paths;
   for (int i = 0; i < 4; ++i)
-    paths[i] = m_secondaryWeapons[i] ? m_secondaryWeapons[i]->getHudImagePath()
-                                     : "";
+    paths[i] =
+        m_secondaryWeapons[i] ? m_secondaryWeapons[i]->getHudImagePath() : "";
   emit playerSecondaryWeaponsChanged(paths);
 }
 

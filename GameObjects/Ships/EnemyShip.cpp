@@ -7,7 +7,6 @@
 #include "Utils/Utils.h"
 #include "Weapons/PrimaryWeapon.h"
 #include <QColor>
-#include <QGraphicsScene>
 #include <QPen>
 #include <QTimer>
 #include <QTimerEvent>
@@ -191,7 +190,6 @@ std::unique_ptr<GameObject> EnemyShip::clone() const {
   enemyShip->m_currentEnergy = m_currentEnergy;
   enemyShip->m_currentHealth = m_currentHealth;
   enemyShip->m_maxEnergy = m_maxEnergy;
-  enemyShip->m_originalColor = m_originalColor;
   enemyShip->m_autoFire = m_autoFire;
 
   for (auto &weapon : m_primaryWeapons) {

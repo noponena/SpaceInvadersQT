@@ -14,7 +14,6 @@ public:
 protected:
   void initializeSounds() override;
   void initializeObjectType() override;
-
 };
 
 } // namespace Collectables

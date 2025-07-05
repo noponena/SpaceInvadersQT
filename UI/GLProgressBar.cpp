@@ -76,8 +76,10 @@ void GLProgressBar::setCenter(float x, float y, UISizeMode mode) {
 }
 
 void GLProgressBar::destroyGL(QOpenGLFunctions_3_3_Core *gl) {
-    if (m_vao) gl->glDeleteVertexArrays(1, &m_vao);
-    if (m_vbo) gl->glDeleteBuffers(1, &m_vbo);
+  if (m_vao)
+    gl->glDeleteVertexArrays(1, &m_vao);
+  if (m_vbo)
+    gl->glDeleteBuffers(1, &m_vbo);
 }
 
 void GLProgressBar::setRange(float minValue, float maxValue) {

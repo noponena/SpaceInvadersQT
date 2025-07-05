@@ -85,9 +85,9 @@ set(HEADERS
     GameObjects/Ships/PlayerShip.h
     GameObjects/Ships/Ship.h
     Graphics/Animations/AnimationPlayer.h
-    Graphics/CooldownItem.h
-    Graphics/GLBar.h
-    Graphics/GLCooldownItem.h
+
+
+
     Graphics/Effects/EffectManager.h
     Graphics/Effects/Particle.h
     Graphics/Effects/ParticleSystem.h
@@ -152,8 +152,8 @@ set(SOURCES
     GameObjects/Ships/EnemyShip.cpp
     GameObjects/Ships/PlayerShip.cpp
     GameObjects/Ships/Ship.cpp
-    Graphics/GLBar.cpp
-    Graphics/GLCooldownItem.cpp
+
+
     Graphics/Effects/EffectManager.cpp
     Graphics/Effects/ParticleSystem.cpp
     Graphics/TextureRegistry.cpp

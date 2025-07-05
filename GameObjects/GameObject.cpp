@@ -2,7 +2,6 @@
 #include "Game/Audio/SoundManager.h"
 #include "Graphics/Effects/EffectManager.h"
 #include "Utils/BoundsChecker.h"
-#include <QGraphicsScene>
 #include <cmath>
 
 namespace GameObjects {

@@ -17,7 +17,7 @@ std::unique_ptr<Weapon> SecondaryWeapon::clone() const {
 }
 
 QString SecondaryWeapon::getHudImagePath() const {
-    return m_projectilePrototype->hudPixmapResourcePath();
+  return m_projectilePrototype->hudPixmapResourcePath();
 }
 
 } // namespace Weapons

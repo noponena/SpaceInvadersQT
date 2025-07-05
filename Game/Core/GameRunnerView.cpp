@@ -201,14 +201,13 @@ void GameRunnerView::startLevel(const Levels::Level &level,
           &GameObjects::Ships::PlayerShip::playerMaxEnergySet, this,
           &GameRunnerView::onPlayerMaxEnergySet);
 
+  connect(m_playerShip.get(),
+          &GameObjects::Ships::PlayerShip::playerSecondaryWeaponsChanged, this,
+          &GameRunnerView::onPlayerSecondaryWeaponsChanged);
 
   connect(m_playerShip.get(),
-          &GameObjects::Ships::PlayerShip::playerSecondaryWeaponsChanged,
-          this, &GameRunnerView::onPlayerSecondaryWeaponsChanged);
-
-  connect(m_playerShip.get(),
-          &GameObjects::Ships::PlayerShip::playerSecondaryWeaponFired,
-          this, &GameRunnerView::onPlayerSecondaryWeaponFired);
+          &GameObjects::Ships::PlayerShip::playerSecondaryWeaponFired, this,
+          &GameRunnerView::onPlayerSecondaryWeaponFired);
 
   m_gameState->initialize();
 
@@ -270,8 +269,10 @@ void GameRunnerView::initializeGL() {
 
   m_uiPanel = std::make_unique<UI::Panel>();
   m_weaponBar = std::make_unique<UI::GLWeaponBar>();
-  m_weaponBar->setSlotSize(0.025f, UI::UISizeMode::Fraction); // 10% of screen width
-  m_weaponBar->setPosition(0.5f, 0.91f, UI::UISizeMode::Fraction); // Centered, near top
+  m_weaponBar->setSlotSize(0.025f,
+                           UI::UISizeMode::Fraction); // 10% of screen width
+  m_weaponBar->setPosition(0.5f, 0.91f,
+                           UI::UISizeMode::Fraction); // Centered, near top
 
   // === 1. Compile and link shaders ===
   // Main sprite shader
@@ -355,7 +356,9 @@ void GameRunnerView::paintGL() {
   m_healthBar->render(this, width(), height());
   m_energyBar->render(this, width(), height());
   auto now = std::chrono::high_resolution_clock::now();
-  float nowSec = std::chrono::duration_cast<std::chrono::duration<float>>(now - m_gameStartTime).count();
+  float nowSec = std::chrono::duration_cast<std::chrono::duration<float>>(
+                     now - m_gameStartTime)
+                     .count();
 
   m_weaponBar->render(this, width(), height(), nowSec);
   renderAllSprites();

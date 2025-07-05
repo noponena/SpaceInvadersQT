@@ -1,4 +1,5 @@
 #include "Utils.h"
+#include <QColor>
 #include <QRandomGenerator>
 #include <chrono>
 #include <ctime>

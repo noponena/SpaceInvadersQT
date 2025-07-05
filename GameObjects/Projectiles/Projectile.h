@@ -34,7 +34,7 @@ public:
 
   QString hudPixmapResourcePath() const;
 
-  protected:
+protected:
   int m_damage;
   QString m_hudPixmapResourcePath = "";
   std::unordered_set<ProjectileProperty> m_properties;

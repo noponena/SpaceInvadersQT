@@ -61,7 +61,6 @@ protected:
   bool m_onHitAnimationInProgress = false;
   bool m_autoFire = false;
   std::unique_ptr<UI::GLProgressBar> m_healthBar;
-  QColor m_originalColor;
 
   virtual void initializeDestructionAnimation() override;
   void initializeDestructionEffects() override;

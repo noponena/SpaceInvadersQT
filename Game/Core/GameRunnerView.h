@@ -10,7 +10,6 @@
 #include "UI/GameObjectCounter.h"
 #include "UI/Panel.h"
 #include <QElapsedTimer>
-#include <QGraphicsView>
 #include <QKeyEvent>
 #include <QLabel>
 #include <QOpenGLBuffer>
@@ -192,19 +191,21 @@ private slots:
   void onPlayerEnergyUpdated(float value) { m_energyBar->setValue(value); }
   void onPlayerMaxEnergySet(float value) { m_energyBar->setRange(0, value); }
   void onPlayerSecondaryWeaponsChanged(const std::array<QString, 4> &weapons) {
-      int i = 0;
-      for (const auto & weapon : weapons) {
-          qDebug() << "weapon =" << weapon;
-          m_weaponBar->setSlotImage(i, weapon);
-          i++;
-      }
+    int i = 0;
+    for (const auto &weapon : weapons) {
+      qDebug() << "weapon =" << weapon;
+      m_weaponBar->setSlotImage(i, weapon);
+      i++;
+    }
   }
   void onPlayerSecondaryWeaponFired(std::uint32_t weaponIndex,
                                     std::uint32_t cooldownMs) {
-      auto now = std::chrono::high_resolution_clock::now();
-      float nowSec = std::chrono::duration_cast<std::chrono::duration<float>>(now - m_gameStartTime).count();
-      float cooldownSec = cooldownMs / 1000.0f;
-      m_weaponBar->startCooldown(weaponIndex, cooldownSec, nowSec);
+    auto now = std::chrono::high_resolution_clock::now();
+    float nowSec = std::chrono::duration_cast<std::chrono::duration<float>>(
+                       now - m_gameStartTime)
+                       .count();
+    float cooldownSec = cooldownMs / 1000.0f;
+    m_weaponBar->startCooldown(weaponIndex, cooldownSec, nowSec);
   }
   void onSpawnEventsFinished() { m_spawnEventsFinished = true; }
   void pause() {
