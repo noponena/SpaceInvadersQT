@@ -69,7 +69,6 @@ void EffectManager::update(float deltaTime) {
     if ((*it)->allParticlesDead()) {
       (*it)->destroyGL(m_glFuncs);
       it = m_effects.erase(it);
-      qDebug() << "[EffectManager] ParticleSystem deleted";
     } else {
       ++it;
     }
@@ -105,7 +104,6 @@ void EffectManager::spawnDestructionEffect(const QVector2D &pos, float lifeSpan,
   auto system = std::make_unique<ParticleSystem>();
   system->spawnParticles(count, pos, lifeSpan, maxSpeed, color);
   m_pendingInit.push_back(std::move(system));
-  qDebug() << "[EffectManager] ParticleSystem added";
 }
 
 void EffectManager::clear() {

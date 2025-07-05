@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 project(SpaceInvadersQT LANGUAGES CXX)
 
+find_package(Qt6 REQUIRED COMPONENTS Widgets OpenGL)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -103,7 +105,9 @@ set(HEADERS
     Graphics/TextureRegistry.h
     UI/FPSCounter.h
     UI/GameObjectCounter.h
+    UI/GLProgressBar.h
     UI/MainWindow.h
+    UI/Panel.h
     Utils/Math/MathConstants.h
     Utils/Math/MathFunctions.h
     Utils/BoundsChecker.h
@@ -169,7 +173,9 @@ set(SOURCES
     Main/main.cpp
     UI/FPSCounter.cpp
     UI/GameObjectCounter.cpp
+    UI/GLProgressBar.cpp
     UI/MainWindow.cpp
+    UI/Panel.cpp
     Utils/BoundsChecker.cpp
     Utils/PerformanceBenchmark.cpp
     Utils/Utils.cpp
@@ -201,6 +207,7 @@ target_link_libraries(${PROJECT_NAME}
         Qt6::Gui
         Qt6::Widgets
         Qt6::OpenGLWidgets
+        Qt6::OpenGL
         Qt6::Concurrent
 )
 

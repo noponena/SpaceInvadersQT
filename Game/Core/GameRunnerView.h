@@ -1,12 +1,6 @@
 #ifndef GAMERUNNERVIEW_H
 #define GAMERUNNERVIEW_H
 
-#include "Game/CollisionDetection/CollisionDetector.h"
-#include "Game/Core/GameHUD.h"
-#include "Game/Core/GameState.h"
-#include "Game/Levels/LevelManager.h"
-#include "UI/FPSCounter.h"
-#include "UI/GameObjectCounter.h"
 #include <QElapsedTimer>
 #include <QGraphicsView>
 #include <QKeyEvent>
@@ -19,12 +13,18 @@
 #include <QThread>
 #include <QTimer>
 #include <QWheelEvent>
+#include "Game/CollisionDetection/CollisionDetector.h"
+#include "Game/Core/GameState.h"
+#include "Game/Levels/LevelManager.h"
+#include "UI/FPSCounter.h"
+#include "UI/GLProgressBar.h"
+#include "UI/GameObjectCounter.h"
+#include "UI/Panel.h"
 
 namespace Game {
 namespace Core {
 
-class GameRunnerView : public QOpenGLWidget,
-                       protected QOpenGLFunctions_3_3_Core {
+class GameRunnerView : public QOpenGLWidget, QOpenGLFunctions_3_3_Core {
   Q_OBJECT
 public:
   explicit GameRunnerView(Config::GameContext gameCtx,
@@ -46,8 +46,10 @@ private:
   Config::GameContext m_gameCtx;
   QOpenGLShaderProgram *m_program = nullptr;
   QOpenGLShaderProgram *m_lineProgram = nullptr;
+  std::unique_ptr<UI::Panel> m_uiPanel;
+  std::unique_ptr<UI::GLProgressBar> m_healthBar;
+  std::unique_ptr<UI::GLProgressBar> m_energyBar;
   GameState *m_gameState;
-  GameHUD *m_gameHUD;
   std::unique_ptr<Levels::LevelManager> m_levelManager;
   QTimer m_gameTimer;
   QTimer m_benchmarkTimer;
@@ -182,6 +184,18 @@ private slots:
   void onEnemyLimitReached() {
     m_levelFailed = true;
     m_playerShip = nullptr;
+  }
+  void onPlayerHealthUpdated(float value) {
+      m_healthBar->setValue(value);
+  }
+  void onPlayerMaxHealthSet(float value) {
+      m_healthBar->setRange(0, value);
+  }
+  void onPlayerEnergyUpdated(float value) {
+      m_energyBar->setValue(value);
+  }
+  void onPlayerMaxEnergySet(float value) {
+      m_energyBar->setRange(0, value);
   }
   void onSpawnEventsFinished() { m_spawnEventsFinished = true; }
   void pause() {

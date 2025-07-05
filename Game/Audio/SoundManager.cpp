@@ -97,8 +97,6 @@ void SoundManager::cleanup() {
     alGetSourcei((*it)->getSourceID(), AL_SOURCE_STATE, &state);
     if (state != AL_PLAYING) {
       it = m_activeSources.erase(it);
-      qDebug() << "[SoundManager] Removing a sound source.. Active sources:"
-               << m_activeSources.size();
     } else {
       ++it;
     }

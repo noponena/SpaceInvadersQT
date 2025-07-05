@@ -1,9 +1,11 @@
 #include "Game/Core/GameRunnerView.h"
 #include "Game/Audio/SoundManager.h"
+#include <QOpenGLContext>
+#include <QOpenGLFunctions_3_3_Core>
 #include "Graphics/Effects/EffectManager.h"
 #include "Graphics/TextureRegistry.h"
 #include "Utils/PerformanceBenchmark.h"
-#include <QOpenGLWidget>
+#include <QOpenGLContext>
 #include <QTimer>
 #include <QVector2D>
 #include <chrono>
@@ -103,9 +105,6 @@ GameRunnerView::GameRunnerView(Config::GameContext ctx, QWidget *parent)
   m_elapsedTimer.start();
   m_fpsTimer.start();
 
-  // m_gameHUD = new GameHUD(ctx.screenGeometry.width(),
-  //                               ctx.screenGeometry.height());
-
   setupConnections();
 }
 
@@ -116,8 +115,6 @@ GameRunnerView::~GameRunnerView() {
   delete m_gameState;
   delete m_program;
   delete m_lineProgram;
-  if (m_gameHUD)
-    delete m_gameHUD;
   delete m_fpsCounter;
   delete m_gameObjectCounter;
   delete m_stellarTokens;
@@ -133,7 +130,6 @@ GameRunnerView::~GameRunnerView() {
 
 void GameRunnerView::setupView() {
   QSurfaceFormat format;
-  // format.setSwapBehavior(QSurfaceFormat::TripleBuffer);
   format.setSwapInterval(0);
   format.setRenderableType(QSurfaceFormat::RenderableType::OpenGL);
   QSurfaceFormat::setDefaultFormat(format);
@@ -189,6 +185,24 @@ void GameRunnerView::startLevel(const Levels::Level &level,
   m_gameState->createPlayerShip();
   m_playerShip = m_gameState->playerShip();
 
+  connect(m_playerShip.get(),
+          &GameObjects::Ships::PlayerShip::playerHealthUpdated,
+          this,
+          &GameRunnerView::onPlayerHealthUpdated);
+
+  connect(m_playerShip.get(),
+          &GameObjects::Ships::PlayerShip::playerMaxHealthSet, this,
+          &GameRunnerView::onPlayerMaxHealthSet);
+
+  connect(m_playerShip.get(),
+          &GameObjects::Ships::PlayerShip::playerEnergyUpdated,
+          this,
+          &GameRunnerView::onPlayerEnergyUpdated);
+
+  connect(m_playerShip.get(),
+          &GameObjects::Ships::PlayerShip::playerMaxEnergySet, this,
+          &GameRunnerView::onPlayerMaxEnergySet);
+
   /*
   connect(m_playerShip.get(),
           &GameObjects::Ships::PlayerShip::playerSecondaryWeaponsChanged,
@@ -206,15 +220,6 @@ void GameRunnerView::startLevel(const Levels::Level &level,
   connect(m_playerShip.get(),
           &GameObjects::Ships::PlayerShip::playerMaxEnergySet, m_gameHUD,
           &GameHUD::onPlayerMaxEnergySet);
-
-  connect(m_playerShip.get(),
-          &GameObjects::Ships::PlayerShip::playerHealthUpdated, m_gameHUD,
-          &GameHUD::onPlayerHealthUpdated);
-
-  connect(m_playerShip.get(),
-          &GameObjects::Ships::PlayerShip::playerMaxHealthSet, m_gameHUD,
-          &GameHUD::onPlayerMaxHealthSet);
-
 */
 
   m_gameState->initialize();
@@ -248,8 +253,36 @@ void GameRunnerView::resumeGame() {
 }
 
 void GameRunnerView::initializeGL() {
+
   initializeOpenGLFunctions();
   Graphics::Effects::EffectManager::instance().initializeGL(this);
+
+  m_healthBar = std::make_unique<UI::GLProgressBar>(
+      0.f, 100.f,      // Min/max
+      0.7f, 0.015f,     // 30% width, 6% height (fractions)
+      UI::UISizeMode::Fraction
+      );
+  m_healthBar->setBarColors(
+      QVector4D(0.1f, 0.7f, 0.2f, 1.f),   // Green
+      QVector4D(0.95f, 0.83f, 0.29f, 1.f),// Yellow
+      QVector4D(0.93f, 0.24f, 0.24f, 1.f) // Red
+      );
+  m_healthBar->setThresholds(0.6f, 0.3f); // 60%/30% thresholds
+  m_healthBar->setCenter(0.5f, 0.952f);
+
+  m_energyBar = std::make_unique<UI::GLProgressBar>(
+      0.f, 100.f,      // Min/max
+      0.7f, 0.015f,     // 30% width, 6% height (fractions)
+      UI::UISizeMode::Fraction
+      );
+  m_energyBar->setBarColors(
+      QVector4D(24.f/255.f, 40.f/255.f, 119.f/255.f, 1.f), // Blue
+      QVector4D(24.f/255.f, 40.f/255.f, 119.f/255.f, 1.f),
+      QVector4D(24.f/255.f, 40.f/255.f, 119.f/255.f, 1.f)
+      );
+  m_energyBar->setCenter(0.5f, 0.97f);
+
+  m_uiPanel = std::make_unique<UI::Panel>();
 
   // === 1. Compile and link shaders ===
   // Main sprite shader
@@ -326,9 +359,11 @@ void GameRunnerView::paintGL() {
   glClearColor(0, 0, 0, 1);
   glClear(GL_COLOR_BUFFER_BIT);
 
-  // m_gameHUD->render(this);
-
+  m_uiPanel->render(this, m_gameCtx.screenGeometry.width(), m_gameCtx.screenGeometry.height());
+  m_healthBar->render(this, width(), height());
+  m_energyBar->render(this, width(), height());
   renderAllSprites();
+
   Graphics::Effects::EffectManager::instance().render(
       QVector2D(width(), height()));
 
@@ -358,7 +393,6 @@ void GameRunnerView::renderAllSprites() {
 }
 
 void GameRunnerView::renderSprite(const GameObjects::GameObject *obj) {
-  // NOTE: Assumes m_vao and m_program already bound by caller
   const auto &pos = obj->getPosition();
   const GameObjects::RenderData renderData = obj->getRenderData();
   const auto &texInfo =
@@ -418,6 +452,7 @@ void GameRunnerView::gameLoop() {
   float deltaTimeInSeconds = calculateDeltaTime();
   capFrameRate(MIN_FRAME_TIME, deltaTimeInSeconds);
 
+
   if (deltaTimeInSeconds > MAX_FRAME_TIME)
     deltaTimeInSeconds = MAX_FRAME_TIME;
 
@@ -459,10 +494,10 @@ float GameRunnerView::calculateRenderTime(
 
 float GameRunnerView::calculateDeltaTime() {
   int frameTimeMs = m_elapsedTimer.restart();
-  if (m_benchmarkMode) {
-    Utils::PerformanceBenchmark::getInstance(m_gameCtx).recordFrameTime(
-        frameTimeMs);
-  }
+    if (m_benchmarkMode) {
+        Utils::PerformanceBenchmark::getInstance(m_gameCtx).recordFrameTime(
+            frameTimeMs);
+    }
   return static_cast<float>(frameTimeMs) / 1000.0f;
 }
 
